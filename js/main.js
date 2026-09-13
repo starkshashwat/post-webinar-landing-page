@@ -197,12 +197,45 @@ window.videoController = new VideoController();
 function initLenisScroll() {
   if (typeof Lenis === 'undefined') return;
 
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 1024);
+
+  // On touch/mobile devices, let native hardware momentum handle scrolling to completely prevent scroll locking/sticking!
+  if (isTouchDevice) {
+    window.addEventListener('scroll', () => {
+      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
+      const progressBar = document.getElementById('systemProgress');
+      if (progressBar) {
+        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
+        progressBar.style.width = `${progressPct}%`;
+      }
+    }, { passive: true });
+
+    // Smooth Anchor Navigation on mobile
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        if (!targetId || targetId === '#' || targetId.startsWith('#open-popup')) return;
+
+        const targetEl = document.querySelector(targetId);
+        if (targetEl) {
+          e.preventDefault();
+          const navHeader = document.querySelector('.moya-header') || document.querySelector('header');
+          const navHeight = navHeader ? navHeader.offsetHeight + 18 : 78;
+          const targetY = targetEl.getBoundingClientRect().top + window.scrollY - navHeight;
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
+      });
+    });
+    return;
+  }
+
   try {
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.2
+      syncTouch: false
     });
     window.lenisInstance = lenis;
 
@@ -210,14 +243,12 @@ function initLenisScroll() {
     if (typeof ScrollTrigger !== 'undefined') {
       lenis.on('scroll', () => {
         ScrollTrigger.update();
-        // Update reading progress bar without extra native scroll listener
         const progressBar = document.getElementById('systemProgress');
         if (progressBar) {
           const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
           const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
           progressBar.style.width = `${progressPct}%`;
         }
-        // Phase 9: Background Parallax Map
         document.body.style.setProperty('--bg-scroll-y', `${-window.scrollY * 0.15}px`);
       });
 
@@ -256,16 +287,50 @@ function initLenisScroll() {
 // GLOBAL HEADLINE WORD-BY-WORD SCROLL REVEAL ANIMATION (SPLITTYPE + GSAP)
 // ==========================================================================
 function initHeadlineTextAnimations() {
-  if (typeof SplitType === "undefined" || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
+  if (typeof gsap === "undefined") return;
 
+  // Dedicated lightweight load animation for Hero Headline (never scrub on mobile to prevent scroll stalls)
+  const heroTitle = document.querySelector('.hero-clean-title');
+  if (heroTitle && heroTitle.dataset.splitDone !== "true") {
+    heroTitle.dataset.splitDone = "true";
+    gsap.fromTo(heroTitle,
+      { opacity: 0, y: 22 },
+      { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.1 }
+    );
+  }
+
+  if (typeof SplitType === "undefined" || typeof ScrollTrigger === "undefined") return;
+
+  // Headings further down the page that enter on scroll
   const targetHeadings = document.querySelectorAll(
-    ".hero-clean-title, .parallax-section-header h2, .bento-section-title, .coverflow-header h2, .testi-v2-title, .how-it-works-section .section-heading-lg, .curriculum-section-title, #curriculum .section-heading-lg, #bonuses .section-heading-lg, #bonus-vault .section-heading-lg, #support .section-heading-lg, .mentor-phil-quote-text, .mentor-name-title, .results-headline-text, .pricing-sec-title, #faq .section-heading-lg, .final-cta-section h2, .section-heading-lg"
+    ".parallax-section-header h2, .bento-section-title, .coverflow-header h2, .testi-v2-title, .how-it-works-section .section-heading-lg, .curriculum-section-title, #curriculum .section-heading-lg, #bonuses .section-heading-lg, #bonus-vault .section-heading-lg, #support .section-heading-lg, .mentor-phil-quote-text, .mentor-name-title, .results-headline-text, .pricing-sec-title, #faq .section-heading-lg, .final-cta-section h2, .section-heading-lg"
   );
+
+  const isMobile = window.innerWidth <= 1024;
 
   targetHeadings.forEach(heading => {
     try {
       if (heading.dataset.splitDone === "true") return;
       heading.dataset.splitDone = "true";
+
+      if (isMobile) {
+        // Simple, clean mobile scroll reveal without GPU-heavy 3D rotationX or blur scrubs
+        gsap.fromTo(heading,
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: heading,
+              start: "top 88%",
+              once: true
+            }
+          }
+        );
+        return;
+      }
 
       const split = new SplitType(heading, { types: "words" });
       if (!split.words || split.words.length === 0) return;
@@ -273,18 +338,15 @@ function initHeadlineTextAnimations() {
       split.words.forEach(w => {
         w.style.display = "inline-block";
         w.style.willChange = "opacity, transform, filter";
-        // Setup for 3D flip
         w.style.transformOrigin = "bottom center";
       });
 
-      // 3D Flip Starting State
       gsap.set(split.words, { 
         opacity: 0, 
         rotationX: -90, 
         filter: "blur(8px)" 
       });
 
-      // Scroll-driven 3D Flip Reveal
       gsap.to(split.words, {
         opacity: 1,
         rotationX: 0,
@@ -293,12 +355,11 @@ function initHeadlineTextAnimations() {
         ease: "power2.out",
         scrollTrigger: {
           trigger: heading,
-          start: "top 85%", // Triggers slightly earlier for smoother entry
+          start: "top 85%",
           end: "bottom 58%",
           scrub: 0.5,
           invalidateOnRefresh: true,
           onLeave: () => {
-             // Cleanup will-change for performance
              split.words.forEach(w => w.style.willChange = "auto");
           }
         }
@@ -315,7 +376,6 @@ function initHeadlineTextAnimations() {
   }
 }
 
-
 // ==========================================================================
 // UNIFIED GLOBAL MOTION & SECTION-TO-SECTION PARALLAX ARCHITECTURE
 // ==========================================================================
@@ -325,10 +385,10 @@ function initGlobalMotionArchitecture() {
 
   const mm = gsap.matchMedia();
 
-  // Desktop Animation System (>= 769px)
+  // Desktop Animation System (>= 1025px)
   mm.add("(min-width: 1025px)", () => {
     
-    // --- Phase 4 & 5: Hero and Cinematic Curtain (Spatial Overlap & Z-Depth) ---
+    // --- Hero -> Section 2 Transition (Fluid Depth Scrub Without Trapping Pinned Scroll) ---
     const hero = document.getElementById("top");
     const curtain = document.getElementById("heroCinematicCurtain");
     const centerVideo = document.querySelector(".cinematic-center-video-wrapper");
@@ -336,58 +396,43 @@ function initGlobalMotionArchitecture() {
 
     if (hero && curtain) {
       gsap.set(curtain, {
-        y: "100vh",
-        scale: 0.9,
-        borderRadius: "60px",
-        opacity: 0.8,
-        transformOrigin: "center top",
-        zIndex: 10
+        scale: 0.94,
+        y: 40,
+        opacity: 0.85,
+        borderRadius: "24px",
+        transformOrigin: "center top"
       });
 
-      const heroExitTl = gsap.timeline({
+      const heroTl = gsap.timeline({
         scrollTrigger: {
           trigger: hero,
-          start: "top top",
-          end: "bottom top",
-          scrub: 1,
-          pin: true,
-          pinSpacing: false,
-          invalidateOnRefresh: true,
-          toggleClass: {targets: hero, className: "is-animating"}
-        }
-      });
-
-      heroExitTl.to(hero, {
-        scale: 0.85,
-        filter: "brightness(0.4) blur(4px)",
-        ease: "power2.inOut"
-      });
-
-      const curtainEnterTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: hero,
-          start: "top top",
-          end: "bottom top",
-          scrub: 1,
+          start: "bottom 95%",
+          endTrigger: curtain,
+          end: "top 10%",
+          scrub: 0.8,
           invalidateOnRefresh: true
         }
       });
 
-      curtainEnterTl.to(curtain, {
-        y: "0vh",
+      heroTl.to(hero, {
+        scale: 0.93,
+        y: -40,
+        opacity: 0.35,
+        ease: "power1.inOut"
+      }, 0);
+
+      heroTl.to(curtain, {
         scale: 1,
-        borderRadius: "0px",
+        y: 0,
         opacity: 1,
+        borderRadius: "0px",
         ease: "power2.out"
-      });
-      
-      hero.classList.add("gsap-hw-accel");
-      curtain.classList.add("gsap-hw-accel");
+      }, 0);
     }
 
     if (curtain && centerVideo) {
       gsap.fromTo(centerVideo,
-        { opacity: 0, y: 100, scale: 0.85, filter: "blur(12px)" },
+        { opacity: 0, y: 60, scale: 0.92, filter: "blur(8px)" },
         {
           opacity: 1,
           y: 0,
@@ -396,8 +441,8 @@ function initGlobalMotionArchitecture() {
           ease: "power3.out",
           scrollTrigger: {
             trigger: curtain,
-            start: "top 50%",
-            end: "top 10%",
+            start: "top 65%",
+            end: "top 20%",
             scrub: 0.8,
             invalidateOnRefresh: true
           }
@@ -411,7 +456,7 @@ function initGlobalMotionArchitecture() {
 
       gsap.set(giantText, {
         scale: 0.78,
-        y: 100,
+        y: 80,
         opacity: 0,
         transformOrigin: "center bottom"
       });
@@ -431,7 +476,7 @@ function initGlobalMotionArchitecture() {
       });
     }
 
-    // --- Phase 7: The "Brick" System (Bento Grids - Asymmetric Stagger) ---
+    // --- Bento Grids: Asymmetric Stagger ---
     ["featured-koushik", "featured-reeshav"].forEach(sectionId => {
       const section = document.getElementById(sectionId);
       if (!section) return;
@@ -464,7 +509,7 @@ function initGlobalMotionArchitecture() {
       }
     });
     
-    // --- Phase 10: Pinning & Sticking (System SVG Pipe) ---
+    // --- System SVG Pipe ---
     const systemSection = document.getElementById("system");
     const systemContainer = document.querySelector(".how-it-works-container");
     const activePath = document.getElementById("connectingPipeActive");
@@ -507,7 +552,7 @@ function initGlobalMotionArchitecture() {
     }
   });
 
-  // Mobile Animation System (<= 768px) Fallbacks
+  // Mobile Animation System (<= 1024px) Fallbacks: 100% Fluid Native Momentum Scrolling
   mm.add("(max-width: 1024px)", () => {
     const curtain = document.getElementById("heroCinematicCurtain");
     const centerVideo = document.querySelector(".cinematic-center-video-wrapper");
@@ -519,12 +564,12 @@ function initGlobalMotionArchitecture() {
         {
           opacity: 1,
           y: 0,
+          duration: 0.6,
           ease: "power2.out",
           scrollTrigger: {
             trigger: curtain,
             start: "top 85%",
-            end: "top 40%",
-            scrub: 0.4
+            once: true
           }
         }
       );
@@ -532,16 +577,16 @@ function initGlobalMotionArchitecture() {
 
     if (curtain && giantText) {
       gsap.fromTo(giantText,
-        { opacity: 0.2, scale: 0.8 },
+        { opacity: 0.2, scale: 0.9 },
         {
           opacity: 0.85,
           scale: 1,
-          ease: "power1.out",
+          duration: 0.8,
+          ease: "power2.out",
           scrollTrigger: {
             trigger: curtain,
-            start: "top 90%",
-            end: "center 40%",
-            scrub: 0.4
+            start: "top 80%",
+            once: true
           }
         }
       );
@@ -565,7 +610,6 @@ function initGlobalMotionArchitecture() {
     });
   });
 }
-
 
 // Parallax Stacked Cards in Section 3 (#proof)
 function initParallaxCards() {

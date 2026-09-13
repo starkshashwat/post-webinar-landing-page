@@ -10895,21 +10895,131 @@ body::before {
 }
 
 
+/* ==========================================================================
+   MOBILE SCROLL STABILITY & HERO / 2ND SECTION OVERLAP PERFECTION
+   ========================================================================== */
 @media (max-width: 1024px) {
+  /* 1. Hero Container & Layout: Natural Height, Zero Clipping */
+  #top,
   .hero-clean {
     height: auto !important;
-    min-height: 100vh !important;
+    min-height: auto !important;
+    padding-top: clamp(80px, 12vh, 105px) !important;
+    padding-bottom: 75px !important; /* Generous breathing room so button NEVER overlaps */
+    margin-bottom: 0 !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
   }
-  .cinematic-center-video-card {
+
+  .hero-clean > .container {
+    width: 100% !important;
+    padding: 0 16px !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    z-index: 5 !important;
+  }
+
+  .dashboard-viewport {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto 28px !important;
+    perspective: none !important; /* Remove 3D perspective GPU overhead on mobile */
+  }
+
+  /* 2. Hero CTA Button Isolation: Never Overlap with Section 2 */
+  .cta-container {
+    position: relative !important;
+    z-index: 25 !important;
+    margin-top: 24px !important;
+    margin-bottom: 30px !important;
+    padding-bottom: 15px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: 340px !important;
+  }
+
+  .cta-container .hero-cta-primary {
+    width: 100% !important;
+    min-height: 54px !important;
+  }
+
+  .cta-container .hero-cta-secondary {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* 3. Section 2 (Cinematic Curtain): Clean Separation & Natural Scroll */
+  #heroCinematicCurtain,
+  .cinematic-curtain-container {
+    position: relative !important;
+    z-index: 10 !important;
+    min-height: auto !important;
+    margin-top: 0 !important;
+    padding-top: 30px !important;
+    padding-bottom: 50px !important;
+    overflow: hidden !important;
+    display: block !important;
+  }
+
+  .cinematic-footer-wrapper {
+    min-height: auto !important;
+    padding-top: 15px !important;
+  }
+
+  /* Straighten Marquee on Mobile to Prevent Corner Overlap Spikes into Hero */
+  .cinematic-diagonal-marquee-wrap {
+    transform: none !important;
+    margin: 10px 0 28px !important;
+    width: 100% !important;
+    padding: 10px 0 !important;
+  }
+
+  /* 4. Complete Removal of 2nd Section Video Box on Mobile */
+  .cinematic-center-video-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 20px auto 28px !important;
+    padding: 0 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  .cinematic-center-video-card,
+  body.light-mode .cinematic-center-video-card {
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     padding: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
   }
-  .cinematic-video-badge {
+
+  .cinematic-center-video-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+  }
+
+  /* Hide badge and caption box completely to leave ONLY the clean video */
+  .cinematic-video-badge,
+  .cinematic-video-caption {
     display: none !important;
   }
-}
 
+  .cinematic-center-video-card .bento-video-wrapper {
+    border-radius: 16px !important;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+  }
+}
