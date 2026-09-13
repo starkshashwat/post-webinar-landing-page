@@ -10795,10 +10795,13 @@
     .cinematic-clean-video-frame {
       position: relative;
       width: 100%;
+      aspect-ratio: 16 / 9;
+      height: auto;
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 24px 65px rgba(0, 0, 0, 0.75), 0 4px 20px rgba(0, 0, 0, 0.5);
       background: #000;
+      display: block;
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
     }
     .cinematic-clean-video-frame:hover {
@@ -10811,16 +10814,18 @@
     .cinematic-clean-video-frame .bento-video-wrapper {
       position: relative;
       width: 100%;
+      height: 100%;
       aspect-ratio: 16 / 9;
       border-radius: 18px;
       overflow: hidden;
       background: #000;
+      display: block;
     }
     .cinematic-clean-video-frame .bento-video-wrapper video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
     }
     /* Eyebrow badge completely disabled/hidden */
     .cinematic-video-badge {
@@ -11105,12 +11110,23 @@ body::before {
     box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55) !important;
     overflow: hidden !important;
     width: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+    height: auto !important;
+    display: block !important;
   }
 
   .cinematic-clean-video-frame .bento-video-wrapper {
     border-radius: 14px !important;
     width: 100% !important;
+    height: 100% !important;
     aspect-ratio: 16 / 9 !important;
+    display: block !important;
+  }
+
+  .cinematic-clean-video-frame .bento-video-wrapper video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
   }
 
   /* Hide badge completely */
@@ -11128,12 +11144,34 @@ body::before {
     padding: 0 8px !important;
   }
 
+  /* Big, bold, commanding MOYA typography on mobile */
   .footer-giant-bg-text {
     position: relative !important;
-    margin: 20px auto 14px !important;
-    font-size: clamp(80px, 22vw, 150px) !important;
-    line-height: 0.82 !important;
+    margin: 24px auto 14px !important;
+    font-size: clamp(120px, 32vw, 210px) !important;
+    line-height: 0.8 !important;
+    font-weight: 900 !important;
     width: 100% !important;
+    text-align: center !important;
     overflow: hidden !important;
+  }
+
+  /* Mobile-first headline and layout optimization */
+  .hero-clean-title {
+    font-size: clamp(1.7rem, 6.8vw, 2.35rem) !important;
+    line-height: 1.16 !important;
+    letter-spacing: -0.03em !important;
+    margin: 0 auto 16px !important;
+    padding: 0 8px !important;
+    text-align: center !important;
+  }
+
+  /* Disable heavy 3D GPU warp tunnel on mobile to free GPU fill-rate */
+  .warp-tunnel-container,
+  .warp-tunnel-sides,
+  .warp-face {
+    animation: none !important;
+    perspective: none !important;
+    transform: none !important;
   }
 }

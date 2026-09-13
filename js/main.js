@@ -45,8 +45,8 @@ window.handleCtaClick = handleCtaClick;
 // ==========================================================================
 class VideoController {
   constructor() {
-    this.activeVideo = null;
     this.videos = new Set();
+    this.activeVideo = null;
     this.initialized = false;
   }
 
@@ -54,11 +54,9 @@ class VideoController {
     if (this.initialized) return;
     this.initialized = true;
 
-    // Discover and bind all video containers across all sections
-    const wrappers = document.querySelectorAll(
-      '.bento-video-wrapper, .cinematic-center-video-wrapper, .cinematic-center-video-card, .bento-journey-video-card, .video-card-item'
-    );
-    wrappers.forEach(wrap => this.registerWrapper(wrap));
+    // Discover all unique video elements directly across the document (avoids duplicate binding from parent/child wrappers)
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(video => this.registerVideo(video));
 
     // Global listener to ensure single playing video at any given time
     document.addEventListener('play', (e) => {
@@ -75,55 +73,58 @@ class VideoController {
     });
   }
 
-  registerWrapper(wrap) {
-    const video = wrap.querySelector('video');
-    const playBtn = wrap.querySelector('.custom-play-btn, .video-play-overlay');
-    if (!video) return;
-
+  registerVideo(video) {
+    if (!video || this.videos.has(video)) return;
     this.videos.add(video);
 
-    const toggle = (e) => {
+    const wrap = video.closest('.cinematic-clean-video-frame, .bento-video-wrapper, .video-card-item') || video.parentElement;
+    const playBtn = wrap ? wrap.querySelector('.custom-play-btn, .video-play-overlay') : null;
+
+    const startPlayback = (e) => {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
       }
-      if (video.paused) {
-        this.playVideo(video, playBtn);
-      } else {
-        this.pauseVideo(video, playBtn);
-      }
+      this.playVideo(video, playBtn);
     };
 
     if (playBtn) {
-      playBtn.addEventListener('click', toggle);
+      playBtn.addEventListener('click', startPlayback);
       playBtn.style.pointerEvents = 'auto';
       playBtn.style.cursor = 'pointer';
     }
 
-    video.addEventListener('click', toggle);
-    video.style.cursor = 'pointer';
+    video.addEventListener('click', (e) => {
+      if (!video.hasAttribute('controls') || video.paused) {
+        if (!video.hasAttribute('controls')) {
+          this.playVideo(video, playBtn);
+        }
+      }
+    });
 
     video.addEventListener('play', () => {
       if (playBtn) playBtn.style.display = 'none';
       video.setAttribute('controls', 'true');
-      const card = video.closest('.bento-card, .cinematic-center-video-card');
+      const card = video.closest('.bento-card, .cinematic-center-video-wrapper, .cinematic-clean-video-frame');
       if (card) card.classList.add('is-playing');
       document.body.classList.add('is-cinema-mode');
     });
 
     video.addEventListener('pause', () => {
-      if (playBtn) playBtn.style.display = 'flex';
-      const card = video.closest('.bento-card, .cinematic-center-video-card');
+      // When paused, native controls handle play/pause UI.
+      // Do NOT show duplicate custom-play-btn on top of native pause controls!
+      const card = video.closest('.bento-card, .cinematic-center-video-wrapper, .cinematic-clean-video-frame');
       if (card) card.classList.remove('is-playing');
       if (this.activeVideo === video) this.activeVideo = null;
       document.body.classList.remove('is-cinema-mode');
     });
 
     video.addEventListener('ended', () => {
-      if (playBtn) playBtn.style.display = 'flex';
+      // Only when video completely ends, reset controls and restore custom play button
       video.removeAttribute('controls');
+      if (playBtn) playBtn.style.display = 'flex';
       video.currentTime = 0;
-      const card = video.closest('.bento-card, .cinematic-center-video-card');
+      const card = video.closest('.bento-card, .cinematic-center-video-wrapper, .cinematic-clean-video-frame');
       if (card) card.classList.remove('is-playing');
       if (this.activeVideo === video) this.activeVideo = null;
       document.body.classList.remove('is-cinema-mode');
@@ -156,10 +157,8 @@ class VideoController {
         if (err.name === 'NotAllowedError') {
           video.muted = true;
           video.play().catch(() => {
-            if (playBtn) playBtn.style.display = 'flex';
+            if (!video.hasAttribute('controls') && playBtn) playBtn.style.display = 'flex';
           });
-        } else {
-          if (playBtn) playBtn.style.display = 'flex';
         }
       });
     }
@@ -169,7 +168,6 @@ class VideoController {
     try {
       video.pause();
     } catch (err) {}
-    if (playBtn) playBtn.style.display = 'flex';
     if (this.activeVideo === video) this.activeVideo = null;
   }
 
@@ -199,15 +197,22 @@ function initLenisScroll() {
 
   const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 1024);
 
-  // On touch/mobile devices, let native hardware momentum handle scrolling to completely prevent scroll locking/sticking!
+  // On touch/mobile devices, use native hardware momentum scrolling with rAF throttling for 60 FPS
   if (isTouchDevice) {
+    let ticking = false;
     window.addEventListener('scroll', () => {
-      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
-      const progressBar = document.getElementById('systemProgress');
-      if (progressBar) {
-        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
-        progressBar.style.width = `${progressPct}%`;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
+          const progressBar = document.getElementById('systemProgress');
+          if (progressBar) {
+            const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
+            progressBar.style.width = `${progressPct}%`;
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     }, { passive: true });
 
@@ -232,7 +237,7 @@ function initLenisScroll() {
 
   try {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       syncTouch: false
@@ -249,13 +254,13 @@ function initLenisScroll() {
           const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
           progressBar.style.width = `${progressPct}%`;
         }
-        document.body.style.setProperty('--bg-scroll-y', `${-window.scrollY * 0.15}px`);
       });
 
       gsap.ticker.add((time) => {
         lenis.raf(time * 1000);
       });
-      gsap.ticker.lagSmoothing(0);
+      // Safe, standard lag smoothing prevents stutter during brief frame drops
+      gsap.ticker.lagSmoothing(500, 33);
     }
 
     // Smooth Anchor Navigation taking fixed navbar into account
@@ -271,7 +276,7 @@ function initLenisScroll() {
           const navHeight = navHeader ? navHeader.offsetHeight + 18 : 78;
           lenis.scrollTo(targetEl, {
             offset: -navHeight,
-            duration: 1.2,
+            duration: 1.1,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
           });
         }
@@ -289,19 +294,18 @@ function initLenisScroll() {
 function initHeadlineTextAnimations() {
   if (typeof gsap === "undefined") return;
 
-  // Dedicated lightweight load animation for Hero Headline (never scrub on mobile to prevent scroll stalls)
+  // Dedicated lightweight load animation for Hero Headline
   const heroTitle = document.querySelector('.hero-clean-title');
   if (heroTitle && heroTitle.dataset.splitDone !== "true") {
     heroTitle.dataset.splitDone = "true";
     gsap.fromTo(heroTitle,
-      { opacity: 0, y: 22 },
-      { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.1 }
+      { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", delay: 0.1 }
     );
   }
 
   if (typeof SplitType === "undefined" || typeof ScrollTrigger === "undefined") return;
 
-  // Headings further down the page that enter on scroll
   const targetHeadings = document.querySelectorAll(
     ".parallax-section-header h2, .bento-section-title, .coverflow-header h2, .testi-v2-title, .how-it-works-section .section-heading-lg, .curriculum-section-title, #curriculum .section-heading-lg, #bonuses .section-heading-lg, #bonus-vault .section-heading-lg, #support .section-heading-lg, .mentor-phil-quote-text, .mentor-name-title, .results-headline-text, .pricing-sec-title, #faq .section-heading-lg, .final-cta-section h2, .section-heading-lg"
   );
@@ -314,17 +318,17 @@ function initHeadlineTextAnimations() {
       heading.dataset.splitDone = "true";
 
       if (isMobile) {
-        // Simple, clean mobile scroll reveal without GPU-heavy 3D rotationX or blur scrubs
+        // High-performance mobile scroll reveal: zero blur, zero scrub overhead
         gsap.fromTo(heading,
-          { opacity: 0, y: 20 },
+          { opacity: 0, y: 18 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.6,
+            duration: 0.5,
             ease: "power2.out",
             scrollTrigger: {
               trigger: heading,
-              start: "top 88%",
+              start: "top 90%",
               once: true
             }
           }
@@ -337,33 +341,29 @@ function initHeadlineTextAnimations() {
 
       split.words.forEach(w => {
         w.style.display = "inline-block";
-        w.style.willChange = "opacity, transform, filter";
-        w.style.transformOrigin = "bottom center";
+        w.style.willChange = "opacity, transform";
       });
 
-      gsap.set(split.words, { 
-        opacity: 0, 
-        rotationX: -90, 
-        filter: "blur(8px)" 
-      });
-
-      gsap.to(split.words, {
-        opacity: 1,
-        rotationX: 0,
-        filter: "blur(0px)",
-        stagger: 0.08,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: heading,
-          start: "top 85%",
-          end: "bottom 58%",
-          scrub: 0.5,
-          invalidateOnRefresh: true,
-          onLeave: () => {
-             split.words.forEach(w => w.style.willChange = "auto");
+      // Pure transform & opacity flip: Zero GPU blur re-rasterization during scroll!
+      gsap.fromTo(split.words,
+        { opacity: 0, y: 16, rotationX: -35 },
+        {
+          opacity: 1,
+          y: 0,
+          rotationX: 0,
+          stagger: 0.03,
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: heading,
+            start: "top 88%",
+            once: true,
+            onLeave: () => {
+              split.words.forEach(w => w.style.willChange = "auto");
+            }
           }
         }
-      });
+      );
     } catch (e) {
       console.warn("SplitType error on heading:", heading, e);
     }
@@ -398,12 +398,12 @@ function initGlobalMotionArchitecture() {
     const pills = document.querySelectorAll("#cinematicPills .footer-glass-pill");
 
     if (hero && curtain) {
-      // Curtain starts recessed / zoomed-out from depth
+      // Curtain starts recessed from depth
       gsap.set(curtain, {
-        scale: 0.84,
-        y: 90,
-        opacity: 0.35,
-        borderRadius: "32px",
+        scale: 0.88,
+        y: 60,
+        opacity: 0.5,
+        borderRadius: "24px",
         transformOrigin: "center top"
       });
 
@@ -413,16 +413,16 @@ function initGlobalMotionArchitecture() {
           start: "bottom 95%",
           endTrigger: curtain,
           end: "top 12%",
-          scrub: 0.8,
+          scrub: 0.6,
           invalidateOnRefresh: true
         }
       });
 
+      // Pure transform and opacity: Zero blur filter to preserve 60 FPS
       heroTl.to(hero, {
-        scale: 0.91,
-        y: -60,
-        opacity: 0.25,
-        filter: "blur(4px)",
+        scale: 0.92,
+        y: -40,
+        opacity: 0.3,
         ease: "power1.inOut"
       }, 0);
 
@@ -438,18 +438,16 @@ function initGlobalMotionArchitecture() {
     // --- Sequential Mid-Screen Reveal for Elements in Section 2 ---
     if (heading) {
       gsap.fromTo(heading,
-        { opacity: 0, y: 35, filter: "blur(6px)" },
+        { opacity: 0, y: 24 },
         {
           opacity: 1,
           y: 0,
-          filter: "blur(0px)",
+          duration: 0.7,
           ease: "power3.out",
           scrollTrigger: {
             trigger: heading,
-            start: "top 82%",
-            end: "top 55%",
-            scrub: 0.5,
-            invalidateOnRefresh: true
+            start: "top 85%",
+            once: true
           }
         }
       );
@@ -457,17 +455,16 @@ function initGlobalMotionArchitecture() {
 
     if (desc) {
       gsap.fromTo(desc,
-        { opacity: 0, y: 25 },
+        { opacity: 0, y: 18 },
         {
           opacity: 1,
           y: 0,
+          duration: 0.7,
           ease: "power3.out",
           scrollTrigger: {
             trigger: desc,
-            start: "top 82%",
-            end: "top 58%",
-            scrub: 0.5,
-            invalidateOnRefresh: true
+            start: "top 85%",
+            once: true
           }
         }
       );
@@ -475,19 +472,18 @@ function initGlobalMotionArchitecture() {
 
     if (pills && pills.length > 0) {
       gsap.fromTo(pills,
-        { opacity: 0, y: 20, scale: 0.92 },
+        { opacity: 0, y: 16, scale: 0.95 },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          stagger: 0.1,
+          stagger: 0.08,
+          duration: 0.6,
           ease: "back.out(1.2)",
           scrollTrigger: {
             trigger: "#cinematicPills",
-            start: "top 85%",
-            end: "top 62%",
-            scrub: 0.5,
-            invalidateOnRefresh: true
+            start: "top 88%",
+            once: true
           }
         }
       );
@@ -495,35 +491,31 @@ function initGlobalMotionArchitecture() {
 
     if (centerVideo) {
       gsap.fromTo(centerVideo,
-        { opacity: 0, y: 45, scale: 0.94, filter: "blur(6px)" },
+        { opacity: 0, y: 32, scale: 0.96 },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          filter: "blur(0px)",
+          duration: 0.8,
           ease: "power3.out",
           scrollTrigger: {
             trigger: centerVideo,
-            start: "top 78%",
-            end: "top 45%",
-            scrub: 0.7,
-            invalidateOnRefresh: true
+            start: "top 82%",
+            once: true
           }
         }
       );
     }
 
     // --- Dynamic Kinetic Typography: Giant 'MOYA' Watermark Scrub ---
-    // Starts extra large (scale: 1.65), as user reaches the video it shrinks down to scale: 1.0,
-    // settling cleanly below 'Watch Koushik's Journey' with zero overlap behind video!
     if (giantText && centerVideo) {
       const isLight = document.body.classList.contains("light-mode");
-      const glowColor = isLight ? "rgba(229, 46, 63, 0.3)" : "rgba(229, 46, 63, 0.45)";
+      const glowColor = isLight ? "rgba(229, 46, 63, 0.25)" : "rgba(229, 46, 63, 0.4)";
 
       gsap.set(giantText, {
-        scale: 1.65,
-        y: 30,
-        opacity: 0.25,
+        scale: 1.5,
+        y: 20,
+        opacity: 0.35,
         transformOrigin: "center top"
       });
 
@@ -531,13 +523,13 @@ function initGlobalMotionArchitecture() {
         scale: 1.0,
         y: 0,
         opacity: 0.95,
-        filter: `drop-shadow(0 0 35px ${glowColor})`,
+        filter: `drop-shadow(0 0 30px ${glowColor})`,
         ease: "power2.out",
         scrollTrigger: {
           trigger: centerVideo,
           start: "top 75%",
           end: "bottom 30%",
-          scrub: 0.6,
+          scrub: 0.5,
           invalidateOnRefresh: true
         }
       });
@@ -629,102 +621,81 @@ function initGlobalMotionArchitecture() {
     const desc = document.getElementById("cinematicDesc");
     const pills = document.querySelectorAll("#cinematicPills .footer-glass-pill");
 
-    // Smooth entry transition on mobile without pinning or scroll trap
-    if (hero && curtain) {
-      gsap.set(curtain, {
-        scale: 0.92,
-        opacity: 0.6,
-        transformOrigin: "center top"
-      });
-
-      gsap.to(curtain, {
-        scale: 1,
-        opacity: 1,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: curtain,
-          start: "top 90%",
-          end: "top 40%",
-          scrub: 0.5
-        }
-      });
-    }
-
+    // Clean lightweight mobile transition: zero pinning, zero touch capture
     if (heading) {
       gsap.fromTo(heading,
-        { opacity: 0, y: 20 },
+        { opacity: 0, y: 16 },
         {
           opacity: 1,
           y: 0,
           duration: 0.5,
           ease: "power2.out",
-          scrollTrigger: { trigger: heading, start: "top 88%", once: true }
+          scrollTrigger: { trigger: heading, start: "top 90%", once: true }
         }
       );
     }
 
     if (desc) {
       gsap.fromTo(desc,
-        { opacity: 0, y: 15 },
+        { opacity: 0, y: 14 },
         {
           opacity: 1,
           y: 0,
           duration: 0.5,
           ease: "power2.out",
-          scrollTrigger: { trigger: desc, start: "top 88%", once: true }
+          scrollTrigger: { trigger: desc, start: "top 90%", once: true }
         }
       );
     }
 
     if (pills && pills.length > 0) {
       gsap.fromTo(pills,
-        { opacity: 0, y: 15 },
+        { opacity: 0, y: 12 },
         {
           opacity: 1,
           y: 0,
           duration: 0.5,
-          stagger: 0.08,
+          stagger: 0.06,
           ease: "power2.out",
-          scrollTrigger: { trigger: "#cinematicPills", start: "top 88%", once: true }
+          scrollTrigger: { trigger: "#cinematicPills", start: "top 90%", once: true }
         }
       );
     }
 
     if (centerVideo) {
       gsap.fromTo(centerVideo,
-        { opacity: 0, y: 25, scale: 0.96 },
+        { opacity: 0, y: 20 },
         {
           opacity: 1,
           y: 0,
-          scale: 1,
           duration: 0.6,
           ease: "power2.out",
           scrollTrigger: {
             trigger: centerVideo,
-            start: "top 85%",
+            start: "top 88%",
             once: true
           }
         }
       );
     }
 
-    // Dynamic 'MOYA' scale on mobile: starts large (1.35) and shrinks to 0.88
+    // Dynamic 'MOYA' scale on mobile: prominent, bold watermark settling at full scale (1.05)
     if (giantText && centerVideo) {
       gsap.set(giantText, {
-        scale: 1.35,
-        opacity: 0.25,
+        scale: 1.18,
+        opacity: 0.4,
         transformOrigin: "center top"
       });
 
       gsap.to(giantText, {
-        scale: 0.88,
-        opacity: 0.9,
+        scale: 1.0,
+        opacity: 0.95,
         ease: "power2.out",
         scrollTrigger: {
           trigger: centerVideo,
           start: "top 80%",
           end: "bottom 30%",
-          scrub: 0.5
+          scrub: 0.4
         }
       });
     }
@@ -2090,11 +2061,18 @@ window.openLightbox = function(src) {
         });
 
         // Gentle Scroll Parallax
+        let parallaxTicking = false;
         window.addEventListener('scroll', () => {
-          const rect = container.getBoundingClientRect();
-          if (rect.top < window.innerHeight && rect.bottom > 0) {
-            const scrollOffset = (window.innerHeight / 2 - (rect.top + rect.height / 2)) * 0.05;
-            tiltLayer.style.translate = `0 ${scrollOffset.toFixed(1)}px`;
+          if (!parallaxTicking && window.innerWidth > 1024) {
+            window.requestAnimationFrame(() => {
+              const rect = container.getBoundingClientRect();
+              if (rect.top < window.innerHeight && rect.bottom > 0) {
+                const scrollOffset = (window.innerHeight / 2 - (rect.top + rect.height / 2)) * 0.05;
+                tiltLayer.style.translate = `0 ${scrollOffset.toFixed(1)}px`;
+              }
+              parallaxTicking = false;
+            });
+            parallaxTicking = true;
           }
         }, { passive: true });
       }
