@@ -18,11 +18,14 @@
   <script src="https://unpkg.com/split-type"></script>
   <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
 
+  <link rel="icon" type="image/png" href="https://storage.files-vault.com/uploads/1757144294-JlC9Si3uqh.png">
+  <link rel="shortcut icon" type="image/png" href="https://storage.files-vault.com/uploads/1757144294-JlC9Si3uqh.png">
+
   <!-- Production Stylesheet -->
   <link rel="stylesheet" href="./css/main.css" />
 </head>
 <body>
-  ss="moya-ghl-container light-mode" id="moya-ghl-root">
+  <div class="moya-ghl-container light-mode" id="moya-ghl-root">
 
 <!-- Top System Reading Progress -->
 <div class="system-progress"><div class="system-progress-bar" id="systemProgress"></div></div>
@@ -223,9 +226,6 @@
     <!-- Breathing Aurora Glow -->
     <div class="footer-aurora"></div>
 <!-- Background Grid Removed per User Request -->
-    
-    <!-- Giant Background Typography with ScrollTrigger Scrub -->
-    <div id="giantBgText" class="footer-giant-bg-text">MOYA</div>
 
     <!-- Diagonal Scrolling Marquee Ribbon (-rotate-2 scale-110) -->
     <div class="cinematic-diagonal-marquee-wrap">
@@ -282,7 +282,32 @@
       </div>
     </div>
 
-    </footer>
+    <!-- Section 2 Centerpiece Video (Placed between Pills and Giant MOYA Typography) -->
+    <div class="cinematic-center-video-wrapper">
+      <div class="cinematic-center-video-card">
+        <div class="cinematic-video-badge">
+          <span class="cinematic-badge-dot"></span>
+          <span>Featured Video • Koushik's ₹5L/Mo Breakdown</span>
+        </div>
+        <div class="bento-video-wrapper">
+          <video 
+            class="hls-video" 
+            src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5baac49f830e49beccec0.mp4"
+            data-src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5baac49f830e49beccec0.mp4" 
+            playsinline 
+            preload="metadata" 
+            poster="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5c4eedf2d0155533d0f1a.png"></video>
+          <div class="custom-play-btn" title="Click to Play Video"></div>
+        </div>
+        <div class="cinematic-video-caption">
+          <strong>Watch Koushik's Journey:</strong> From 0 to ₹5,00,000/month in 6 weeks with MOYA's faceless blueprint
+        </div>
+      </div>
+    </div>
+    
+    <!-- Giant Background Typography with ScrollTrigger Scrub -->
+    <div id="giantBgText" class="footer-giant-bg-text">MOYA</div>
+  </footer>
 </div>
 
 
@@ -544,18 +569,20 @@
       </div>
     </div>
 
-    <!-- Slot 6: Bottom-Left Video (Col 1, Row 3 - 16:9 Video) -->
+    <!-- Slot 6: Weekly Journey Card (Col 1, Row 3 - Matches Reeshav structure) -->
     <div class="bento-slot-journey">
-      <div class="bento-card bento-video-card-horizontal">
-        <div class="bento-video-wrapper">
-          <video 
-            class="hls-video" 
-            src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5baac49f830e49beccec0.mp4"
-            data-src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5baac49f830e49beccec0.mp4" 
-            playsinline 
-            preload="metadata" 
-            poster="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5c4eedf2d0155533d0f1a.png"></video>
-          <div class="custom-play-btn custom-play-btn-sm" title="Click to Play Video"></div>
+      <div class="bento-card bento-journey-card">
+        <div>
+          <div class="bento-card-title">Weekly Journey</div>
+          <div class="bento-card-desc">From ₹0 to ₹5,00,000/month in 6 weeks with MOYA's faceless blueprint and automated video machine.</div>
+        </div>
+        <div class="bento-journey-avatars">
+          <div class="bento-avatar-stack">
+            <img src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a771ec49994d35aa0e259a6.png" alt="Koushik">
+            <img src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a771e019a9c7792ea60fb3b.png" alt="Reeshav">
+            <img src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a771e3b03343f290f8c91f8.png" alt="Saurav">
+          </div>
+          <div class="bento-journey-badge">₹5L/Mo Verified</div>
         </div>
       </div>
     </div>
@@ -1838,19 +1865,19 @@
       <!-- Stats Grid -->
       <div class="mentor-phil-stats-grid" style="margin-top: 32px;">
         <div class="mentor-phil-stat-card">
-          <div class="mentor-phil-stat-num">7,000+</div>
+          <div class="mentor-phil-stat-num" data-target="7000" data-suffix="+">7,000+</div>
           <div class="mentor-phil-stat-label">Videos Engineered</div>
         </div>
         <div class="mentor-phil-stat-card">
-          <div class="mentor-phil-stat-num">10,000+</div>
+          <div class="mentor-phil-stat-num" data-target="10000" data-suffix="+">10,000+</div>
           <div class="mentor-phil-stat-label">Thumbnails Tested</div>
         </div>
         <div class="mentor-phil-stat-card">
-          <div class="mentor-phil-stat-num">$35K+</div>
+          <div class="mentor-phil-stat-num" data-prefix="$" data-target="35" data-suffix="K+">$35K+</div>
           <div class="mentor-phil-stat-label">Algorithmic R&amp;D</div>
         </div>
         <div class="mentor-phil-stat-card">
-          <div class="mentor-phil-stat-num">450+</div>
+          <div class="mentor-phil-stat-num" data-target="450" data-suffix="+">450+</div>
           <div class="mentor-phil-stat-label">Channels Scaled</div>
         </div>
       </div>
@@ -2209,7 +2236,7 @@
        CLIENT INTERACTIVITY & ANIMATION SCRIPTS
        ======================================================================== -->
 
-- Sticky Mobile Floating CTA Bar (Appears when scrolled past hero on mobile) -->
+<!-- Sticky Mobile Floating CTA Bar (Appears when scrolled past hero on mobile) -->
     <div class="moya-mobile-sticky-bar" id="mobileStickyBar" aria-hidden="true">
       <div class="moya-mobile-sticky-inner">
         <div class="moya-mobile-sticky-info">

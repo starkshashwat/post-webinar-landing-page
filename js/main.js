@@ -1,122 +1,943 @@
 import './data.js';
 
 /* ==========================================================================
-   MOYA LANDING PAGE INTERACTION & MOTION ORCHESTRATION ENGINE
+   MOYA LANDING PAGE - PRODUCTION MOTION, VIDEO & INTERACTION ENGINE
+   Unified GSAP 3.12, ScrollTrigger, Lenis Smooth Scroll, SplitType & Video Controller
    ========================================================================== */
 
-// -- GHL Robust DOM Ready Helper --
-    function onReady(fn) {
-      if (document.readyState === 'interactive' || document.readyState === 'complete') {
-        setTimeout(fn, 1);
-      } else {
-        document.addEventListener('DOMContentLoaded', fn);
+// -- Robust DOM Ready Helper --
+function onReady(fn) {
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    setTimeout(fn, 1);
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
+  }
+}
+window.onReady = onReady;
+
+// DOM Helper Selectors
+const $ = (selector, scope = document) => scope.querySelector(selector);
+const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+
+// Toast Notification Trigger
+function triggerToast(msg) {
+  const toast = $("#systemToast");
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add("is-active");
+  setTimeout(() => toast.classList.remove("is-active"), 3200);
+}
+
+// CTA Router
+function handleCtaClick(e) {
+  if (e && e.currentTarget && e.currentTarget.getAttribute('href') && e.currentTarget.getAttribute('href').startsWith('#')) {
+    return; // Allow anchor links to smooth scroll
+  }
+  const config = window.MOYA_APP_CONFIG || {};
+  if (config.checkoutUrl) {
+    window.location.href = config.checkoutUrl;
+  }
+}
+window.handleCtaClick = handleCtaClick;
+
+// ==========================================================================
+// CENTRALIZED VIDEO CONTROLLER (SINGLETON SOURCE OF TRUTH)
+// ==========================================================================
+class VideoController {
+  constructor() {
+    this.activeVideo = null;
+    this.videos = new Set();
+    this.initialized = false;
+  }
+
+  init() {
+    if (this.initialized) return;
+    this.initialized = true;
+
+    // Discover and bind all video containers across all sections
+    const wrappers = document.querySelectorAll(
+      '.bento-video-wrapper, .cinematic-center-video-wrapper, .cinematic-center-video-card, .bento-journey-video-card, .video-card-item'
+    );
+    wrappers.forEach(wrap => this.registerWrapper(wrap));
+
+    // Global listener to ensure single playing video at any given time
+    document.addEventListener('play', (e) => {
+      if (e.target && e.target.tagName === 'VIDEO') {
+        this.onVideoStarted(e.target);
       }
-    }
-    window.onReady = onReady;
+    }, true);
 
-    // ScrollTrigger Refresh Lifecycle for GoHighLevel and Dynamic Image Loading
-    window.addEventListener('load', () => {
-      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+    // Keyboard ESC pauses active video
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.activeVideo) {
+        this.pauseVideo(this.activeVideo);
+      }
     });
-    setTimeout(() => {
-      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
-    }, 600);
-    setTimeout(() => {
-      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
-    }, 1800);
-    setTimeout(() => {
-      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
-    }, 3500);
+  }
 
-    // Configuration Data
-    const MOYA_APP_CONFIG = {
-      checkoutUrl: "https://pay.mechanismofya.com/widget/form/FmYYoRVcghC0BOE0ky78",
-      specialPrice: "₹4,997",
-      roadmap: [
-        {
-          tab: "01 Foundation",
-          title: "Select & Validate Your Niche",
-          body: "Stop guessing topics based on personal passion. You run your candidate niches through our mathematical CPM and search velocity matrix to ensure high advertiser demand before writing a single word.",
-          done: "Your niche is mathematically validated with high CPM and proven evergreen search volume."
-        },
-        {
-          tab: "02 Packaging",
-          title: "Engineered Channel Identity",
-          body: "Configure channel metadata, high-CTR thumbnail grids, banner positioning, and algorithmic keywords. This structure tells YouTube's recommendation neural network exactly who to serve your videos to.",
-          done: "Your channel architecture and high-converting visual templates are 100% complete."
-        },
-        {
-          tab: "03 Assembly",
-          title: "2-Hour Faceless Production Machine",
-          body: "Deploy Savan's 7,000-video tested workflow: AI-assisted scripting prompts for 65%+ retention, studio-grade AI voice synthesis, and motion graphics asset libraries for rapid 2-hour video rendering.",
-          done: "You can produce and publish high-retention faceless videos in under 2 hours."
-        },
-        {
-          tab: "04 Launch",
-          title: "Algorithmic Release & Browse Velocity",
-          body: "Execute the 10-video batch launch cadence. Leverage title curiosity gaps and thumbnail contrast ratios to trigger YouTube's initial recommendation browse feature tests.",
-          done: "Your first 10 videos are live and gathering organic impressions across YouTube browse features."
-        },
-        {
-          tab: "05 Scale",
-          title: "Studio Diagnostics & Multi-Monetization",
-          body: "Analyze retention decay points inside YouTube Studio. Re-package lagging titles, scale winning video angles, and activate affiliate and digital product backend funnels.",
-          done: "Channel hits monetized status and generates compounding weekly cashflow."
-        }
-      ],
-      faq: [
-        {
-          q: "Is MOYA suitable if I have zero prior YouTube or editing experience?",
-          a: "Yes, 100%. MOYA is engineered from scratch for complete beginners. You do not need video editing skills, audio engineering knowledge, or YouTube expertise. The system provides pre-tested templates and step-by-step guidance for every single phase."
-        },
-        {
-          q: "Do I ever have to appear on camera or record my voice?",
-          a: "Never. The entire MOYA mechanism is built for faceless channels. We teach you how to leverage AI voiceover synthesis, stock footage, motion graphic overlays, and automated animations so you remain 100% private and behind the scenes."
-        },
-        {
-          q: "How many hours per week do I need to implement this?",
-          a: "Because the MOYA system eliminates manual filming and tedious editing, most students spend only 6 to 10 hours per week. Once your assembly line is set up, a complete video can be scripted, voiced, and edited in under 2 hours."
-        },
-        {
-          q: "What makes MOYA different from other YouTube courses?",
-          a: "Most courses are passive video lectures where the mentor abandons you once you pay. MOYA is an implementation system with hands-on support: you receive private community access, weekly live doubt-clearing sessions, and an intensive 2-day onboarding bootcamp."
-        },
-        {
-          q: "How fast did student Koushik reach 7.1M views?",
-          a: "Koushik reached 7.1M views and over $41,296.84 in estimated revenue within 90 days of implementing the MOYA roadmap. While individual results vary depending on consistency and niche, the roadmap is engineered for rapid algorithmic validation."
-        },
-        {
-          q: "What happens immediately after I enroll?",
-          a: "You immediately receive portal access credentials, instant access to all 19 bonus vaults, an invitation to the private student community, and access to the private student mastermind community and the 2-day onboarding bootcamp."
-        }
-      ]
+  registerWrapper(wrap) {
+    const video = wrap.querySelector('video');
+    const playBtn = wrap.querySelector('.custom-play-btn, .video-play-overlay');
+    if (!video) return;
+
+    this.videos.add(video);
+
+    const toggle = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (video.paused) {
+        this.playVideo(video, playBtn);
+      } else {
+        this.pauseVideo(video, playBtn);
+      }
     };
 
-    // Helper Selectors
-    const $ = (s, p = document) => p.querySelector(s);
-    const $$ = (s, p = document) => Array.from(p.querySelectorAll(s));
-
-    // Toast Notification Trigger
-    function triggerToast(msg) {
-      const t = $("#systemToast");
-      t.textContent = msg;
-      t.classList.add("active");
-      clearTimeout(triggerToast._timer);
-      triggerToast._timer = setTimeout(() => t.classList.remove("active"), 4000);
+    if (playBtn) {
+      playBtn.addEventListener('click', toggle);
+      playBtn.style.pointerEvents = 'auto';
+      playBtn.style.cursor = 'pointer';
     }
 
-    // CTA Router
-    function handleCtaClick() {
-      if (MOYA_APP_CONFIG.checkoutUrl) {
-        window.location.href = MOYA_APP_CONFIG.checkoutUrl;
-      } else {
-        const offerEl = $("#offer");
-        if (offerEl) {
-          offerEl.scrollIntoView({ behavior: "smooth" });
-          triggerToast("Checkout link is being updated. Review the complete offer details below.");
+    video.addEventListener('click', toggle);
+    video.style.cursor = 'pointer';
+
+    video.addEventListener('play', () => {
+      if (playBtn) playBtn.style.display = 'none';
+      video.setAttribute('controls', 'true');
+      const card = video.closest('.bento-card, .cinematic-center-video-card');
+      if (card) card.classList.add('is-playing');
+    });
+
+    video.addEventListener('pause', () => {
+      if (playBtn) playBtn.style.display = 'flex';
+      const card = video.closest('.bento-card, .cinematic-center-video-card');
+      if (card) card.classList.remove('is-playing');
+      if (this.activeVideo === video) this.activeVideo = null;
+    });
+
+    video.addEventListener('ended', () => {
+      if (playBtn) playBtn.style.display = 'flex';
+      video.removeAttribute('controls');
+      video.currentTime = 0;
+      const card = video.closest('.bento-card, .cinematic-center-video-card');
+      if (card) card.classList.remove('is-playing');
+      if (this.activeVideo === video) this.activeVideo = null;
+    });
+  }
+
+  onVideoStarted(video) {
+    if (this.activeVideo && this.activeVideo !== video) {
+      try {
+        this.activeVideo.pause();
+      } catch (err) {}
+    }
+    this.activeVideo = video;
+  }
+
+  playVideo(video, playBtn) {
+    if (this.activeVideo && this.activeVideo !== video) {
+      try {
+        this.activeVideo.pause();
+      } catch (err) {}
+    }
+    this.activeVideo = video;
+    video.setAttribute('controls', 'true');
+    if (playBtn) playBtn.style.display = 'none';
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        console.warn('Video playback notice (handling autoplay/gesture restriction):', err.name);
+        if (err.name === 'NotAllowedError') {
+          video.muted = true;
+          video.play().catch(() => {
+            if (playBtn) playBtn.style.display = 'flex';
+          });
+        } else {
+          if (playBtn) playBtn.style.display = 'flex';
         }
+      });
+    }
+  }
+
+  pauseVideo(video, playBtn) {
+    try {
+      video.pause();
+    } catch (err) {}
+    if (playBtn) playBtn.style.display = 'flex';
+    if (this.activeVideo === video) this.activeVideo = null;
+  }
+
+  pauseAll() {
+    this.videos.forEach(v => {
+      try {
+        if (!v.paused) v.pause();
+      } catch (err) {}
+    });
+    const modalPlayer = document.getElementById('cfModalPlayer');
+    if (modalPlayer) {
+      try {
+        modalPlayer.pause();
+      } catch (err) {}
+    }
+    document.querySelectorAll('.bento-card.is-playing, .cinematic-center-video-card.is-playing').forEach(c => c.classList.remove('is-playing'));
+    this.activeVideo = null;
+  }
+}
+window.videoController = new VideoController();
+
+// ==========================================================================
+// LENIS SMOOTH SCROLL ENGINE & ANCHOR NAVIGATION
+// ==========================================================================
+function initLenisScroll() {
+  if (typeof Lenis === 'undefined') return;
+
+  try {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      touchMultiplier: 1.2
+    });
+    window.lenisInstance = lenis;
+
+    // Sync Lenis scroll events directly with GSAP ScrollTrigger
+    if (typeof ScrollTrigger !== 'undefined') {
+      lenis.on('scroll', () => {
+        ScrollTrigger.update();
+        // Update reading progress bar without extra native scroll listener
+        const progressBar = document.getElementById('systemProgress');
+        if (progressBar) {
+          const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
+          progressBar.style.width = `${progressPct}%`;
+        }
+      });
+
+      gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    // Smooth Anchor Navigation taking fixed navbar into account
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        if (!targetId || targetId === '#' || targetId.startsWith('#open-popup')) return;
+
+        const targetEl = document.querySelector(targetId);
+        if (targetEl) {
+          e.preventDefault();
+          const navHeader = document.querySelector('.moya-header') || document.querySelector('header');
+          const navHeight = navHeader ? navHeader.offsetHeight + 18 : 78;
+          lenis.scrollTo(targetEl, {
+            offset: -navHeight,
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+          });
+        }
+      });
+    });
+
+  } catch (err) {
+    console.warn('Lenis initialization error:', err);
+  }
+}
+
+// ==========================================================================
+// GLOBAL HEADLINE WORD-BY-WORD SCROLL REVEAL ANIMATION (SPLITTYPE + GSAP)
+// ==========================================================================
+function initHeadlineTextAnimations() {
+  if (typeof SplitType === 'undefined' || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+
+  const targetHeadings = document.querySelectorAll(
+    '.hero-clean-title, ' +
+    '.parallax-section-header h2, ' +
+    '.bento-section-title, ' +
+    '.coverflow-header h2, ' +
+    '.testi-v2-title, ' +
+    '.how-it-works-section .section-heading-lg, ' +
+    '.curriculum-section-title, ' +
+    '#curriculum .section-heading-lg, ' +
+    '#bonuses .section-heading-lg, ' +
+    '#bonus-vault .section-heading-lg, ' +
+    '#support .section-heading-lg, ' +
+    '.mentor-phil-quote-text, ' +
+    '.mentor-name-title, ' +
+    '.results-headline-text, ' +
+    '.pricing-sec-title, ' +
+    '#faq .section-heading-lg, ' +
+    '.final-cta-section h2, ' +
+    '.section-heading-lg'
+  );
+
+  targetHeadings.forEach(heading => {
+    try {
+      if (heading.dataset.splitDone === 'true') return;
+      heading.dataset.splitDone = 'true';
+
+      const split = new SplitType(heading, { types: 'words' });
+      if (!split.words || split.words.length === 0) return;
+
+      split.words.forEach(w => {
+        w.style.display = 'inline-block';
+        w.style.willChange = 'opacity, transform, filter';
+      });
+
+      // Start muted and slightly offset for natural scroll awareness
+      gsap.set(split.words, { opacity: 0.22, y: 12, filter: 'blur(1.5px)' });
+
+      // Scroll-driven progressive reveal that reverses smoothly when scrolling up
+      gsap.to(split.words, {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        stagger: 0.08,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: heading,
+          start: 'top 82%',
+          end: 'bottom 58%',
+          scrub: 0.5,
+          invalidateOnRefresh: true
+        }
+      });
+
+    } catch (e) {
+      console.warn('SplitType error on heading:', heading, e);
+    }
+  });
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      ScrollTrigger.refresh();
+    });
+  }
+}
+
+// ==========================================================================
+// UNIFIED GLOBAL MOTION & SECTION-TO-SECTION PARALLAX ARCHITECTURE
+// ==========================================================================
+function initGlobalMotionArchitecture() {
+  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  const mm = gsap.matchMedia();
+
+  // Desktop Animation System (>= 769px)
+  mm.add('(min-width: 769px)', () => {
+    // 1. HERO -> SECTION 2 TRANSITION
+    const hero = document.getElementById('top');
+    if (hero && window.innerWidth > 768) {
+      // Validated desktop viewport
+    }
+    const curtain = document.getElementById('heroCinematicCurtain');
+    const centerVideo = document.querySelector('.cinematic-center-video-wrapper');
+    const giantText = document.getElementById('giantBgText');
+    const ribbon = curtain ? curtain.querySelector('.cinematic-diagonal-marquee-wrap') : null;
+    const centerContent = curtain ? curtain.querySelector('.cinematic-content-center') : null;
+
+    if (hero && curtain) {
+      gsap.set(curtain, {
+        scale: 0.88,
+        y: 100,
+        opacity: 0.35,
+        borderRadius: '36px',
+        transformOrigin: 'center top'
+      });
+
+      const heroTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: hero,
+          start: 'bottom 92%',
+          endTrigger: curtain,
+          end: 'top 5%',
+          scrub: 0.8,
+          invalidateOnRefresh: true
+        }
+      });
+
+      heroTl.to(hero, {
+        y: -140,
+        scale: 0.92,
+        opacity: 0.25,
+        ease: 'power1.inOut'
+      }, 0);
+
+      heroTl.to(curtain, {
+        scale: 1,
+        y: 0,
+        opacity: 1,
+        borderRadius: '0px',
+        ease: 'power2.out'
+      }, 0);
+    }
+
+    // 2. Section 2 Elements Reordered Sequence Parallax Scrub
+    if (curtain && ribbon) {
+      gsap.fromTo(ribbon,
+        { scale: 1.08, opacity: 0, y: 25 },
+        {
+          scale: 1.04,
+          opacity: 1,
+          y: 0,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: curtain,
+            start: 'top 80%',
+            end: 'top 35%',
+            scrub: 0.6
+          }
+        }
+      );
+    }
+
+    if (curtain && centerContent) {
+      gsap.fromTo(centerContent,
+        { y: 35, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: curtain,
+            start: 'top 70%',
+            end: 'top 30%',
+            scrub: 0.6
+          }
+        }
+      );
+    }
+
+    if (curtain && centerVideo) {
+      gsap.fromTo(centerVideo,
+        { opacity: 0, y: 40, scale: 0.94 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: curtain,
+            start: 'top 55%',
+            end: 'top 15%',
+            scrub: 0.6,
+            invalidateOnRefresh: true
+          }
+        }
+      );
+    }
+
+    if (curtain && giantText) {
+      const isLight = document.body.classList.contains('light-mode');
+      const glowColor = isLight ? 'rgba(229, 46, 63, 0.36)' : 'rgba(229, 46, 63, 0.50)';
+
+      gsap.set(giantText, {
+        scale: 0.78,
+        y: 50,
+        opacity: 0.3,
+        filter: 'drop-shadow(0 0 0px rgba(229, 46, 63, 0))',
+        transformOrigin: 'center bottom'
+      });
+
+      const giantTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: curtain,
+          start: 'top 40%',
+          end: 'bottom 20%',
+          scrub: 0.4,
+          invalidateOnRefresh: true
+        }
+      });
+
+      giantTl.to(giantText, {
+        scale: 1.08,
+        y: 0,
+        opacity: 1,
+        filter: `drop-shadow(0 0 35px ${glowColor}) drop-shadow(0 0 70px rgba(229, 46, 63, 0.22))`,
+        ease: 'power2.out',
+        duration: 0.6
+      });
+
+      giantTl.to(giantText, {
+        scale: 0.92,
+        y: -40,
+        opacity: 0.4,
+        filter: 'drop-shadow(0 0 10px rgba(229, 46, 63, 0.08))',
+        ease: 'power2.in',
+        duration: 0.4
+      });
+    }
+
+    // 3. Magnetic Physics on Section 2 Glass Pills
+    if (curtain) {
+      curtain.querySelectorAll('.magnetic-btn').forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+          const rect = btn.getBoundingClientRect();
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const deltaX = e.clientX - rect.left - centerX;
+          const deltaY = e.clientY - rect.top - centerY;
+          gsap.to(btn, {
+            x: deltaX * 0.35,
+            y: deltaY * 0.35,
+            rotationX: -deltaY * 0.12,
+            rotationY: deltaX * 0.12,
+            scale: 1.05,
+            ease: 'power2.out',
+            duration: 0.4
+          });
+        });
+        btn.addEventListener('mouseleave', () => {
+          gsap.to(btn, {
+            x: 0,
+            y: 0,
+            rotationX: 0,
+            rotationY: 0,
+            scale: 1,
+            ease: 'elastic.out(1, 0.35)',
+            duration: 0.8
+          });
+        });
+      });
+    }
+
+    // 4. Section 2 to Section 3 (Proof) Continuous Flow
+    const sec3 = document.getElementById('proof');
+    if (curtain && sec3) {
+      gsap.set(sec3, { position: 'relative', zIndex: 12 });
+      const proofHeader = sec3.querySelector('.parallax-section-header');
+      if (proofHeader) {
+        gsap.fromTo(proofHeader,
+          { y: 30, opacity: 0.4 },
+          {
+            y: 0,
+            opacity: 1,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: sec3,
+              start: 'top 85%',
+              end: 'top 50%',
+              scrub: 0.5
+            }
+          }
+        );
       }
     }
+
+    // 5. BENTO GRIDS INDIVIDUAL CARD STAGGERED ENTRANCES (Koushik & Reeshav)
+    ['featured-koushik', 'featured-reeshav'].forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+
+      const cells = section.querySelectorAll('.bento-grid-showcase > div');
+      if (cells.length > 0) {
+        gsap.fromTo(cells,
+          { opacity: 0, y: 45, scale: 0.96 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            stagger: 0.08,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 82%',
+              end: 'top 28%',
+              scrub: 0.5,
+              invalidateOnRefresh: true
+            }
+          }
+        );
+      }
+    });
+
+    // 6. GENERAL REPEATED CARD ENTRANCE SEQUENCES
+    const cardSections = [
+      { sel: '#reviews .expandable-gallery-root', cards: '.expandable-gallery-track > *', start: 'top 85%' },
+      { sel: '#community-reviews', cards: '.testi-v2-card', start: 'top 85%' },
+      { sel: '#system', cards: '.how-step-card-wrap', start: 'top 82%' },
+      { sel: '#curriculum', cards: '.folder-wrapper, .folder-card-item', start: 'top 80%' },
+      { sel: '#support', cards: '.support-feature-card, .support-guarantee-card', start: 'top 85%' },
+      { sel: '#offer', cards: '.pricing-sec-card, .pricing-feature-item', start: 'top 80%' },
+      { sel: '#faq', cards: '.faq-accordion-item', start: 'top 85%' }
+    ];
+
+    cardSections.forEach(cs => {
+      const parent = document.querySelector(cs.sel);
+      if (!parent) return;
+      const cards = parent.querySelectorAll(cs.cards);
+      if (cards.length > 0) {
+        gsap.fromTo(cards,
+          { opacity: 0, y: 38, scale: 0.97 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            stagger: 0.06,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: parent,
+              start: cs.start,
+              end: 'top 35%',
+              scrub: 0.5,
+              invalidateOnRefresh: true
+            }
+          }
+        );
+      }
+    });
+
+    // 7. System Step Connected Pipeline Line Drawing
+    const systemContainer = document.querySelector('.how-it-works-container');
+    const activePath = document.getElementById('connectingPipeActive');
+    const glowDot = document.getElementById('pipeGlowDot');
+    const stepCards = document.querySelectorAll('.how-step-card-wrap');
+
+    if (systemContainer && activePath) {
+      const totalLength = activePath.getTotalLength ? activePath.getTotalLength() : 0;
+      if (totalLength > 0) {
+        activePath.style.strokeDasharray = totalLength;
+        activePath.style.strokeDashoffset = totalLength;
+        if (glowDot) glowDot.style.opacity = '0';
+
+        ScrollTrigger.create({
+          trigger: systemContainer,
+          start: 'top 82%',
+          end: 'bottom 82%',
+          scrub: 0.3,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const progress = self.progress;
+            activePath.style.strokeDashoffset = totalLength * (1 - progress);
+
+            if (glowDot) {
+              if (progress > 0.01 && progress < 0.99) {
+                const pt = activePath.getPointAtLength(progress * totalLength);
+                glowDot.setAttribute('cx', pt.x);
+                glowDot.setAttribute('cy', pt.y);
+                glowDot.style.opacity = '1';
+              } else {
+                glowDot.style.opacity = '0';
+              }
+            }
+
+            const thresholds = [0.03, 0.30, 0.62, 0.92];
+            stepCards.forEach((card, idx) => {
+              if (progress >= thresholds[idx]) {
+                card.classList.add('is-connected');
+              } else {
+                card.classList.remove('is-connected');
+              }
+            });
+          }
+        });
+      }
+    }    // 6. Section Card Entrances (Optimized without fighting 3D cards)
+    const sectionCardMappings = [
+      { sel: '#proof', cards: '.parallax-sticky-step', start: 'top 82%' },
+      { sel: '#curriculum', cards: '.folder-wrapper', start: 'top 82%' },
+      { sel: '#bonuses', cards: '.bonus-snack-badge', start: 'top 82%' },
+      { sel: '#bonus-vault', cards: '.mb-tilt-layer, .mb-feature-list li', start: 'top 82%' },
+      { sel: '#support', cards: '.support-loop-card, .support-pillar-card', start: 'top 82%' },
+      { sel: '#mentor', cards: '.mentor-phil-stat-card, .mentor-bio-expanded-card', start: 'top 82%' },
+      { sel: '#pricing', cards: '.pricing-card-wrap, .pricing-summary-card', start: 'top 82%' },
+      { sel: '#faq', cards: '.faq-accordion-item', start: 'top 85%' }
+    ];
+
+    sectionCardMappings.forEach(({ sel, cards, start }) => {
+      initCardEntranceTimeline(sel, cards, start);
+    });
+
+    // 7. Bonus Snack Badges Blur-In on Scroll
+    const snackNav = document.querySelector('.bonus-snack-nav');
+    const snackBadges = document.querySelectorAll('.bonus-snack-badge');
+    if (snackNav && snackBadges.length) {
+      gsap.fromTo(snackBadges,
+        { filter: 'blur(8px)', opacity: 0.25, y: 18 },
+        {
+          filter: 'blur(0px)',
+          opacity: 1,
+          y: 0,
+          stagger: 0.12,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: snackNav,
+            start: 'top 85%',
+            end: 'top 55%',
+            scrub: 0.6
+          }
+        }
+      );
+    }
+
+    // 8. Mentor Philosophy Banner Parallax & Live Counters
+    const mentorSection = document.getElementById('mentor');
+    const mentorBanner = document.getElementById('mentorBannerParallax');
+    if (mentorSection && mentorBanner) {
+      gsap.fromTo(mentorBanner,
+        { y: -35, scale: 1.04 },
+        {
+          y: 35,
+          scale: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: mentorSection,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 0.8
+          }
+        }
+      );
+    }
+
+    // Mentor Stats Live Counter Physics
+    const mentorStats = document.querySelectorAll('.mentor-phil-stat-num');
+    if (mentorStats.length) {
+      ScrollTrigger.create({
+        trigger: '.mentor-phil-stats-grid',
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          mentorStats.forEach(stat => {
+            const target = parseFloat(stat.dataset.target) || 0;
+            const prefix = stat.dataset.prefix || '';
+            const suffix = stat.dataset.suffix || '';
+            const isComma = target >= 1000;
+            const obj = { val: 0 };
+
+            gsap.to(obj, {
+              val: target,
+              duration: 1.8,
+              ease: 'power2.out',
+              onUpdate: () => {
+                const current = Math.round(obj.val);
+                stat.textContent = prefix + (isComma ? current.toLocaleString('en-US') : current) + suffix;
+              }
+            });
+          });
+        }
+      });
+    }
+
+  });
+
+  // Mobile Animation System (<= 768px)
+  mm.add('(max-width: 768px)', () => {
+    // Reduced motion distances and natural fluid scrolling on mobile
+    const curtain = document.getElementById('heroCinematicCurtain');
+    const centerVideo = document.querySelector('.cinematic-center-video-wrapper');
+    const giantText = document.getElementById('giantBgText');
+
+    if (curtain && centerVideo) {
+      gsap.fromTo(centerVideo,
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: curtain,
+            start: 'top 85%',
+            end: 'top 40%',
+            scrub: 0.4
+          }
+        }
+      );
+    }
+
+    if (curtain && giantText) {
+      gsap.fromTo(giantText,
+        { opacity: 0.2, scale: 0.8 },
+        {
+          opacity: 0.85,
+          scale: 1,
+          ease: 'power1.out',
+          scrollTrigger: {
+            trigger: curtain,
+            start: 'top 90%',
+            end: 'center 40%',
+            scrub: 0.4
+          }
+        }
+      );
+    }
+
+    // Simple mobile staggered card reveals
+    document.querySelectorAll('.bento-grid-showcase > div, .how-step-card-wrap, .folder-wrapper').forEach(card => {
+      gsap.fromTo(card,
+        { opacity: 0, y: 22 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: card,
+            start: 'top 90%',
+            once: true
+          }
+        }
+      );
+    });
+  });
+}
+
+// Parallax Stacked Cards in Section 3 (#proof)
+function initParallaxCards() {
+  const track = document.getElementById('parallaxTrack');
+  if (!track || typeof ScrollTrigger === 'undefined') return;
+
+  const cards = track.querySelectorAll('.parallax-card-inner');
+  const total = cards.length;
+  if (total === 0) return;
+
+  cards.forEach((card, idx) => {
+    card.style.top = `calc(10vh + ${idx * 20}px)`;
+  });
+
+  ScrollTrigger.create({
+    trigger: track,
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.4,
+    invalidateOnRefresh: true,
+    onUpdate: (self) => {
+      const progress = self.progress;
+      cards.forEach((card, idx) => {
+        const targetScale = Math.max(0.70, 1 - (total - idx - 1) * 0.058);
+        const rangeStart = idx * (1 / total);
+
+        let scale = 1;
+        if (progress > rangeStart) {
+          const t = Math.min(1, (progress - rangeStart) / (1 - rangeStart));
+          scale = 1 - t * (1 - targetScale);
+        }
+        const brightness = Math.max(0.78, 1 - (1 - scale) * 0.65);
+        card.style.transform = `scale(${scale})`;
+        card.style.filter = `brightness(${brightness})`;
+      });
+    }
+  });
+
+  // Proof Modal Lightbox Support
+  const modal = document.getElementById('proofModal');
+  const modalImg = document.getElementById('modalImg');
+  const modalBadge = document.getElementById('modalBadge');
+  const modalName = document.getElementById('modalName');
+  const modalNiche = document.getElementById('modalNiche');
+  const modalQuote = document.getElementById('modalQuote');
+  const modalCounter = document.getElementById('modalCounter');
+  const modalClose = modal ? modal.querySelector('.proof-modal-close') : null;
+  const modalBackdrop = modal ? modal.querySelector('.proof-modal-backdrop') : null;
+  const modalPrev = modal ? modal.querySelector('.proof-modal-nav-prev') : null;
+  const modalNext = modal ? modal.querySelector('.proof-modal-nav-next') : null;
+
+  const proofCards = document.querySelectorAll('.parallax-card-inner');
+  let currentModalIndex = 0;
+
+  function updateModalContent(idx) {
+    if (!modal) return;
+    currentModalIndex = (idx + proofCards.length) % proofCards.length;
+    const card = proofCards[currentModalIndex];
+    if (!card) return;
+
+    const img = card.querySelector('.parallax-mockup-img');
+    const badge = card.querySelector('.parallax-badge-pill');
+    const name = card.querySelector('.parallax-header-name');
+    const niche = card.querySelector('.parallax-header-niche');
+    const quote = card.querySelector('.parallax-quote-text');
+
+    if (modalImg && img) modalImg.src = img.src;
+    if (modalBadge && badge) modalBadge.textContent = badge.textContent.trim();
+    if (modalName && name) modalName.textContent = name.textContent.trim();
+    if (modalNiche && niche) modalNiche.textContent = niche.textContent.trim();
+    if (modalQuote && quote) modalQuote.textContent = quote.textContent.trim();
+    if (modalCounter) modalCounter.textContent = `${currentModalIndex + 1} of ${proofCards.length}`;
+  }
+
+  window.openProofModal = function(param1, param2) {
+    if (typeof param1 === 'string' && (param1.startsWith('http') || param1.includes('/'))) {
+      window.openLightbox(param1);
+      return;
+    }
+    const idx = typeof param1 === 'number' ? param1 : 0;
+    updateModalContent(idx);
+    if (modal) {
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+    }
+  };
+
+  window.closeProofModal = function closeProofModal() {
+    if (modal) {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+    }
+    const gLightbox = document.getElementById('globalLightbox');
+    if (gLightbox) {
+      gLightbox.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+    }
+  };
+
+  proofCards.forEach((card, idx) => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.hero-cta') || e.target.closest('a')) return;
+      window.openProofModal(idx);
+    });
+  });
+
+  if (modalClose) modalClose.addEventListener('click', window.closeProofModal);
+  if (modalBackdrop) modalBackdrop.addEventListener('click', window.closeProofModal);
+  if (modalPrev) modalPrev.addEventListener('click', () => updateModalContent(currentModalIndex - 1));
+  if (modalNext) modalNext.addEventListener('click', () => updateModalContent(currentModalIndex + 1));
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') window.closeProofModal();
+  });
+}
+
+// Global Image Lightbox
+window.openLightbox = function(src) {
+  let lightbox = document.getElementById('globalLightbox');
+  if (!lightbox) {
+    lightbox = document.createElement('div');
+    lightbox.id = 'globalLightbox';
+    lightbox.className = 'global-lightbox-overlay';
+    lightbox.innerHTML = `
+      <div class="global-lightbox-backdrop"></div>
+      <div class="global-lightbox-content">
+        <img src="" alt="Proof Preview" class="global-lightbox-img" />
+        <button class="global-lightbox-close" aria-label="Close Lightbox">&times;</button>
+      </div>
+    `;
+    document.body.appendChild(lightbox);
+
+    const close = () => {
+      lightbox.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+    };
+    lightbox.querySelector('.global-lightbox-backdrop').addEventListener('click', close);
+    lightbox.querySelector('.global-lightbox-close').addEventListener('click', close);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('is-open')) close();
+    });
+  }
+
+  const img = lightbox.querySelector('.global-lightbox-img');
+  if (img) img.src = src;
+  lightbox.classList.add('is-open');
+  document.body.classList.add('modal-open');
+};
+
+// ==========================================================================
+// PRESERVED DOM COMPONENTS & INITIALIZATION
+// ==========================================================================
 
     // Render 3D Interactive Folder Course Modules & Lightbox Modal
     const COURSE_MODULES = [
@@ -694,6 +1515,7 @@ import './data.js';
       });
     }
 
+
     // Render FAQ Accordion
     function initFaq() {
       const container = $("#faqAccordion");
@@ -725,106 +1547,6 @@ import './data.js';
       });
     }
 
-    // Lightbox Proof Modal
-    function openProofModal(src, title) {
-      const modal = $("#lightboxModal");
-      const img = $("#modalImg");
-      const modalTitle = $("#modalTitle");
-      if (!modal || !img) return;
-
-      img.src = src;
-      modalTitle.textContent = title || "Verified Analytics Proof";
-      if (typeof modal.showModal === "function") {
-        modal.showModal();
-        document.body.classList.add("modal-open");
-      }
-    }
-
-    window.closeProofModal = function closeProofModal() {
-      const modal = $("#lightboxModal");
-      if (modal) {
-        modal.close();
-        document.body.classList.remove("modal-open");
-      }
-    }
-
-    $("#lightboxModal")?.addEventListener("click", (e) => {
-      if (e.target === $("#lightboxModal")) closeProofModal();
-    });
-
-    // Video Card Lazy Players
-    function initVideoCards() {
-      $$(".video-card-item").forEach((card) => {
-        const overlay = $(".video-play-overlay", card);
-        const vid = $("video", card);
-        if (!overlay || !vid) return;
-
-        overlay.addEventListener("click", () => {
-          const src = vid.getAttribute("data-src");
-          if (!vid.src && src) {
-            vid.src = src;
-            vid.load();
-          }
-          overlay.style.display = "none";
-          vid.play().catch(() => {});
-        });
-
-        vid.addEventListener("pause", () => { overlay.style.display = "grid"; });
-        vid.addEventListener("ended", () => { overlay.style.display = "grid"; });
-      });
-    }
-
-    // Scroll Observer for Reading Progress
-    function initScrollEngine() {
-      const progressBar = $("#systemProgress");
-
-      const updateScroll = () => {
-        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
-        if (progressBar) progressBar.style.width = `${progressPct}%`;
-      };
-
-      window.addEventListener("scroll", updateScroll, { passive: true });
-      updateScroll();
-
-      // Intersection Observer for Reveal Elements & Viewport Scroll Driver
-      const checkReveals = () => {
-        const winH = window.innerHeight || document.documentElement.clientHeight;
-        $$(".reveal-on-scroll:not(.is-visible)").forEach((el) => {
-          const rect = el.getBoundingClientRect();
-          if (rect.top < winH * 0.94 && rect.bottom > -50) {
-            el.classList.add("is-visible");
-          }
-        });
-      };
-
-      if ("IntersectionObserver" in window) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("is-visible");
-              observer.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.02, rootMargin: "100px 0px 100px 0px" });
-
-        $$(".reveal-on-scroll").forEach((el) => {
-          observer.observe(el);
-          const rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight * 1.1) {
-            el.classList.add("is-visible");
-          }
-        });
-      } else {
-        $$(".reveal-on-scroll").forEach((el) => el.classList.add("is-visible"));
-      }
-
-      window.addEventListener("scroll", checkReveals, { passive: true });
-      document.addEventListener("scroll", checkReveals, { passive: true });
-      const scrollParents = document.querySelectorAll('#moya-ghl-root, .c-custom-code, .hl_page-creator');
-      scrollParents.forEach(sp => sp.addEventListener("scroll", checkReveals, { passive: true }));
-      checkReveals();
-    }
 
     // Motion Graphic Chart Drawing Animation
     function animateChartOnLoad() {
@@ -880,46 +1602,6 @@ import './data.js';
       }, 400);
     }
 
-    // Document Initialization
-    onReady(() => {
-      // Bind All CTA Buttons
-      $$(".js-cta").forEach((btn) => btn.addEventListener("click", handleCtaClick));
-
-      // Initialize Sections
-      init3DCourseFolders();
-      initFaq();
-      initVideoCards();
-      initScrollEngine();
-      animateChartOnLoad();
-      animateDashboardCounters();
-    });
-
-/* ==========================================================================
-   LENIS SMOOTH SCROLL, 3D MOTIONS, LIGHTBOX & USER INTERACTION ENGINE
-   ========================================================================== */
-
-(function() {
-      // 1. Lenis Smooth Inertia Scrolling
-      if (typeof Lenis !== 'undefined') {
-          try {
-              const lenis = new Lenis({
-                  duration: 1.2,
-                  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                  smoothWheel: true,
-                  touchMultiplier: 1.2
-              });
-              window.lenisInstance = lenis;
-              lenis.on('scroll', () => {
-                  if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.update();
-              });
-              gsap.ticker.add((time) => {
-                  lenis.raf(time * 1000);
-              });
-              gsap.ticker.lagSmoothing(0);
-          } catch (err) {
-              console.warn("Lenis init:", err);
-          }
-      }
 
     // 1. Robust Light/Dark Theme Switcher (Default: Light Mode)
     function initTheme() {
@@ -950,6 +1632,7 @@ import './data.js';
             }
         };
     }
+
 
     // 2. Interactive Chart Hover & Crosshair Tracker
         // 2. Grid-Locked 3D Warp Star Beams (Strict Path Following & Slow Smooth Pace)
@@ -1052,198 +1735,7 @@ import './data.js';
         setupHorizontalFace(faces.right, false);
     }
 
-        // ==========================================================================
-        // 2. PARALLAX STACKED SCROLL ANIMATION (FROM REFERENCE: 2nd section)
-        // ==========================================================================
-        function initParallaxCards() {
-            const track = document.getElementById('parallaxTrack');
-            if (!track) return;
 
-            const cards = track.querySelectorAll('.parallax-card-inner');
-            const total = cards.length;
-            if (total === 0) return;
-
-            // Setup static top offsets: each subsequent card has +20px offset
-            cards.forEach((card, idx) => {
-                const topOffset = idx * 20;
-                card.style.top = `calc(10vh + ${topOffset}px)`;
-            });
-
-            function onScroll() {
-                const trackRect = track.getBoundingClientRect();
-                const windowH = window.innerHeight;
-                const totalTrackScroll = trackRect.height - windowH;
-                if (totalTrackScroll <= 0) return;
-
-                const currentScroll = -trackRect.top;
-                const progress = Math.min(Math.max(currentScroll / totalTrackScroll, 0), 1);
-
-                cards.forEach((card, idx) => {
-                    // Exact target scale formula from reference: Math.max(0.6, 1 - (total - idx - 1) * 0.08)
-                    const targetScale = Math.max(0.70, 1 - (total - idx - 1) * 0.058);
-                    const rangeStart = idx * (1 / total);
-
-                    let scale = 1;
-                    if (progress > rangeStart) {
-                        const t = Math.min(1, (progress - rangeStart) / (1 - rangeStart));
-                        scale = 1 - t * (1 - targetScale);
-                    }
-
-                    const brightness = Math.max(0.78, 1 - (1 - scale) * 0.65);
-
-                    card.style.transform = `scale(${scale})`;
-                    card.style.filter = `brightness(${brightness})`;
-                });
-            }
-
-            let ticking = false;
-            window.addEventListener('scroll', () => {
-                if (!ticking) {
-                    window.requestAnimationFrame(() => {
-                        onScroll();
-                        ticking = false;
-                    });
-                    ticking = true;
-                }
-            }, { passive: true });
-
-            window.addEventListener('resize', onScroll);
-            onScroll();
-
-            // Lightbox Modal Support
-            const modal = document.getElementById('proofModal');
-            const modalImg = document.getElementById('modalImg');
-            const modalBadge = document.getElementById('modalBadge');
-            const modalName = document.getElementById('modalName');
-            const modalNiche = document.getElementById('modalNiche');
-            const modalQuote = document.getElementById('modalQuote');
-            const modalCounter = document.getElementById('modalCounter');
-            const modalClose = document.getElementById('proofModalClose');
-            const modalBackdrop = document.getElementById('proofModalBackdrop');
-            const modalPrev = document.getElementById('modalPrev');
-            const modalNext = document.getElementById('modalNext');
-
-            const studentData = [
-                {
-                    name: "Rahul K.",
-                    niche: "Finance & Investing",
-                    badge: "Verified $3,800/mo",
-                    img: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c5eada8c1f4515d6d7.webp",
-                    quote: "The validation framework gave me absolute clarity. Within 45 days, my faceless channel hit consistent views and monetized ad revenue without showing my face."
-                },
-                {
-                    name: "Priya D.",
-                    niche: "Motivation & Mindset",
-                    badge: "2.4M Views Milestone",
-                    img: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c5eada8c1f4515d6dc.webp",
-                    quote: "Left my 9-to-5 after 4 months. The automation workflow and batch scripting system changed everything for my financial independence."
-                },
-                {
-                    name: "Arjun M.",
-                    niche: "Tech & Consumer Gadgets",
-                    badge: "Verified $1,950/mo",
-                    img: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c5708c41d4dfb5fecc.webp",
-                    quote: "The batch scripting SOP and voiceover pipeline reduced my production time from 14 hours to under 2 hours per video. Absolute game changer."
-                },
-                {
-                    name: "Sneha J.",
-                    niche: "Travel & AI Automation",
-                    badge: "980K Views Milestone",
-                    img: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c5c8fd689c358fe170.webp",
-                    quote: "As a beginner, I was overwhelmed by software tools. MOYA streamlined the exact stack I needed, and the weekly clinics gave me personalized feedback."
-                },
-                {
-                    name: "Vikram K.",
-                    niche: "Case Studies & Business",
-                    badge: "Verified $4,600/mo",
-                    img: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c5eada8c1f4515d6e7.webp",
-                    quote: "Targeting high advertiser CPMs was the best advice I ever received. Even with modest view counts, the revenue outperformed channels with massive followings."
-                },
-                {
-                    name: "Neha D.",
-                    niche: "Philosophy & Lore",
-                    badge: "1.8M Views Milestone",
-                    img: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c5eada8c1f4515d6f0.webp",
-                    quote: "I had zero video editing experience. MOYA's step-by-step SOPs made the process so intuitive that I launched my first video in just 7 days."
-                }
-            ];
-
-            let currentStudentIdx = 0;
-
-            function updateModalContent(idx) {
-                if (!modal) return;
-                currentStudentIdx = (idx + studentData.length) % studentData.length;
-                const data = studentData[currentStudentIdx];
-                if (modalBadge) modalBadge.textContent = data.badge;
-                if (modalName) modalName.textContent = data.name;
-                if (modalNiche) modalNiche.textContent = data.niche;
-                if (modalQuote) modalQuote.textContent = `\"${data.quote}\"`;
-                if (modalImg) {
-                    modalImg.src = data.img;
-                    modalImg.alt = `${data.name} - YouTube Analytics Result`;
-                }
-                if (modalCounter) modalCounter.textContent = `${currentStudentIdx + 1} / ${studentData.length}`;
-            }
-
-            window.openProofModal = function(param1, param2) {
-                if (!modal) return;
-                if (typeof param1 === 'number') {
-                    updateModalContent(param1);
-                } else if (typeof param1 === 'string') {
-                    if (modalImg) modalImg.src = param1;
-                    if (modalName) modalName.textContent = param2 || "Verified Dashboard Case Study";
-                    if (modalBadge) modalBadge.textContent = "Verified Analytics";
-                    if (modalNiche) modalNiche.textContent = "MOYA Implementation";
-                    if (modalQuote) modalQuote.textContent = "Authentic documented YouTube Studio screenshot.";
-                    if (modalCounter) modalCounter.textContent = "";
-                }
-                modal.classList.add('is-active');
-                modal.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
-            };
-
-            window.closeProofModal = function closeProofModal() {
-                if (!modal) return;
-                modal.classList.remove('is-active');
-                modal.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
-            }
-
-            cards.forEach((card, idx) => {
-                card.addEventListener('click', () => {
-                    window.openProofModal(idx);
-                });
-            });
-
-            if (modalClose) modalClose.addEventListener('click', closeProofModal);
-            if (modalBackdrop) modalBackdrop.addEventListener('click', closeProofModal);
-            if (modalPrev) modalPrev.addEventListener('click', () => updateModalContent(currentStudentIdx - 1));
-            if (modalNext) modalNext.addEventListener('click', () => updateModalContent(currentStudentIdx + 1));
-
-            window.addEventListener('keydown', (e) => {
-                if (!modal || !modal.classList.contains('is-active')) return;
-                if (e.key === 'Escape') closeProofModal();
-                else if (e.key === 'ArrowLeft') updateModalContent(currentStudentIdx - 1);
-                else if (e.key === 'ArrowRight') updateModalContent(currentStudentIdx + 1);
-            });
-        }
-
-    // ==========================================================================
-    // ACETERNITY ANIMATED STACKED TESTIMONIALS (FROM REFERENCE FOLDER)
-    // ==========================================================================
-    // ACETERNITY ANIMATED STACKED TESTIMONIALS (DIRECT IN-PLACE VIDEO PLAYBACK)
-        // ==========================================================================
-    // COVERFLOW CAROUSEL VIDEO TESTIMONIALS ENGINE
-    // (Exact Math & Interaction from @ruixen.ui/coverflow-carousel)
-    // ==========================================================================
-        // ==========================================================================
-    // FULL-WIDTH HORIZONTAL VIDEO TESTIMONIALS CAROUSEL (DRAG, SWIPE, CLICK-TO-PLAY)
-    // ==========================================================================
-        // ==========================================================================
-    // SECTION 05: 3D REVERSE COVERFLOW (TILTED CARDS + 100% PLAYABLE VIDEOS)
-    // ==========================================================================
-    // SECTION 05: 3D REVERSE COVERFLOW (TILTED CARDS + 100% PLAYABLE VIDEOS)
-    // EXACT IMPLEMENTATION FROM refrance/video testemonial marquee @ruixen.ui/coverflow-carousel
     function initExpandableGallery() {
       const track = document.getElementById('galleryTrack');
       const prevBtn = document.getElementById('galleryPrevBtn');
@@ -1599,11 +2091,6 @@ import './data.js';
       renderPage(0, false);
     }
 
-    // Alias for backwards compatibility with init callers
-    function initCoverflowCarousel() {
-      initExpandableGallery();
-    }
-
     function initMegaBonusParallax() {
         const container = document.getElementById('megaBonusParallax');
         const tiltLayer = document.getElementById('megaBonusTilt');
@@ -1651,6 +2138,7 @@ import './data.js';
       }
 
       initMegaBonusParallax();
+
 
     function initChart() {
         const chartArea = document.getElementById('mainChartArea');
@@ -1700,710 +2188,7 @@ import './data.js';
     }
 
     
-    // 8. Cinematic Curtain Parallax & Magnetic Physics (from refrance/mrque section belwo the hero)
-    
-    // 9. Global GSAP Section Entrance Animations (ScrollTrigger for all sections)
-    
-    // Bento Grid Video Direct In-Place Playback Handler
-    
-    // Global Dashboard Proof Lightbox Modal
-    window.openLightbox = function(src) {
-        let modal = document.getElementById('bentoLightboxModal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'bentoLightboxModal';
-            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(9,10,32,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out;opacity:0;transition:opacity 0.3s ease;';
-            modal.innerHTML = `
-                <div style="position:relative;max-width:92vw;max-height:90vh;display:flex;align-items:center;justify-content:center;">
-                    <img id="bentoLightboxImg" src="" style="max-width:100%;max-height:90vh;object-fit:contain;border-radius:14px;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);" alt="Dashboard Proof Enlarged">
-                    <button id="bentoLightboxClose" style="position:absolute;top:-18px;right:-18px;width:38px;height:38px;border-radius:50%;background:#E52E3F;color:#fff;border:none;cursor:pointer;font-size:18px;font-weight:bold;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(229,46,63,0.5);">✕</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            modal.addEventListener('click', function(e) {
-                if (e.target.id === 'bentoLightboxModal' || e.target.id === 'bentoLightboxClose') {
-                    modal.style.opacity = '0';
-                    setTimeout(function() { modal.style.display = 'none'; }, 300);
-                }
-            });
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && modal.style.display !== 'none') {
-                    modal.style.opacity = '0';
-                    setTimeout(function() { modal.style.display = 'none'; }, 300);
-                }
-            });
-        }
-        const img = document.getElementById('bentoLightboxImg');
-        if (img) img.src = src;
-        modal.style.display = 'flex';
-        requestAnimationFrame(function() { modal.style.opacity = '1'; });
-    };
 
-        function initBentoVideos() {
-        document.querySelectorAll('.bento-video-card').forEach(card => {
-            const video = card.querySelector('video');
-            const btn = card.querySelector('.custom-play-btn');
-            if (!video) return;
-
-            function togglePlay(e) {
-                if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                if (video.paused) {
-                    video.setAttribute('controls', 'true');
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(err => {
-                            console.log('Playback notice:', err);
-                        });
-                    }
-                    if (btn) btn.style.display = 'none';
-                } else {
-                    video.pause();
-                    if (btn) btn.style.display = 'flex';
-                }
-            }
-
-            if (btn) btn.addEventListener('click', togglePlay);
-            video.addEventListener('click', togglePlay);
-
-            video.addEventListener('play', () => {
-                if (btn) btn.style.display = 'none';
-                video.setAttribute('controls', 'true');
-            });
-            video.addEventListener('pause', () => {
-                if (btn) btn.style.display = 'flex';
-            });
-            video.addEventListener('ended', () => {
-                if (btn) btn.style.display = 'flex';
-                video.removeAttribute('controls');
-            });
-        });
-    }
-
-    function initGlobalSectionAnimations() {
-        if (typeof gsap === 'undefined') return;
-
-        // Select all sections that should animate on scroll
-        const sections = document.querySelectorAll('.section-spacing:not(.parallax-scroll-section), .bento-featured-section, .how-it-works-section, .final-cta-section');
-
-        sections.forEach(section => {
-            let isRevealed = false;
-            const reveal = () => {
-                if (isRevealed) return;
-                isRevealed = true;
-                section.classList.add('is-visible');
-
-                gsap.fromTo(section, 
-                    { opacity: 0, y: 35, scale: 0.98 },
-                    { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power2.out" }
-                );
-
-                const headings = section.querySelectorAll('.section-heading-lg, .bento-section-title, .section-kicker-tag, .bento-section-badge');
-                if (headings.length > 0) {
-                    gsap.fromTo(headings, 
-                        { opacity: 0, y: 22 },
-                        { opacity: 1, y: 0, stagger: 0.08, duration: 0.6, ease: "power2.out" }
-                    );
-                }
-
-                const cards = section.querySelectorAll('.bento-card, .moya-card, .parallax-card-outer, .timeline-item');
-                if (cards.length > 0) {
-                    gsap.fromTo(cards,
-                        { opacity: 0, y: 28, scale: 0.96 },
-                        { opacity: 1, y: 0, scale: 1, stagger: 0.06, duration: 0.7, ease: "power2.out" }
-                    );
-                }
-
-                const texts = section.querySelectorAll('.section-lead-text, .bento-section-sub');
-                if (texts.length > 0) {
-                    gsap.fromTo(texts,
-                        { opacity: 0, y: 16 },
-                        { opacity: 1, y: 0, stagger: 0.06, duration: 0.5, ease: "power2.out" }
-                    );
-                }
-            };
-
-            // 1. ScrollTrigger Trigger (fires once when section enters screen)
-            if (typeof ScrollTrigger !== 'undefined') {
-                ScrollTrigger.create({
-                    trigger: section,
-                    start: "top 90%",
-                    once: true,
-                    onEnter: reveal
-                });
-            }
-
-            // 2. Native IntersectionObserver Fallback (100% reliable inside GoHighLevel)
-            if ('IntersectionObserver' in window) {
-                const sObs = new IntersectionObserver((entries) => {
-                    entries.forEach(e => {
-                        if (e.isIntersecting) {
-                            reveal();
-                            sObs.unobserve(e.target);
-                        }
-                    });
-                }, { threshold: 0.05, rootMargin: '0px 0px -5% 0px' });
-                sObs.observe(section);
-            }
-
-            // 3. Immediate viewport check (if already on screen)
-            const rect = section.getBoundingClientRect();
-            if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
-                reveal();
-            }
-        });
-
-        // Special: Bento Grid cells get individual entrance
-        const bentoGrid = document.querySelector('.bento-grid-showcase');
-        const bentoCells = document.querySelectorAll('.bento-grid-showcase > div');
-        if (bentoGrid && bentoCells.length > 0) {
-            let bentoRevealed = false;
-            const revealBento = () => {
-                if (bentoRevealed) return;
-                bentoRevealed = true;
-                gsap.fromTo(bentoCells,
-                    { opacity: 0, y: 25, scale: 0.96 },
-                    { opacity: 1, y: 0, scale: 1, duration: 0.65, stagger: 0.06, ease: "power2.out" }
-                );
-            };
-
-            if (typeof ScrollTrigger !== 'undefined') {
-                ScrollTrigger.create({
-                    trigger: bentoGrid,
-                    start: "top 88%",
-                    once: true,
-                    onEnter: revealBento
-                });
-            }
-
-            if ('IntersectionObserver' in window) {
-                const bObs = new IntersectionObserver((entries) => {
-                    entries.forEach(e => {
-                        if (e.isIntersecting) {
-                            revealBento();
-                            bObs.unobserve(e.target);
-                        }
-                    });
-                }, { threshold: 0.08 });
-                bObs.observe(bentoGrid);
-            }
-
-            const bRect = bentoGrid.getBoundingClientRect();
-            if (bRect.top < window.innerHeight * 0.9 && bRect.bottom > 0) {
-                revealBento();
-            }
-        }
-    }
-
-    function initCinematicMarquee() {
-        if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
-        gsap.registerPlugin(ScrollTrigger);
-
-        const hero = document.getElementById("top");
-        const curtain = document.getElementById("heroCinematicCurtain");
-        if (!curtain) return;
-
-        const giantText = document.getElementById("giantBgText");
-        const heading = document.getElementById("cinematicHeading");
-        const desc = document.getElementById("cinematicDesc");
-        const pills = document.getElementById("cinematicPills");
-        const ribbon = curtain.querySelector(".cinematic-diagonal-marquee-wrap");
-
-        // 1. HERO EXITS STRAIGHT UP & SECTION 2 ZOOMS IN AND REVEALS FROM UNDERNEATH
-        // On mobile (<= 768px), disable sudden snapping & excessive scroll interception for natural scrolling
-        if (hero && window.innerWidth > 768) {
-            // Initial state for Section 2 zoom-in reveal
-            gsap.set(curtain, {
-                scale: 0.88,
-                y: 80,
-                opacity: 0.45,
-                borderRadius: "36px",
-                transformOrigin: "center top",
-                boxShadow: "0 -30px 70px rgba(0, 0, 0, 0.55)"
-            });
-
-            const curtainTl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: hero,
-                    start: "bottom 95%",
-                    endTrigger: curtain,
-                    end: "top 10%",
-                    scrub: 0.8,
-                    invalidateOnRefresh: true
-                }
-            });
-
-            // Section 1 goes straight up, with subtle depth shrink
-            curtainTl.to(hero, {
-                y: -140,
-                scale: 0.92,
-                opacity: 0.25,
-                ease: "power1.inOut"
-            }, 0);
-
-            // Section 2 zooms in and expands to full screen seamlessly
-            curtainTl.to(curtain, {
-                scale: 1,
-                y: 0,
-                opacity: 1,
-                borderRadius: "0px",
-                boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-                ease: "power1.out"
-            }, 0);
-        }
-
-        // 2. Giant MOYA Text Parallax Scrub - Continuous Upward Motion, Dynamic Scale & Subtle Glow Bloom
-        if (giantText) {
-            const isLight = document.body.classList.contains('light-mode');
-            const glowColor = isLight ? "rgba(229, 46, 63, 0.36)" : "rgba(229, 46, 63, 0.50)";
-
-            // Set initial state: starts lower down, compact scale, low opacity, no glow
-            gsap.set(giantText, {
-                scale: 0.70,
-                y: 110,
-                opacity: 0.20,
-                filter: "drop-shadow(0 0 0px rgba(229, 46, 63, 0))",
-                transformOrigin: "center bottom"
-            });
-
-            const giantTl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: curtain,
-                    start: "top 95%",
-                    end: "bottom 15%",
-                    scrub: 0.4,
-                    invalidateOnRefresh: true
-                }
-            });
-
-            // Stage 1: Continuous upward movement, scales up to full majesty, and subtle ambient crimson glow blooms
-            giantTl.to(giantText, {
-                scale: 1.15,
-                y: -10,
-                opacity: 1.0,
-                filter: `drop-shadow(0 0 38px ${glowColor}) drop-shadow(0 0 75px rgba(229, 46, 63, 0.22))`,
-                ease: "power2.out",
-                duration: 0.52
-            });
-
-            // Stage 2: Continues upward journey smoothly, shrinks slightly and softens as user scrolls out
-            giantTl.to(giantText, {
-                scale: 0.82,
-                y: -110,
-                opacity: 0.25,
-                filter: "drop-shadow(0 0 10px rgba(229, 46, 63, 0.08))",
-                ease: "power2.in",
-                duration: 0.48
-            });
-        }
-
-        // 3. Diagonal Marquee Ribbon Entrance
-        if (ribbon) {
-            gsap.fromTo(ribbon,
-                { scale: 1.12, opacity: 0, y: 35 },
-                {
-                    scale: 1.04,
-                    opacity: 1,
-                    y: 0,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: curtain,
-                        start: "top 80%",
-                        end: "top 30%",
-                        scrub: 0.8
-                    }
-                }
-            );
-        }
-
-        // 4. Center Content Entrance Stagger
-        if (heading && desc && pills) {
-            gsap.fromTo([heading, desc, pills], 
-                { y: 45, opacity: 0 }, 
-                { 
-                    y: 0, 
-                    opacity: 1, 
-                    stagger: 0.15, 
-                    ease: "power2.out", 
-                    scrollTrigger: {
-                        trigger: curtain,
-                        start: "top 65%",
-                        end: "top 20%",
-                        scrub: 0.8
-                    }
-                }
-            );
-        }
-
-        // 5. Magnetic Physics for Interactive Buttons (matching Yi component)
-        const magneticBtns = curtain.querySelectorAll(".magnetic-btn");
-        magneticBtns.forEach(btn => {
-            btn.addEventListener("mousemove", (e) => {
-                const rect = btn.getBoundingClientRect();
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const deltaX = e.clientX - rect.left - centerX;
-                const deltaY = e.clientY - rect.top - centerY;
-                gsap.to(btn, {
-                    x: deltaX * 0.35,
-                    y: deltaY * 0.35,
-                    rotationX: -deltaY * 0.12,
-                    rotationY: deltaX * 0.12,
-                    scale: 1.05,
-                    ease: "power2.out",
-                    duration: 0.4
-                });
-            });
-            btn.addEventListener("mouseleave", () => {
-                gsap.to(btn, {
-                    x: 0,
-                    y: 0,
-                    rotationX: 0,
-                    rotationY: 0,
-                    scale: 1,
-                    ease: "elastic.out(1, 0.35)",
-                    duration: 0.8
-                });
-            });
-        });
-
-        // 6. Section 2 to Section 3 Transition — Coordinated Layered Pull-Up Motion
-        const sec3 = document.getElementById("proof") || curtain.nextElementSibling;
-        if (sec3 && giantText) {
-            const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-            if (!prefersReduced) {
-                gsap.set(sec3, {
-                    y: 70,
-                    position: "relative",
-                    zIndex: 12
-                });
-
-                const exitTl = gsap.timeline({
-                    scrollTrigger: {
-                        trigger: curtain,
-                        start: "bottom 92%",
-                        endTrigger: sec3,
-                        end: "top 25%",
-                        scrub: 0.6,
-                        invalidateOnRefresh: true
-                    }
-                });
-
-                // Section 3 pulls up over Section 2 like a sliding sheet
-                exitTl.to(sec3, {
-                    y: 0,
-                    ease: "power1.out"
-                }, 0);
-
-                // Giant MOYA background text moves DOWNWARD (opposite direction of scroll) with subtle rotation (4.5deg) and gradual fade
-                exitTl.to(giantText, {
-                    y: 110,
-                    rotation: 4.5,
-                    opacity: 0.12,
-                    ease: "power1.inOut"
-                }, 0);
-            }
-        }
-    }
-
-    
-    // ==========================================================================
-    // HEADLINE WORD-BY-WORD TEXT REVEAL ANIMATION (GSAP + SPLITTYPE)
-    // ==========================================================================
-    // ==========================================================================
-    // GLOBAL HEADLINE WORD-BY-WORD SCROLL REVEAL ANIMATION (SPLITTYPE + GSAP)
-        // ==========================================================================
-    // GLOBAL SECTION HEADLINE SCROLL ANIMATION (WORD-BY-WORD PROGRESSIVE SCRUB)
-    // ==========================================================================
-    function initHeadlineTextAnimations() {
-        if (typeof SplitType === 'undefined' || typeof gsap === 'undefined') return;
-
-        const targetHeadings = document.querySelectorAll(
-            '.hero-clean-title, ' +
-            '.parallax-section-header h2, ' +
-            '.bento-section-title, ' +
-            '.coverflow-header h2, ' +
-            '.testi-v2-title, ' +
-            '.how-it-works-section .section-heading-lg, ' +
-            '.curriculum-section-title, ' +
-            '#curriculum .section-heading-lg, ' +
-            '#bonuses .section-heading-lg, ' +
-            '#bonus-vault .section-heading-lg, ' +
-            '#support .section-heading-lg, ' +
-            '.mentor-phil-quote-text, ' +
-            '.mentor-name-title, ' +
-            '.results-headline-text, ' +
-            '.pricing-sec-title, ' +
-            '#faq .section-heading-lg, ' +
-            '.final-cta-section h2, ' +
-            '.section-heading-lg'
-        );
-
-        targetHeadings.forEach(heading => {
-            try {
-                if (heading.dataset.splitDone === 'true') return;
-                heading.dataset.splitDone = 'true';
-
-                const split = new SplitType(heading, { types: 'words' });
-                if (!split.words || split.words.length === 0) return;
-
-                split.words.forEach(w => {
-                    w.style.display = 'inline-block';
-                    w.style.willChange = 'opacity, transform';
-                });
-
-                // Subtle initial state: visible enough that text is never black/hidden, but ready to animate
-                gsap.set(split.words, { opacity: 0.35, y: 12 });
-
-                let hasAnimated = false;
-                const playReveal = () => {
-                    if (hasAnimated) return;
-                    hasAnimated = true;
-                    gsap.to(split.words, {
-                        opacity: 1,
-                        y: 0,
-                        stagger: 0.04,
-                        duration: 0.6,
-                        ease: "power2.out"
-                    });
-                };
-
-                // 1. ScrollTrigger
-                if (typeof ScrollTrigger !== 'undefined') {
-                    ScrollTrigger.create({
-                        trigger: heading,
-                        start: "top 88%",
-                        once: true,
-                        onEnter: playReveal
-                    });
-                }
-
-                // 2. IntersectionObserver Fallback (100% reliable in GoHighLevel)
-                if ('IntersectionObserver' in window) {
-                    const observer = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                playReveal();
-                                observer.unobserve(entry.target);
-                            }
-                        });
-                    }, { threshold: 0.12, rootMargin: '0px 0px -5% 0px' });
-                    observer.observe(heading);
-                }
-
-                // 3. Immediate viewport check
-                const rect = heading.getBoundingClientRect();
-                if (rect.top < window.innerHeight * 0.88 && rect.bottom > 0) {
-                    playReveal();
-                }
-
-            } catch (e) {
-                console.warn('SplitType error on heading:', heading, e);
-            }
-        });
-
-        if (document.fonts && document.fonts.ready) {
-            document.fonts.ready.then(() => {
-                if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
-            });
-        }
-    }
-
-    // ==========================================================================
-    // SECTION 06: SCROLL-DRIVEN CONNECTED STRING & CARD ACTIVATION PIPELINE
-    // ==========================================================================
-    function initSystemStepScroll() {
-        const container = document.querySelector('.how-it-works-container');
-        const activePath = document.getElementById('connectingPipeActive');
-        const glowDot = document.getElementById('pipeGlowDot');
-        const cards = document.querySelectorAll('.how-step-card-wrap');
-
-        if (!container || !activePath) return;
-
-        const totalLength = activePath.getTotalLength();
-        if (!totalLength) return;
-
-        // Set initial state for path drawing
-        activePath.style.strokeDasharray = totalLength;
-        activePath.style.strokeDashoffset = totalLength;
-
-        if (glowDot) {
-            glowDot.style.opacity = '0';
-        }
-
-        let lastProgress = -1;
-
-        function updatePipeState(forcedProgress) {
-            let progress;
-            if (typeof forcedProgress === 'number' && !isNaN(forcedProgress)) {
-                progress = forcedProgress;
-            } else {
-                // Viewport-relative calculation: immune to whether window, body, or a GHL wrapper is scrolling!
-                const rect = container.getBoundingClientRect();
-                const winH = window.innerHeight || document.documentElement.clientHeight;
-                const startY = winH * 0.82;
-                const endY = winH * 0.18;
-                const totalDist = rect.height + (startY - endY);
-                const currentDist = startY - rect.top;
-                progress = Math.max(0, Math.min(1, currentDist / totalDist));
-            }
-
-            if (Math.abs(progress - lastProgress) < 0.0008) return;
-            lastProgress = progress;
-
-            const currentOffset = totalLength * (1 - progress);
-            activePath.style.strokeDashoffset = currentOffset;
-
-            if (glowDot) {
-                if (progress > 0.01 && progress < 0.99) {
-                    const pt = activePath.getPointAtLength(progress * totalLength);
-                    glowDot.setAttribute('cx', pt.x);
-                    glowDot.setAttribute('cy', pt.y);
-                    glowDot.style.opacity = "1";
-                } else {
-                    glowDot.style.opacity = "0";
-                }
-            }
-
-            const thresholds = [0.03, 0.30, 0.62, 0.92];
-            cards.forEach((card, idx) => {
-                if (progress >= thresholds[idx]) {
-                    card.classList.add('is-connected');
-                } else {
-                    card.classList.remove('is-connected');
-                }
-            });
-        }
-
-        // Run initial check
-        updatePipeState();
-
-        // 1. High-frequency 60fps ticker via requestAnimationFrame / gsap.ticker
-        if (typeof gsap !== 'undefined') {
-            gsap.ticker.add(() => updatePipeState());
-        } else {
-            let ticking = false;
-            window.addEventListener('scroll', () => {
-                if (!ticking) {
-                    requestAnimationFrame(() => {
-                        updatePipeState();
-                        ticking = false;
-                    });
-                    ticking = true;
-                }
-            }, { passive: true });
-        }
-
-        // 2. Window, Document, and GoHighLevel parent container scroll listeners
-        window.addEventListener('scroll', () => updatePipeState(), { passive: true });
-        window.addEventListener('resize', () => updatePipeState(), { passive: true });
-        document.addEventListener('scroll', () => updatePipeState(), { passive: true });
-
-        const ghlContainers = document.querySelectorAll('#moya-ghl-root, .c-custom-code, .hl_page-creator, .section_wrapper, .hl-wrapper, body, html');
-        ghlContainers.forEach(c => c.addEventListener('scroll', () => updatePipeState(), { passive: true }));
-
-        // 3. ScrollTrigger integration (for standard standalone browsers)
-        if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-            try {
-                gsap.registerPlugin(ScrollTrigger);
-                ScrollTrigger.create({
-                    trigger: container,
-                    start: "top 82%",
-                    end: "bottom 82%",
-                    scrub: 0.3,
-                    invalidateOnRefresh: true,
-                    onUpdate: (self) => updatePipeState(self.progress)
-                });
-            } catch(e) {}
-        }
-
-        // 4. Mobile individual card entrance observer (for stacked layout <= 899px)
-        if ('IntersectionObserver' in window) {
-            const cardObs = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) {
-                        e.target.classList.add('is-connected');
-                    }
-                });
-            }, { threshold: 0.2 });
-            cards.forEach(card => cardObs.observe(card));
-        }
-    }
-
-    function initMentorPhilosophyAnimation() {
-        if (typeof gsap === 'undefined') return;
-
-        // Majestic Mentor Banner Parallax Scrub
-        const banner = document.getElementById('mentorBannerParallax');
-        if (banner && typeof ScrollTrigger !== 'undefined') {
-            gsap.fromTo(banner,
-                { yPercent: -8 },
-                {
-                    yPercent: 8,
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: ".mentor-banner-fullwidth-wrap",
-                        start: "top bottom",
-                        end: "bottom top",
-                        scrub: 1.2
-                    }
-                }
-            );
-        }
-
-        const statsCards = document.querySelectorAll('.mentor-phil-stat-card');
-        const statsGrid = document.querySelector('.mentor-phil-stats-grid');
-        if (statsCards.length > 0 && statsGrid) {
-            let statsRevealed = false;
-            const revealStats = () => {
-                if (statsRevealed) return;
-                statsRevealed = true;
-                gsap.fromTo(statsCards, 
-                    { opacity: 0, y: 30 },
-                    { 
-                        opacity: 1, 
-                        y: 0, 
-                        stagger: 0.12, 
-                        ease: "power2.out", 
-                        duration: 0.6 
-                    }
-                );
-            };
-
-            if (typeof ScrollTrigger !== 'undefined') {
-                ScrollTrigger.create({
-                    trigger: statsGrid,
-                    start: "top 88%",
-                    once: true,
-                    onEnter: revealStats
-                });
-            }
-
-            if ('IntersectionObserver' in window) {
-                const mObs = new IntersectionObserver((entries) => {
-                    entries.forEach(e => {
-                        if (e.isIntersecting) {
-                            revealStats();
-                            mObs.unobserve(e.target);
-                        }
-                    });
-                }, { threshold: 0.1 });
-                mObs.observe(statsGrid);
-            }
-
-            const sRect = statsGrid.getBoundingClientRect();
-            if (sRect.top < window.innerHeight * 0.9 && sRect.bottom > 0) {
-                revealStats();
-            }
-        }
-    }
-
-    // ==========================================================================
-    // INTERACTIVE PRICING SECTION
-    // ==========================================================================
-    
     // Helper to update character spans dynamically for 3D buttons
     function set3dButtonText(container, text) {
         if (!container) return;
@@ -2443,40 +2228,7 @@ import './data.js';
         if (mentorshipItem) mentorshipItem.style.opacity = '1.0';
     }
 
-    if (document.readyState === 'loading') {
-        onReady(() => {
-            initTheme();
-            initGridStars();
-            initChart();
-            initParallaxCards();
-            initCoverflowCarousel();
-            initMegaBonusParallax();
-            initCinematicMarquee();
-            initGlobalSectionAnimations();
-            initBentoVideos();
-            initSystemStepScroll();
-            initMentorPhilosophyAnimation();
-            initInteractivePricing();
-            initHeadlineTextAnimations();
-        });
-    } else {
-        initTheme();
-        initGridStars();
-        initChart();
-        initParallaxCards();
-        initCoverflowCarousel();
-        initMegaBonusParallax();
-        initCinematicMarquee();
-        initGlobalSectionAnimations();
-        initBentoVideos();
-        initSystemStepScroll();
-        initMentorPhilosophyAnimation();
-        initInteractivePricing();
-        initHeadlineTextAnimations();
-    }
-})();
 
-  // Sticky Mobile Floating CTA Bar Controller
   (function initMobileStickyBar() {
     function checkStickyVisibility() {
       const stickyBar = document.getElementById('mobileStickyBar');
@@ -2503,7 +2255,6 @@ import './data.js';
   })();
 
 
-    // -- GoHighLevel (GHL) Native Popup & CTA Integration --
     onReady(function() {
       document.querySelectorAll('a[href="#open-popup"], a.open-ghl-popup').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
@@ -2520,33 +2271,48 @@ import './data.js';
       });
     });
 
-    // ==========================================================================
-    // SCRIPT: USER-CONTROLLED BONUS MARQUEE & SNACK NAVIGATION (Item 15)
-    // ==========================================================================
     (function initBonusUserMarquee() {
       const viewport = document.querySelector('.fw-marquee-viewport');
       const snackButtons = document.querySelectorAll('.js-snack-nav-btn');
       if (!viewport) return;
 
-      // 1. Mouse Drag to Scroll
       let isDown = false;
       let startX = 0;
       let scrollLeft = 0;
+      let isHovered = false;
+      let animId = null;
+      const speed = 0.85;
+
+      function step() {
+        if (!isDown && !isHovered) {
+          viewport.scrollLeft += speed;
+          if (viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth - 2) {
+            viewport.scrollLeft = 0;
+          }
+        }
+        animId = requestAnimationFrame(step);
+      }
+      animId = requestAnimationFrame(step);
+
+      // Mouse Events
+      viewport.addEventListener('mouseenter', () => { isHovered = true; });
+      viewport.addEventListener('mouseleave', () => {
+        isHovered = false;
+        isDown = false;
+        viewport.classList.remove('grabbing');
+      });
 
       viewport.addEventListener('mousedown', (e) => {
         isDown = true;
+        isHovered = true;
         viewport.classList.add('grabbing');
         startX = e.pageX - viewport.offsetLeft;
         scrollLeft = viewport.scrollLeft;
       });
 
-      viewport.addEventListener('mouseleave', () => {
-        isDown = false;
-        viewport.classList.remove('grabbing');
-      });
-
       viewport.addEventListener('mouseup', () => {
         isDown = false;
+        isHovered = false;
         viewport.classList.remove('grabbing');
       });
 
@@ -2554,19 +2320,31 @@ import './data.js';
         if (!isDown) return;
         e.preventDefault();
         const x = e.pageX - viewport.offsetLeft;
-        const walk = (x - startX) * 1.6;
+        const walk = (x - startX) * 1.5;
         viewport.scrollLeft = scrollLeft - walk;
       });
 
-      // 2. Trackpad / Wheel Horizontal Scroll
-      viewport.addEventListener('wheel', (e) => {
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-          return;
-        }
-        if (e.shiftKey) return;
+      // Touch Events for Mobile / Tablet
+      viewport.addEventListener('touchstart', (e) => {
+        isDown = true;
+        isHovered = true;
+        startX = e.touches[0].pageX - viewport.offsetLeft;
+        scrollLeft = viewport.scrollLeft;
       }, { passive: true });
 
-      // 3. Clickable Snack Navigation without vertical jump
+      viewport.addEventListener('touchend', () => {
+        isDown = false;
+        isHovered = false;
+      });
+
+      viewport.addEventListener('touchmove', (e) => {
+        if (!isDown) return;
+        const x = e.touches[0].pageX - viewport.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        viewport.scrollLeft = scrollLeft - walk;
+      }, { passive: true });
+
+      // Clickable Snack Navigation
       snackButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
@@ -2585,3 +2363,50 @@ import './data.js';
         });
       });
     })();
+
+// ==========================================================================
+// MASTER APPLICATION INITIALIZER
+// ==========================================================================
+onReady(() => {
+  // 1. Bind CTA Buttons
+  $$(".js-cta").forEach((btn) => btn.addEventListener("click", handleCtaClick));
+
+  // 2. Initialize Core Components
+  init3DCourseFolders();
+  initFaq();
+  initTheme();
+  initGridStars();
+  initChart();
+  initExpandableGallery();
+  initMegaBonusParallax();
+  initInteractivePricing();
+  animateChartOnLoad();
+  animateDashboardCounters();
+
+  // 3. Initialize Video Controller
+  window.videoController.init();
+
+  // 4. Initialize Lenis Smooth Scroll Engine & Navigation
+  initLenisScroll();
+
+  // 5. Initialize Parallax Cards & Section-to-Section Motion Architecture
+  initParallaxCards();
+  initGlobalMotionArchitecture();
+  initHeadlineTextAnimations();
+
+  // 6. Lifecycle ScrollTrigger Refresh on font/image load
+  window.addEventListener('load', () => {
+    if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+  });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+    });
+  }
+  setTimeout(() => {
+    if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+  }, 500);
+  setTimeout(() => {
+    if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+  }, 1800);
+});
