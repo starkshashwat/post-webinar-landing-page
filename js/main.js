@@ -388,18 +388,22 @@ function initGlobalMotionArchitecture() {
   // Desktop Animation System (>= 1025px)
   mm.add("(min-width: 1025px)", () => {
     
-    // --- Hero -> Section 2 Transition (Fluid Depth Scrub Without Trapping Pinned Scroll) ---
+    // --- Hero -> Section 2 Transition (Cinematic Zoom-Up Entry) ---
     const hero = document.getElementById("top");
     const curtain = document.getElementById("heroCinematicCurtain");
     const centerVideo = document.querySelector(".cinematic-center-video-wrapper");
     const giantText = document.getElementById("giantBgText");
+    const heading = document.getElementById("cinematicHeading");
+    const desc = document.getElementById("cinematicDesc");
+    const pills = document.querySelectorAll("#cinematicPills .footer-glass-pill");
 
     if (hero && curtain) {
+      // Curtain starts recessed / zoomed-out from depth
       gsap.set(curtain, {
-        scale: 0.94,
-        y: 40,
-        opacity: 0.85,
-        borderRadius: "24px",
+        scale: 0.84,
+        y: 90,
+        opacity: 0.35,
+        borderRadius: "32px",
         transformOrigin: "center top"
       });
 
@@ -408,16 +412,17 @@ function initGlobalMotionArchitecture() {
           trigger: hero,
           start: "bottom 95%",
           endTrigger: curtain,
-          end: "top 10%",
+          end: "top 12%",
           scrub: 0.8,
           invalidateOnRefresh: true
         }
       });
 
       heroTl.to(hero, {
-        scale: 0.93,
-        y: -40,
-        opacity: 0.35,
+        scale: 0.91,
+        y: -60,
+        opacity: 0.25,
+        filter: "blur(4px)",
         ease: "power1.inOut"
       }, 0);
 
@@ -430,9 +435,67 @@ function initGlobalMotionArchitecture() {
       }, 0);
     }
 
-    if (curtain && centerVideo) {
+    // --- Sequential Mid-Screen Reveal for Elements in Section 2 ---
+    if (heading) {
+      gsap.fromTo(heading,
+        { opacity: 0, y: 35, filter: "blur(6px)" },
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: heading,
+            start: "top 82%",
+            end: "top 55%",
+            scrub: 0.5,
+            invalidateOnRefresh: true
+          }
+        }
+      );
+    }
+
+    if (desc) {
+      gsap.fromTo(desc,
+        { opacity: 0, y: 25 },
+        {
+          opacity: 1,
+          y: 0,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: desc,
+            start: "top 82%",
+            end: "top 58%",
+            scrub: 0.5,
+            invalidateOnRefresh: true
+          }
+        }
+      );
+    }
+
+    if (pills && pills.length > 0) {
+      gsap.fromTo(pills,
+        { opacity: 0, y: 20, scale: 0.92 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          stagger: 0.1,
+          ease: "back.out(1.2)",
+          scrollTrigger: {
+            trigger: "#cinematicPills",
+            start: "top 85%",
+            end: "top 62%",
+            scrub: 0.5,
+            invalidateOnRefresh: true
+          }
+        }
+      );
+    }
+
+    if (centerVideo) {
       gsap.fromTo(centerVideo,
-        { opacity: 0, y: 60, scale: 0.92, filter: "blur(8px)" },
+        { opacity: 0, y: 45, scale: 0.94, filter: "blur(6px)" },
         {
           opacity: 1,
           y: 0,
@@ -440,38 +503,42 @@ function initGlobalMotionArchitecture() {
           filter: "blur(0px)",
           ease: "power3.out",
           scrollTrigger: {
-            trigger: curtain,
-            start: "top 65%",
-            end: "top 20%",
-            scrub: 0.8,
+            trigger: centerVideo,
+            start: "top 78%",
+            end: "top 45%",
+            scrub: 0.7,
             invalidateOnRefresh: true
           }
         }
       );
     }
 
-    if (curtain && giantText) {
+    // --- Dynamic Kinetic Typography: Giant 'MOYA' Watermark Scrub ---
+    // Starts extra large (scale: 1.65), as user reaches the video it shrinks down to scale: 1.0,
+    // settling cleanly below 'Watch Koushik's Journey' with zero overlap behind video!
+    if (giantText && centerVideo) {
       const isLight = document.body.classList.contains("light-mode");
-      const glowColor = isLight ? "rgba(229, 46, 63, 0.36)" : "rgba(229, 46, 63, 0.50)";
+      const glowColor = isLight ? "rgba(229, 46, 63, 0.3)" : "rgba(229, 46, 63, 0.45)";
 
       gsap.set(giantText, {
-        scale: 0.78,
-        y: 80,
-        opacity: 0,
-        transformOrigin: "center bottom"
+        scale: 1.65,
+        y: 30,
+        opacity: 0.25,
+        transformOrigin: "center top"
       });
 
       gsap.to(giantText, {
-        scale: 1.08,
+        scale: 1.0,
         y: 0,
-        opacity: 1,
+        opacity: 0.95,
         filter: `drop-shadow(0 0 35px ${glowColor})`,
         ease: "power2.out",
         scrollTrigger: {
-          trigger: curtain,
-          start: "top 60%",
-          end: "center 40%",
-          scrub: 0.5
+          trigger: centerVideo,
+          start: "top 75%",
+          end: "bottom 30%",
+          scrub: 0.6,
+          invalidateOnRefresh: true
         }
       });
     }
@@ -554,20 +621,86 @@ function initGlobalMotionArchitecture() {
 
   // Mobile Animation System (<= 1024px) Fallbacks: 100% Fluid Native Momentum Scrolling
   mm.add("(max-width: 1024px)", () => {
+    const hero = document.getElementById("top");
     const curtain = document.getElementById("heroCinematicCurtain");
     const centerVideo = document.querySelector(".cinematic-center-video-wrapper");
     const giantText = document.getElementById("giantBgText");
+    const heading = document.getElementById("cinematicHeading");
+    const desc = document.getElementById("cinematicDesc");
+    const pills = document.querySelectorAll("#cinematicPills .footer-glass-pill");
 
-    if (curtain && centerVideo) {
-      gsap.fromTo(centerVideo,
+    // Smooth entry transition on mobile without pinning or scroll trap
+    if (hero && curtain) {
+      gsap.set(curtain, {
+        scale: 0.92,
+        opacity: 0.6,
+        transformOrigin: "center top"
+      });
+
+      gsap.to(curtain, {
+        scale: 1,
+        opacity: 1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: curtain,
+          start: "top 90%",
+          end: "top 40%",
+          scrub: 0.5
+        }
+      });
+    }
+
+    if (heading) {
+      gsap.fromTo(heading,
         { opacity: 0, y: 20 },
         {
           opacity: 1,
           y: 0,
+          duration: 0.5,
+          ease: "power2.out",
+          scrollTrigger: { trigger: heading, start: "top 88%", once: true }
+        }
+      );
+    }
+
+    if (desc) {
+      gsap.fromTo(desc,
+        { opacity: 0, y: 15 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: "power2.out",
+          scrollTrigger: { trigger: desc, start: "top 88%", once: true }
+        }
+      );
+    }
+
+    if (pills && pills.length > 0) {
+      gsap.fromTo(pills,
+        { opacity: 0, y: 15 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          stagger: 0.08,
+          ease: "power2.out",
+          scrollTrigger: { trigger: "#cinematicPills", start: "top 88%", once: true }
+        }
+      );
+    }
+
+    if (centerVideo) {
+      gsap.fromTo(centerVideo,
+        { opacity: 0, y: 25, scale: 0.96 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
           duration: 0.6,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: curtain,
+            trigger: centerVideo,
             start: "top 85%",
             once: true
           }
@@ -575,21 +708,25 @@ function initGlobalMotionArchitecture() {
       );
     }
 
-    if (curtain && giantText) {
-      gsap.fromTo(giantText,
-        { opacity: 0.2, scale: 0.9 },
-        {
-          opacity: 0.85,
-          scale: 1,
-          duration: 0.8,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: curtain,
-            start: "top 80%",
-            once: true
-          }
+    // Dynamic 'MOYA' scale on mobile: starts large (1.35) and shrinks to 0.88
+    if (giantText && centerVideo) {
+      gsap.set(giantText, {
+        scale: 1.35,
+        opacity: 0.25,
+        transformOrigin: "center top"
+      });
+
+      gsap.to(giantText, {
+        scale: 0.88,
+        opacity: 0.9,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: centerVideo,
+          start: "top 80%",
+          end: "bottom 30%",
+          scrub: 0.5
         }
-      );
+      });
     }
 
     document.querySelectorAll(".bento-grid-showcase > div, .how-step-card-wrap, .folder-wrapper").forEach(card => {
