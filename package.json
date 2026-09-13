@@ -1,0 +1,25 @@
+{
+  "name": "moya-webinar-landing-page",
+  "version": "1.0.0",
+  "description": "Mechanism of YouTube Automation (MOYA) Official Post-Webinar Landing Page",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  },
+  "keywords": [
+    "landing-page",
+    "moya",
+    "youtube-automation",
+    "gsap",
+    "lenis",
+    "production-ready"
+  ],
+  "author": "MOYA",
+  "license": "UNLICENSED"
+}

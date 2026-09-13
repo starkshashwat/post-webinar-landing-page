@@ -1,0 +1,17 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms-of-service", "destination": "/terms.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/refund-policy", "destination": "/refund.html" },
+    { "source": "/refund", "destination": "/refund.html" },
+    { "source": "/contact-us", "destination": "/contact.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/thankyou", "destination": "/thankyou.html" },
+    { "source": "/disclaimer", "destination": "/disclaimer.html" }
+  ]
+}
