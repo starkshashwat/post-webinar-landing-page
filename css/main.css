@@ -10854,3 +10854,43 @@
         transform: none !important;
       }
     }
+/* ==========================================================================
+   GSAP HARDWARE ACCELERATION & MOTION UTILITIES
+   ========================================================================== */
+.gsap-hw-accel {
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+.gsap-mask-clip {
+  clip-path: inset(0 0 0 0);
+}
+
+
+.is-animating {
+  transition: none !important;
+}
+
+
+/* ==========================================================================
+   CINEMATIC VIDEO FOCUS MODE
+   ========================================================================== */
+body.is-cinema-mode {
+  background-color: #040510 !important;
+}
+body.is-cinema-mode section:not(:has(video[controls])) {
+  opacity: 0.2;
+  transition: opacity 0.5s ease;
+}
+body.is-cinema-mode section:has(video[controls]) .bento-card:not(.is-playing),
+body.is-cinema-mode section:has(video[controls]) .hero-clean-title,
+body.is-cinema-mode section:has(video[controls]) .section-heading-lg {
+  opacity: 0.15;
+  transition: opacity 0.5s ease;
+}
+
+
+body::before {
+  background-position-y: var(--bg-scroll-y, 0px);
+}
+

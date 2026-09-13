@@ -108,6 +108,7 @@ class VideoController {
       video.setAttribute('controls', 'true');
       const card = video.closest('.bento-card, .cinematic-center-video-card');
       if (card) card.classList.add('is-playing');
+      document.body.classList.add('is-cinema-mode');
     });
 
     video.addEventListener('pause', () => {
@@ -115,6 +116,7 @@ class VideoController {
       const card = video.closest('.bento-card, .cinematic-center-video-card');
       if (card) card.classList.remove('is-playing');
       if (this.activeVideo === video) this.activeVideo = null;
+      document.body.classList.remove('is-cinema-mode');
     });
 
     video.addEventListener('ended', () => {
@@ -124,6 +126,7 @@ class VideoController {
       const card = video.closest('.bento-card, .cinematic-center-video-card');
       if (card) card.classList.remove('is-playing');
       if (this.activeVideo === video) this.activeVideo = null;
+      document.body.classList.remove('is-cinema-mode');
     });
   }
 
@@ -214,6 +217,8 @@ function initLenisScroll() {
           const progressPct = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
           progressBar.style.width = `${progressPct}%`;
         }
+        // Phase 9: Background Parallax Map
+        document.body.style.setProperty('--bg-scroll-y', `${-window.scrollY * 0.15}px`);
       });
 
       gsap.ticker.add((time) => {
@@ -251,63 +256,55 @@ function initLenisScroll() {
 // GLOBAL HEADLINE WORD-BY-WORD SCROLL REVEAL ANIMATION (SPLITTYPE + GSAP)
 // ==========================================================================
 function initHeadlineTextAnimations() {
-  if (typeof SplitType === 'undefined' || typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+  if (typeof SplitType === "undefined" || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
 
   const targetHeadings = document.querySelectorAll(
-    '.hero-clean-title, ' +
-    '.parallax-section-header h2, ' +
-    '.bento-section-title, ' +
-    '.coverflow-header h2, ' +
-    '.testi-v2-title, ' +
-    '.how-it-works-section .section-heading-lg, ' +
-    '.curriculum-section-title, ' +
-    '#curriculum .section-heading-lg, ' +
-    '#bonuses .section-heading-lg, ' +
-    '#bonus-vault .section-heading-lg, ' +
-    '#support .section-heading-lg, ' +
-    '.mentor-phil-quote-text, ' +
-    '.mentor-name-title, ' +
-    '.results-headline-text, ' +
-    '.pricing-sec-title, ' +
-    '#faq .section-heading-lg, ' +
-    '.final-cta-section h2, ' +
-    '.section-heading-lg'
+    ".hero-clean-title, .parallax-section-header h2, .bento-section-title, .coverflow-header h2, .testi-v2-title, .how-it-works-section .section-heading-lg, .curriculum-section-title, #curriculum .section-heading-lg, #bonuses .section-heading-lg, #bonus-vault .section-heading-lg, #support .section-heading-lg, .mentor-phil-quote-text, .mentor-name-title, .results-headline-text, .pricing-sec-title, #faq .section-heading-lg, .final-cta-section h2, .section-heading-lg"
   );
 
   targetHeadings.forEach(heading => {
     try {
-      if (heading.dataset.splitDone === 'true') return;
-      heading.dataset.splitDone = 'true';
+      if (heading.dataset.splitDone === "true") return;
+      heading.dataset.splitDone = "true";
 
-      const split = new SplitType(heading, { types: 'words' });
+      const split = new SplitType(heading, { types: "words" });
       if (!split.words || split.words.length === 0) return;
 
       split.words.forEach(w => {
-        w.style.display = 'inline-block';
-        w.style.willChange = 'opacity, transform, filter';
+        w.style.display = "inline-block";
+        w.style.willChange = "opacity, transform, filter";
+        // Setup for 3D flip
+        w.style.transformOrigin = "bottom center";
       });
 
-      // Start muted and slightly offset for natural scroll awareness
-      gsap.set(split.words, { opacity: 0.22, y: 12, filter: 'blur(1.5px)' });
+      // 3D Flip Starting State
+      gsap.set(split.words, { 
+        opacity: 0, 
+        rotationX: -90, 
+        filter: "blur(8px)" 
+      });
 
-      // Scroll-driven progressive reveal that reverses smoothly when scrolling up
+      // Scroll-driven 3D Flip Reveal
       gsap.to(split.words, {
         opacity: 1,
-        y: 0,
-        filter: 'blur(0px)',
+        rotationX: 0,
+        filter: "blur(0px)",
         stagger: 0.08,
-        ease: 'power2.out',
+        ease: "power2.out",
         scrollTrigger: {
           trigger: heading,
-          start: 'top 82%',
-          end: 'bottom 58%',
+          start: "top 85%", // Triggers slightly earlier for smoother entry
+          end: "bottom 58%",
           scrub: 0.5,
-          invalidateOnRefresh: true
+          invalidateOnRefresh: true,
+          onLeave: () => {
+             // Cleanup will-change for performance
+             split.words.forEach(w => w.style.willChange = "auto");
+          }
         }
       });
-
     } catch (e) {
-      console.warn('SplitType error on heading:', heading, e);
+      console.warn("SplitType error on heading:", heading, e);
     }
   });
 
@@ -318,113 +315,90 @@ function initHeadlineTextAnimations() {
   }
 }
 
+
 // ==========================================================================
 // UNIFIED GLOBAL MOTION & SECTION-TO-SECTION PARALLAX ARCHITECTURE
 // ==========================================================================
 function initGlobalMotionArchitecture() {
-  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+  if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
   gsap.registerPlugin(ScrollTrigger);
 
   const mm = gsap.matchMedia();
 
   // Desktop Animation System (>= 769px)
-  mm.add('(min-width: 769px)', () => {
-    // 1. HERO -> SECTION 2 TRANSITION
-    const hero = document.getElementById('top');
-    if (hero && window.innerWidth > 768) {
-      // Validated desktop viewport
-    }
-    const curtain = document.getElementById('heroCinematicCurtain');
-    const centerVideo = document.querySelector('.cinematic-center-video-wrapper');
-    const giantText = document.getElementById('giantBgText');
-    const ribbon = curtain ? curtain.querySelector('.cinematic-diagonal-marquee-wrap') : null;
-    const centerContent = curtain ? curtain.querySelector('.cinematic-content-center') : null;
+  mm.add("(min-width: 769px)", () => {
+    
+    // --- Phase 4 & 5: Hero and Cinematic Curtain (Spatial Overlap & Z-Depth) ---
+    const hero = document.getElementById("top");
+    const curtain = document.getElementById("heroCinematicCurtain");
+    const centerVideo = document.querySelector(".cinematic-center-video-wrapper");
+    const giantText = document.getElementById("giantBgText");
 
     if (hero && curtain) {
       gsap.set(curtain, {
-        scale: 0.88,
-        y: 100,
-        opacity: 0.35,
-        borderRadius: '36px',
-        transformOrigin: 'center top'
+        y: "100vh",
+        scale: 0.9,
+        borderRadius: "60px",
+        opacity: 0.8,
+        transformOrigin: "center top",
+        zIndex: 10
       });
 
-      const heroTl = gsap.timeline({
+      const heroExitTl = gsap.timeline({
         scrollTrigger: {
           trigger: hero,
-          start: 'bottom 92%',
-          endTrigger: curtain,
-          end: 'top 5%',
-          scrub: 0.8,
+          start: "top top",
+          end: "bottom top",
+          scrub: 1,
+          pin: true,
+          pinSpacing: false,
+          invalidateOnRefresh: true,
+          toggleClass: {targets: hero, className: "is-animating"}
+        }
+      });
+
+      heroExitTl.to(hero, {
+        scale: 0.85,
+        filter: "brightness(0.4) blur(4px)",
+        ease: "power2.inOut"
+      });
+
+      const curtainEnterTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: hero,
+          start: "top top",
+          end: "bottom top",
+          scrub: 1,
           invalidateOnRefresh: true
         }
       });
 
-      heroTl.to(hero, {
-        y: -140,
-        scale: 0.92,
-        opacity: 0.25,
-        ease: 'power1.inOut'
-      }, 0);
-
-      heroTl.to(curtain, {
+      curtainEnterTl.to(curtain, {
+        y: "0vh",
         scale: 1,
-        y: 0,
+        borderRadius: "0px",
         opacity: 1,
-        borderRadius: '0px',
-        ease: 'power2.out'
-      }, 0);
-    }
-
-    // 2. Section 2 Elements Reordered Sequence Parallax Scrub
-    if (curtain && ribbon) {
-      gsap.fromTo(ribbon,
-        { scale: 1.08, opacity: 0, y: 25 },
-        {
-          scale: 1.04,
-          opacity: 1,
-          y: 0,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: curtain,
-            start: 'top 80%',
-            end: 'top 35%',
-            scrub: 0.6
-          }
-        }
-      );
-    }
-
-    if (curtain && centerContent) {
-      gsap.fromTo(centerContent,
-        { y: 35, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: curtain,
-            start: 'top 70%',
-            end: 'top 30%',
-            scrub: 0.6
-          }
-        }
-      );
+        ease: "power2.out"
+      });
+      
+      hero.classList.add("gsap-hw-accel");
+      curtain.classList.add("gsap-hw-accel");
     }
 
     if (curtain && centerVideo) {
       gsap.fromTo(centerVideo,
-        { opacity: 0, y: 40, scale: 0.94 },
+        { opacity: 0, y: 100, scale: 0.85, filter: "blur(12px)" },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          ease: 'power2.out',
+          filter: "blur(0px)",
+          ease: "power3.out",
           scrollTrigger: {
             trigger: curtain,
-            start: 'top 55%',
-            end: 'top 15%',
-            scrub: 0.6,
+            start: "top 50%",
+            end: "top 10%",
+            scrub: 0.8,
             invalidateOnRefresh: true
           }
         }
@@ -432,305 +406,112 @@ function initGlobalMotionArchitecture() {
     }
 
     if (curtain && giantText) {
-      const isLight = document.body.classList.contains('light-mode');
-      const glowColor = isLight ? 'rgba(229, 46, 63, 0.36)' : 'rgba(229, 46, 63, 0.50)';
+      const isLight = document.body.classList.contains("light-mode");
+      const glowColor = isLight ? "rgba(229, 46, 63, 0.36)" : "rgba(229, 46, 63, 0.50)";
 
       gsap.set(giantText, {
         scale: 0.78,
-        y: 50,
-        opacity: 0.3,
-        filter: 'drop-shadow(0 0 0px rgba(229, 46, 63, 0))',
-        transformOrigin: 'center bottom'
+        y: 100,
+        opacity: 0,
+        transformOrigin: "center bottom"
       });
 
-      const giantTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: curtain,
-          start: 'top 40%',
-          end: 'bottom 20%',
-          scrub: 0.4,
-          invalidateOnRefresh: true
-        }
-      });
-
-      giantTl.to(giantText, {
+      gsap.to(giantText, {
         scale: 1.08,
         y: 0,
         opacity: 1,
-        filter: `drop-shadow(0 0 35px ${glowColor}) drop-shadow(0 0 70px rgba(229, 46, 63, 0.22))`,
-        ease: 'power2.out',
-        duration: 0.6
-      });
-
-      giantTl.to(giantText, {
-        scale: 0.92,
-        y: -40,
-        opacity: 0.4,
-        filter: 'drop-shadow(0 0 10px rgba(229, 46, 63, 0.08))',
-        ease: 'power2.in',
-        duration: 0.4
+        filter: `drop-shadow(0 0 35px ${glowColor})`,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: curtain,
+          start: "top 60%",
+          end: "center 40%",
+          scrub: 0.5
+        }
       });
     }
 
-    // 3. Magnetic Physics on Section 2 Glass Pills
-    if (curtain) {
-      curtain.querySelectorAll('.magnetic-btn').forEach(btn => {
-        btn.addEventListener('mousemove', (e) => {
-          const rect = btn.getBoundingClientRect();
-          const centerX = rect.width / 2;
-          const centerY = rect.height / 2;
-          const deltaX = e.clientX - rect.left - centerX;
-          const deltaY = e.clientY - rect.top - centerY;
-          gsap.to(btn, {
-            x: deltaX * 0.35,
-            y: deltaY * 0.35,
-            rotationX: -deltaY * 0.12,
-            rotationY: deltaX * 0.12,
-            scale: 1.05,
-            ease: 'power2.out',
-            duration: 0.4
-          });
-        });
-        btn.addEventListener('mouseleave', () => {
-          gsap.to(btn, {
-            x: 0,
-            y: 0,
-            rotationX: 0,
-            rotationY: 0,
-            scale: 1,
-            ease: 'elastic.out(1, 0.35)',
-            duration: 0.8
-          });
-        });
-      });
-    }
-
-    // 4. Section 2 to Section 3 (Proof) Continuous Flow
-    const sec3 = document.getElementById('proof');
-    if (curtain && sec3) {
-      gsap.set(sec3, { position: 'relative', zIndex: 12 });
-      const proofHeader = sec3.querySelector('.parallax-section-header');
-      if (proofHeader) {
-        gsap.fromTo(proofHeader,
-          { y: 30, opacity: 0.4 },
-          {
-            y: 0,
-            opacity: 1,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: sec3,
-              start: 'top 85%',
-              end: 'top 50%',
-              scrub: 0.5
-            }
-          }
-        );
-      }
-    }
-
-    // 5. BENTO GRIDS INDIVIDUAL CARD STAGGERED ENTRANCES (Koushik & Reeshav)
-    ['featured-koushik', 'featured-reeshav'].forEach(sectionId => {
+    // --- Phase 7: The "Brick" System (Bento Grids - Asymmetric Stagger) ---
+    ["featured-koushik", "featured-reeshav"].forEach(sectionId => {
       const section = document.getElementById(sectionId);
       if (!section) return;
 
-      const cells = section.querySelectorAll('.bento-grid-showcase > div');
+      const cells = Array.from(section.querySelectorAll(".bento-grid-showcase > div"));
       if (cells.length > 0) {
-        gsap.fromTo(cells,
-          { opacity: 0, y: 45, scale: 0.96 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            stagger: 0.08,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: section,
-              start: 'top 82%',
-              end: 'top 28%',
-              scrub: 0.5,
-              invalidateOnRefresh: true
-            }
+        const heroBrick = cells[0];
+        const secondaryBricks = cells.slice(1);
+        
+        const bentoTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: section,
+            start: "top 75%",
+            toggleActions: "play none none reverse"
           }
+        });
+
+        bentoTl.fromTo(heroBrick,
+          { opacity: 0, scale: 0.9, filter: "blur(10px)" },
+          { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.8, ease: "power4.out" }
         );
+
+        if (secondaryBricks.length > 0) {
+          bentoTl.fromTo(secondaryBricks,
+            { opacity: 0, x: (i) => i % 2 === 0 ? 50 : -50, y: 50 },
+            { opacity: 1, x: 0, y: 0, duration: 0.8, stagger: 0.1, ease: "back.out(1.2)" },
+            "-=0.4"
+          );
+        }
       }
     });
+    
+    // --- Phase 10: Pinning & Sticking (System SVG Pipe) ---
+    const systemSection = document.getElementById("system");
+    const systemContainer = document.querySelector(".how-it-works-container");
+    const activePath = document.getElementById("connectingPipeActive");
+    const stepCards = document.querySelectorAll(".how-step-card-wrap");
 
-    // 6. GENERAL REPEATED CARD ENTRANCE SEQUENCES
-    const cardSections = [
-      { sel: '#reviews .expandable-gallery-root', cards: '.expandable-gallery-track > *', start: 'top 85%' },
-      { sel: '#community-reviews', cards: '.testi-v2-card', start: 'top 85%' },
-      { sel: '#system', cards: '.how-step-card-wrap', start: 'top 82%' },
-      { sel: '#curriculum', cards: '.folder-wrapper, .folder-card-item', start: 'top 80%' },
-      { sel: '#support', cards: '.support-feature-card, .support-guarantee-card', start: 'top 85%' },
-      { sel: '#offer', cards: '.pricing-sec-card, .pricing-feature-item', start: 'top 80%' },
-      { sel: '#faq', cards: '.faq-accordion-item', start: 'top 85%' }
-    ];
-
-    cardSections.forEach(cs => {
-      const parent = document.querySelector(cs.sel);
-      if (!parent) return;
-      const cards = parent.querySelectorAll(cs.cards);
-      if (cards.length > 0) {
-        gsap.fromTo(cards,
-          { opacity: 0, y: 38, scale: 0.97 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            stagger: 0.06,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: parent,
-              start: cs.start,
-              end: 'top 35%',
-              scrub: 0.5,
-              invalidateOnRefresh: true
-            }
-          }
-        );
-      }
-    });
-
-    // 7. System Step Connected Pipeline Line Drawing
-    const systemContainer = document.querySelector('.how-it-works-container');
-    const activePath = document.getElementById('connectingPipeActive');
-    const glowDot = document.getElementById('pipeGlowDot');
-    const stepCards = document.querySelectorAll('.how-step-card-wrap');
-
-    if (systemContainer && activePath) {
+    if (systemSection && systemContainer && activePath) {
       const totalLength = activePath.getTotalLength ? activePath.getTotalLength() : 0;
       if (totalLength > 0) {
         activePath.style.strokeDasharray = totalLength;
         activePath.style.strokeDashoffset = totalLength;
-        if (glowDot) glowDot.style.opacity = '0';
 
         ScrollTrigger.create({
           trigger: systemContainer,
-          start: 'top 82%',
-          end: 'bottom 82%',
-          scrub: 0.3,
+          start: "center center",
+          end: "+=100%",
+          pin: true,
+          scrub: 0.5,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             const progress = self.progress;
             activePath.style.strokeDashoffset = totalLength * (1 - progress);
 
-            if (glowDot) {
-              if (progress > 0.01 && progress < 0.99) {
-                const pt = activePath.getPointAtLength(progress * totalLength);
-                glowDot.setAttribute('cx', pt.x);
-                glowDot.setAttribute('cy', pt.y);
-                glowDot.style.opacity = '1';
-              } else {
-                glowDot.style.opacity = '0';
-              }
-            }
-
-            const thresholds = [0.03, 0.30, 0.62, 0.92];
+            const thresholds = [0.1, 0.4, 0.7, 0.95];
             stepCards.forEach((card, idx) => {
               if (progress >= thresholds[idx]) {
-                card.classList.add('is-connected');
+                if (!card.classList.contains("is-connected")) {
+                   card.classList.add("is-connected");
+                   gsap.fromTo(card, 
+                     { scale: 0.95, filter: "brightness(0.5)" },
+                     { scale: 1, filter: "brightness(1)", duration: 0.4, ease: "power2.out"}
+                   );
+                }
               } else {
-                card.classList.remove('is-connected');
+                card.classList.remove("is-connected");
               }
             });
           }
         });
       }
-    }    // 6. Section Card Entrances (Optimized without fighting 3D cards)
-    const sectionCardMappings = [
-      { sel: '#proof', cards: '.parallax-sticky-step', start: 'top 82%' },
-      { sel: '#curriculum', cards: '.folder-wrapper', start: 'top 82%' },
-      { sel: '#bonuses', cards: '.bonus-snack-badge', start: 'top 82%' },
-      { sel: '#bonus-vault', cards: '.mb-tilt-layer, .mb-feature-list li', start: 'top 82%' },
-      { sel: '#support', cards: '.support-loop-card, .support-pillar-card', start: 'top 82%' },
-      { sel: '#mentor', cards: '.mentor-phil-stat-card, .mentor-bio-expanded-card', start: 'top 82%' },
-      { sel: '#pricing', cards: '.pricing-card-wrap, .pricing-summary-card', start: 'top 82%' },
-      { sel: '#faq', cards: '.faq-accordion-item', start: 'top 85%' }
-    ];
-
-    sectionCardMappings.forEach(({ sel, cards, start }) => {
-      initCardEntranceTimeline(sel, cards, start);
-    });
-
-    // 7. Bonus Snack Badges Blur-In on Scroll
-    const snackNav = document.querySelector('.bonus-snack-nav');
-    const snackBadges = document.querySelectorAll('.bonus-snack-badge');
-    if (snackNav && snackBadges.length) {
-      gsap.fromTo(snackBadges,
-        { filter: 'blur(8px)', opacity: 0.25, y: 18 },
-        {
-          filter: 'blur(0px)',
-          opacity: 1,
-          y: 0,
-          stagger: 0.12,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: snackNav,
-            start: 'top 85%',
-            end: 'top 55%',
-            scrub: 0.6
-          }
-        }
-      );
     }
-
-    // 8. Mentor Philosophy Banner Parallax & Live Counters
-    const mentorSection = document.getElementById('mentor');
-    const mentorBanner = document.getElementById('mentorBannerParallax');
-    if (mentorSection && mentorBanner) {
-      gsap.fromTo(mentorBanner,
-        { y: -35, scale: 1.04 },
-        {
-          y: 35,
-          scale: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: mentorSection,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: 0.8
-          }
-        }
-      );
-    }
-
-    // Mentor Stats Live Counter Physics
-    const mentorStats = document.querySelectorAll('.mentor-phil-stat-num');
-    if (mentorStats.length) {
-      ScrollTrigger.create({
-        trigger: '.mentor-phil-stats-grid',
-        start: 'top 85%',
-        once: true,
-        onEnter: () => {
-          mentorStats.forEach(stat => {
-            const target = parseFloat(stat.dataset.target) || 0;
-            const prefix = stat.dataset.prefix || '';
-            const suffix = stat.dataset.suffix || '';
-            const isComma = target >= 1000;
-            const obj = { val: 0 };
-
-            gsap.to(obj, {
-              val: target,
-              duration: 1.8,
-              ease: 'power2.out',
-              onUpdate: () => {
-                const current = Math.round(obj.val);
-                stat.textContent = prefix + (isComma ? current.toLocaleString('en-US') : current) + suffix;
-              }
-            });
-          });
-        }
-      });
-    }
-
   });
 
-  // Mobile Animation System (<= 768px)
-  mm.add('(max-width: 768px)', () => {
-    // Reduced motion distances and natural fluid scrolling on mobile
-    const curtain = document.getElementById('heroCinematicCurtain');
-    const centerVideo = document.querySelector('.cinematic-center-video-wrapper');
-    const giantText = document.getElementById('giantBgText');
+  // Mobile Animation System (<= 768px) Fallbacks
+  mm.add("(max-width: 768px)", () => {
+    const curtain = document.getElementById("heroCinematicCurtain");
+    const centerVideo = document.querySelector(".cinematic-center-video-wrapper");
+    const giantText = document.getElementById("giantBgText");
 
     if (curtain && centerVideo) {
       gsap.fromTo(centerVideo,
@@ -738,11 +519,11 @@ function initGlobalMotionArchitecture() {
         {
           opacity: 1,
           y: 0,
-          ease: 'power2.out',
+          ease: "power2.out",
           scrollTrigger: {
             trigger: curtain,
-            start: 'top 85%',
-            end: 'top 40%',
+            start: "top 85%",
+            end: "top 40%",
             scrub: 0.4
           }
         }
@@ -755,29 +536,28 @@ function initGlobalMotionArchitecture() {
         {
           opacity: 0.85,
           scale: 1,
-          ease: 'power1.out',
+          ease: "power1.out",
           scrollTrigger: {
             trigger: curtain,
-            start: 'top 90%',
-            end: 'center 40%',
+            start: "top 90%",
+            end: "center 40%",
             scrub: 0.4
           }
         }
       );
     }
 
-    // Simple mobile staggered card reveals
-    document.querySelectorAll('.bento-grid-showcase > div, .how-step-card-wrap, .folder-wrapper').forEach(card => {
+    document.querySelectorAll(".bento-grid-showcase > div, .how-step-card-wrap, .folder-wrapper").forEach(card => {
       gsap.fromTo(card,
         { opacity: 0, y: 22 },
         {
           opacity: 1,
           y: 0,
           duration: 0.6,
-          ease: 'power2.out',
+          ease: "power2.out",
           scrollTrigger: {
             trigger: card,
-            start: 'top 90%',
+            start: "top 90%",
             once: true
           }
         }
@@ -785,6 +565,7 @@ function initGlobalMotionArchitecture() {
     });
   });
 }
+
 
 // Parallax Stacked Cards in Section 3 (#proof)
 function initParallaxCards() {
