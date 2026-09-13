@@ -326,7 +326,7 @@ function initGlobalMotionArchitecture() {
   const mm = gsap.matchMedia();
 
   // Desktop Animation System (>= 769px)
-  mm.add("(min-width: 769px)", () => {
+  mm.add("(min-width: 1025px)", () => {
     
     // --- Phase 4 & 5: Hero and Cinematic Curtain (Spatial Overlap & Z-Depth) ---
     const hero = document.getElementById("top");
@@ -508,7 +508,7 @@ function initGlobalMotionArchitecture() {
   });
 
   // Mobile Animation System (<= 768px) Fallbacks
-  mm.add("(max-width: 768px)", () => {
+  mm.add("(max-width: 1024px)", () => {
     const curtain = document.getElementById("heroCinematicCurtain");
     const centerVideo = document.querySelector(".cinematic-center-video-wrapper");
     const giantText = document.getElementById("giantBgText");
