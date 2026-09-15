@@ -954,83 +954,44 @@ function initGlobalMotionArchitecture() {
 
 // Parallax Stacked Cards in Section 3 (#proof)
 function initParallaxCards() {
+  const proofSection = document.getElementById('proof');
   const track = document.getElementById('parallaxTrack');
-  if (!track) return;
+  if (!track || !proofSection) return;
 
-  const steps = track.querySelectorAll('.parallax-sticky-step');
-  const cards = track.querySelectorAll('.parallax-card-inner');
+  const steps = Array.from(track.querySelectorAll('.parallax-sticky-step'));
   const total = steps.length;
   if (total === 0) return;
 
-  let mobileHeaderSyncTrigger = null;
-  function setupMobileHeaderSync() {
-    if (mobileHeaderSyncTrigger) {
-      mobileHeaderSyncTrigger.kill();
-      mobileHeaderSyncTrigger = null;
-    }
-    const header = document.querySelector('#proof .parallax-section-header');
-    if (!header) return;
-
+  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+    // Basic fallback if GSAP is unavailable
     if (window.innerWidth > 768) {
+      steps.forEach((step, idx) => {
+        step.style.top = `${208 + idx * 32}px`;
+        step.style.zIndex = `${11 + idx}`;
+      });
+    }
+    return;
+  }
+
+  const mm = gsap.matchMedia();
+
+  // Desktop (min-width: 769px) - EXACT LOCKED DESKTOP BEHAVIOR
+  mm.add('(min-width: 769px)', () => {
+    const baseTop = 208;
+    const stepOffset = 32;
+
+    const header = proofSection.querySelector('.parallax-section-header');
+    if (header) {
       header.style.transform = '';
-      return;
     }
 
-    const lastStep = steps[steps.length - 1];
-    if (!lastStep || typeof ScrollTrigger === 'undefined') return;
-
-    mobileHeaderSyncTrigger = ScrollTrigger.create({
-      trigger: track,
-      start: 'top bottom',
-      end: 'bottom top',
-      onUpdate: () => {
-        if (window.innerWidth > 768) {
-          header.style.transform = '';
-          return;
-        }
-        const lastStepRect = lastStep.getBoundingClientRect();
-        const trackRect = track.getBoundingClientRect();
-        const stackBottom = lastStepRect.bottom;
-        if (trackRect.bottom < stackBottom) {
-          const pushUp = Math.round(stackBottom - trackRect.bottom);
-          header.style.transform = `translate3d(0, -${pushUp}px, 0)`;
-        } else {
-          header.style.transform = '';
-        }
-      }
+    steps.forEach((step, idx) => {
+      step.style.position = '';
+      step.style.top = `${baseTop + idx * stepOffset}px`;
+      step.style.zIndex = `${11 + idx}`;
+      step.style.transform = '';
+      step.style.opacity = '';
     });
-  }
-
-  function updateStepPositions() {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      const header = document.querySelector('#proof .parallax-section-header');
-      const headerHeight = header ? header.offsetHeight : 110;
-      const stickyTop = 68; // CSS sticky top on mobile
-      const baseTop = Math.ceil(stickyTop + headerHeight + 14);
-      const stepOffset = 16;
-
-      steps.forEach((step, idx) => {
-        step.style.top = `${baseTop + idx * stepOffset}px`;
-        step.style.zIndex = `${11 + idx}`;
-      });
-    } else {
-      const baseTop = 208;
-      const stepOffset = 32;
-
-      steps.forEach((step, idx) => {
-        step.style.top = `${baseTop + idx * stepOffset}px`;
-        step.style.zIndex = `${11 + idx}`;
-      });
-    }
-
-    setupMobileHeaderSync();
-  }
-
-  updateStepPositions();
-  window.addEventListener('resize', updateStepPositions, { passive: true });
-
-  if (typeof ScrollTrigger !== 'undefined' && typeof gsap !== 'undefined') {
 
     // Gentle depth enhancement for stacked cards (no CPU thrashing)
     steps.forEach((step, idx) => {
@@ -1072,7 +1033,89 @@ function initParallaxCards() {
         }
       );
     }
-  }
+
+    return () => {
+      steps.forEach((step) => {
+        step.style.top = '';
+        step.style.zIndex = '';
+        step.style.transform = '';
+        step.style.opacity = '';
+        const cardInner = step.querySelector('.parallax-card-inner');
+        if (cardInner) {
+          cardInner.style.transform = '';
+          cardInner.style.filter = '';
+        }
+      });
+    };
+  });
+
+  // Mobile (max-width: 768px) - PINNED TIMELINE PREVENTING ANY HEADER OVERLAP
+  mm.add('(max-width: 768px)', () => {
+    const header = proofSection.querySelector('.parallax-section-header');
+    if (header) {
+      header.style.transform = '';
+    }
+
+    // Clear any residual desktop inline styles
+    steps.forEach((step) => {
+      step.style.top = '';
+      step.style.zIndex = '';
+      step.style.position = '';
+      step.style.transform = '';
+      step.style.opacity = '';
+    });
+
+    // Step 0 is the starting base card (visible at resting position)
+    // Steps 1 to 5 start offset down with opacity 0
+    gsap.set(steps.slice(1), { y: 180, opacity: 0 });
+
+    const mobileTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: proofSection,
+        start: 'top 68px',
+        end: '+=1200',
+        pin: true,
+        pinSpacing: true,
+        scrub: 0.4,
+        anticipatePin: 1
+      }
+    });
+
+    // Animate cards 1 through 5 sequentially into stacked deck
+    for (let i = 1; i < total; i++) {
+      const step = steps[i];
+      const prevInner = steps[i - 1].querySelector('.parallax-card-inner');
+
+      mobileTl.to(step, {
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        ease: 'power1.out'
+      });
+
+      if (prevInner) {
+        mobileTl.to(prevInner, {
+          scale: 0.98,
+          filter: 'brightness(0.90)',
+          duration: 1,
+          ease: 'power1.out'
+        }, '<');
+      }
+    }
+
+    // Short holding scrub so all stacked cards rest together before unpinning
+    mobileTl.to({}, { duration: 0.4 });
+
+    return () => {
+      steps.forEach((step) => {
+        gsap.set(step, { clearProps: 'transform,opacity,visibility,top,zIndex' });
+        const cardInner = step.querySelector('.parallax-card-inner');
+        if (cardInner) {
+          gsap.set(cardInner, { clearProps: 'transform,filter' });
+        }
+      });
+    };
+  });
 
   // Proof Modal Lightbox Support
   const modal = document.getElementById('proofModal');

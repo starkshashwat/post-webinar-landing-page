@@ -4973,13 +4973,15 @@
       /* Mobile First Responsive Optimization for Parallax Stacking */
       @media (max-width: 768px) {
         .parallax-scroll-section {
-          padding-top: 18px;
-          padding-bottom: 20px;
+          padding-top: 18px !important;
+          padding-bottom: 24px !important;
+          position: relative !important;
         }
         .parallax-section-header {
-          top: var(--sticky-heading-offset-mobile, 68px);
-          z-index: 30 !important;
-          margin: 0 auto 12px;
+          position: relative !important;
+          top: auto !important;
+          z-index: 2 !important;
+          margin: 0 auto 16px !important;
           padding: 0 12px !important;
           background: transparent !important;
           border: none !important;
@@ -4988,6 +4990,7 @@
           -webkit-backdrop-filter: none !important;
           border-radius: 0 !important;
           max-width: 100%;
+          pointer-events: auto !important;
         }
         .parallax-section-header .section-heading-lg {
           font-size: clamp(1.12rem, 4.4vw, 1.34rem) !important;
@@ -5003,19 +5006,35 @@
           max-width: 320px;
         }
         .parallax-scroll-track {
-          padding-bottom: 60px;
+          position: relative !important;
+          width: 100% !important;
+          max-width: 440px !important;
+          margin: 0 auto !important;
+          padding-bottom: 0 !important;
+          min-height: clamp(330px, 75vw, 380px) !important;
+          height: clamp(330px, 75vw, 380px) !important;
+          overflow: visible !important;
         }
         .parallax-sticky-step {
-          margin-bottom: 22px;
-          padding: 0 8px;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          margin: 0 auto !important;
+          padding: 0 8px !important;
+          box-sizing: border-box !important;
+          pointer-events: auto !important;
+          transition: none !important;
+          will-change: transform, opacity;
         }
-        /* Mobile Stacking Coordinates (strictly below calculated sticky header + gap) */
-        .parallax-sticky-step[data-index="0"] { top: 188px; z-index: 11; }
-        .parallax-sticky-step[data-index="1"] { top: 204px; z-index: 12; }
-        .parallax-sticky-step[data-index="2"] { top: 220px; z-index: 13; }
-        .parallax-sticky-step[data-index="3"] { top: 236px; z-index: 14; }
-        .parallax-sticky-step[data-index="4"] { top: 252px; z-index: 15; }
-        .parallax-sticky-step[data-index="5"] { top: 268px; z-index: 16; }
+        /* Mobile Stacking Coordinates (cascade resting deck) */
+        .parallax-sticky-step[data-index="0"] { top: 0px !important; z-index: 11 !important; }
+        .parallax-sticky-step[data-index="1"] { top: 16px !important; z-index: 12 !important; }
+        .parallax-sticky-step[data-index="2"] { top: 32px !important; z-index: 13 !important; }
+        .parallax-sticky-step[data-index="3"] { top: 48px !important; z-index: 14 !important; }
+        .parallax-sticky-step[data-index="4"] { top: 64px !important; z-index: 15 !important; }
+        .parallax-sticky-step[data-index="5"] { top: 80px !important; z-index: 16 !important; }
 
         .parallax-card-inner {
           border-radius: 16px;
