@@ -376,10 +376,10 @@ function initHeadlineTextAnimations() {
         }
       });
 
-      // Phase 1: Headline words stagger reveal (0% -> ~65%)
+      // Phase 1: Headline words stagger reveal (0% -> ~65%) - Pure Opacity & Transform (No blur)
       tl.fromTo(words,
-        { opacity: 0.15, y: 16, filter: "blur(3px)" },
-        { opacity: 1, y: 0, filter: "blur(0px)", stagger: 0.04, ease: "power1.out" },
+        { opacity: 0.12, y: 16 },
+        { opacity: 1, y: 0, stagger: 0.04, ease: "power1.out" },
         0
       );
 
@@ -564,51 +564,80 @@ function initGlobalMotionArchitecture() {
       });
     }
 
-    // --- Bento Grids: Asymmetric Stagger ---
+    // --- Bento Grids: True Scroll-Progress Scrub (Zero blur, 100% reversible) ---
     ["featured-koushik", "featured-reeshav"].forEach(sectionId => {
       const section = document.getElementById(sectionId);
       if (!section) return;
 
-      const cells = Array.from(section.querySelectorAll(".bento-grid-showcase > div"));
-      if (cells.length > 0) {
-        const heroBrick = cells[0];
-        const secondaryBricks = cells.slice(1);
-        
-        const bentoTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: section,
-            start: "top 75%",
-            toggleActions: "play none none reverse"
-          }
-        });
+      const grid = section.querySelector(".bento-grid-showcase");
+      if (!grid) return;
 
-        bentoTl.fromTo(heroBrick,
-          { opacity: 0, scale: 0.9, filter: "blur(10px)" },
-          { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.8, ease: "power4.out" }
-        );
+      const heroBrick = section.querySelector(".bento-slot-center-hero");
+      const leftBricks = section.querySelectorAll(".bento-slot-integrations, .bento-slot-marquee, .bento-slot-journey");
+      const rightBricks = section.querySelectorAll(".bento-slot-tags, .bento-slot-stat");
 
-        if (secondaryBricks.length > 0) {
-          bentoTl.fromTo(secondaryBricks,
-            { opacity: 0, x: (i) => i % 2 === 0 ? 50 : -50, y: 50 },
-            { opacity: 1, x: 0, y: 0, duration: 0.8, stagger: 0.1, ease: "back.out(1.2)" },
-            "-=0.4"
-          );
+      const bentoTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: grid,
+          start: "top 88%",
+          end: "top 32%",
+          scrub: 0.6,
+          invalidateOnRefresh: true
         }
+      });
+
+      if (heroBrick) {
+        bentoTl.fromTo(heroBrick,
+          { opacity: 0.25, scale: 0.94, y: 24 },
+          { opacity: 1, scale: 1, y: 0, ease: "power1.out" },
+          0
+        );
+      }
+
+      if (leftBricks.length > 0) {
+        bentoTl.fromTo(leftBricks,
+          { opacity: 0.2, x: -32, y: 20 },
+          { opacity: 1, x: 0, y: 0, stagger: 0.08, ease: "power1.out" },
+          0.04
+        );
+      }
+
+      if (rightBricks.length > 0) {
+        bentoTl.fromTo(rightBricks,
+          { opacity: 0.2, x: 32, y: 20 },
+          { opacity: 1, x: 0, y: 0, stagger: 0.08, ease: "power1.out" },
+          0.04
+        );
       }
     });
-    
-    // --- System SVG Pipe (Fluid Natural Scrub, Zero Viewport Freezing) ---
+
+    // --- System SVG Pipe & Progressive Step Disclosure (Fluid Natural Scrub) ---
     const systemSection = document.getElementById("system");
     const systemContainer = document.querySelector(".how-it-works-container");
     const activePath = document.getElementById("connectingPipeActive");
     const glowDot = document.getElementById("pipeGlowDot");
-    const stepCards = document.querySelectorAll(".how-step-card-wrap");
+    const stepCards = Array.from(document.querySelectorAll(".how-step-card-wrap"));
 
-    if (systemSection && systemContainer && activePath) {
+    if (systemSection && systemContainer && activePath && stepCards.length > 0) {
       const totalLength = activePath.getTotalLength ? activePath.getTotalLength() : 0;
       if (totalLength > 0) {
         activePath.style.strokeDasharray = totalLength;
         activePath.style.strokeDashoffset = totalLength;
+
+        // Steps 02, 03, 04 start locked & hidden until tracker reaches them
+        stepCards.forEach((card, idx) => {
+          if (idx > 0) {
+            gsap.set(card, { opacity: 0.12, scale: 0.94, y: 24, pointerEvents: "none" });
+          }
+        });
+
+        // Thresholds calibrated to when glowing tracker touches each step
+        const thresholds = [
+          { start: 0.00, reach: 0.06 }, // Step 01 (Research)
+          { start: 0.20, reach: 0.34 }, // Step 02 (Architecture)
+          { start: 0.50, reach: 0.65 }, // Step 03 (Production)
+          { start: 0.78, reach: 0.92 }  // Step 04 (Monetize)
+        ];
 
         ScrollTrigger.create({
           trigger: systemContainer,
@@ -626,23 +655,127 @@ function initGlobalMotionArchitecture() {
               glowDot.setAttribute("cy", currentPoint.y);
             }
 
-            const thresholds = [0.08, 0.35, 0.65, 0.90];
             stepCards.forEach((card, idx) => {
-              if (progress >= thresholds[idx]) {
-                if (!card.classList.contains("is-connected")) {
-                   card.classList.add("is-connected");
-                   gsap.fromTo(card, 
-                     { scale: 0.96 },
-                     { scale: 1, duration: 0.35, ease: "power2.out"}
-                   );
+              const t = thresholds[idx];
+              if (idx === 0) {
+                // Step 01 active from entry
+                const stepP = Math.min(1, Math.max(0, (progress - t.start) / (t.reach - t.start || 0.06)));
+                card.style.opacity = Math.max(0.4, stepP);
+                if (progress >= t.reach) {
+                  card.classList.add("is-connected");
+                } else {
+                  card.classList.remove("is-connected");
                 }
               } else {
-                card.classList.remove("is-connected");
+                // Steps 02, 03, 04: Progressive Disclosure
+                if (progress < t.start) {
+                  card.style.opacity = "0.12";
+                  card.style.transform = "scale(0.94) translateY(24px)";
+                  card.style.pointerEvents = "none";
+                  card.classList.remove("is-connected");
+                } else if (progress >= t.reach) {
+                  card.style.opacity = "1";
+                  card.style.transform = "scale(1) translateY(0px)";
+                  card.style.pointerEvents = "auto";
+                  if (!card.classList.contains("is-connected")) {
+                    card.classList.add("is-connected");
+                  }
+                } else {
+                  // Smooth progressive reveal as dot approaches the step
+                  const norm = (progress - t.start) / (t.reach - t.start);
+                  const op = 0.12 + norm * 0.88;
+                  const sc = 0.94 + norm * 0.06;
+                  const ty = 24 * (1 - norm);
+                  card.style.opacity = op.toFixed(2);
+                  card.style.transform = `scale(${sc.toFixed(3)}) translateY(${ty.toFixed(1)}px)`;
+                  card.style.pointerEvents = norm > 0.6 ? "auto" : "none";
+                  card.classList.remove("is-connected");
+                }
               }
             });
           }
         });
       }
+    }
+
+    // --- Support Section: Sequential Card Stagger (Scroll-linked scrub) ---
+    const supportSec = document.getElementById("support");
+    if (supportSec) {
+      const loopCards = supportSec.querySelectorAll(".support-loop-card");
+      const pillarCards = supportSec.querySelectorAll(".support-pillar-card");
+      const supportTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: supportSec.querySelector(".support-loop-layout") || supportSec,
+          start: "top 85%",
+          end: "top 35%",
+          scrub: 0.6,
+          invalidateOnRefresh: true
+        }
+      });
+      if (loopCards.length > 0) {
+        supportTl.fromTo(loopCards,
+          { opacity: 0.15, y: 28, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, stagger: 0.1, ease: "power1.out" },
+          0
+        );
+      }
+      if (pillarCards.length > 0) {
+        supportTl.fromTo(pillarCards,
+          { opacity: 0.15, y: 20 },
+          { opacity: 1, y: 0, stagger: 0.1, ease: "power1.out" },
+          0.2
+        );
+      }
+    }
+
+    // --- Bonuses Section: Marquee & Nav Entrance ---
+    const bonusesSec = document.getElementById("bonuses");
+    if (bonusesSec) {
+      const snackNav = bonusesSec.querySelector(".bonus-snack-nav");
+      const marqueeViewport = bonusesSec.querySelector(".fw-marquee-viewport");
+      const bonusTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: bonusesSec,
+          start: "top 85%",
+          end: "top 45%",
+          scrub: 0.6,
+          invalidateOnRefresh: true
+        }
+      });
+      if (snackNav) {
+        bonusTl.fromTo(snackNav,
+          { opacity: 0.2, y: 20 },
+          { opacity: 1, y: 0, ease: "power1.out" },
+          0
+        );
+      }
+      if (marqueeViewport) {
+        bonusTl.fromTo(marqueeViewport,
+          { opacity: 0.25, y: 30, scale: 0.97 },
+          { opacity: 1, y: 0, scale: 1, ease: "power1.out" },
+          0.1
+        );
+      }
+    }
+
+    // --- Mentor Image Genuine Scroll Parallax ---
+    const mentorBanner = document.getElementById("mentorBannerParallax");
+    const mentorSec = document.getElementById("mentor");
+    if (mentorBanner && mentorSec) {
+      gsap.fromTo(mentorBanner,
+        { y: -45 },
+        {
+          y: 45,
+          ease: "none",
+          scrollTrigger: {
+            trigger: mentorSec,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+            invalidateOnRefresh: true
+          }
+        }
+      );
     }
   });
 
@@ -735,22 +868,72 @@ function initGlobalMotionArchitecture() {
       });
     }
 
-    document.querySelectorAll(".bento-grid-showcase > div, .how-step-card-wrap, .folder-wrapper").forEach(card => {
+    // Mobile Bento Grids: Fluid Bidirectional Scrub (Zero Lag)
+    ["featured-koushik", "featured-reeshav"].forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const cards = section.querySelectorAll(".bento-grid-showcase > div");
+      cards.forEach((card, i) => {
+        gsap.fromTo(card,
+          { opacity: 0.2, y: 20 },
+          {
+            opacity: 1,
+            y: 0,
+            ease: "power1.out",
+            scrollTrigger: {
+              trigger: card,
+              start: "top 94%",
+              end: "top 68%",
+              scrub: 0.5,
+              invalidateOnRefresh: true
+            }
+          }
+        );
+      });
+    });
+
+    // Mobile 4-Step Operating Mechanism: Sequential Reveal
+    const mobileStepCards = document.querySelectorAll("#system .how-step-card-wrap");
+    mobileStepCards.forEach((card, idx) => {
       gsap.fromTo(card,
-        { opacity: 0, y: 16 },
+        { opacity: idx === 0 ? 0.6 : 0.18, y: 22, scale: 0.96 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.4,
-          ease: "power2.out",
+          scale: 1,
+          ease: "power1.out",
           scrollTrigger: {
             trigger: card,
-            start: "top 96%",
-            once: true
+            start: "top 90%",
+            end: "top 58%",
+            scrub: 0.5,
+            invalidateOnRefresh: true,
+            onEnter: () => card.classList.add("is-connected"),
+            onLeaveBack: () => { if (idx > 0) card.classList.remove("is-connected"); }
           }
         }
       );
     });
+
+    // Mobile Mentor Image Subtle Parallax
+    const mobileMentorBanner = document.getElementById("mentorBannerParallax");
+    const mobileMentorSec = document.getElementById("mentor");
+    if (mobileMentorBanner && mobileMentorSec) {
+      gsap.fromTo(mobileMentorBanner,
+        { y: -22 },
+        {
+          y: 22,
+          ease: "none",
+          scrollTrigger: {
+            trigger: mobileMentorSec,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+            invalidateOnRefresh: true
+          }
+        }
+      );
+    }
   });
 }
 
@@ -1413,6 +1596,30 @@ window.openLightbox = function(src) {
 
         grid.appendChild(el);
       });
+
+      // Staggered scroll-linked entrance for curriculum modules (bidirectional scrub)
+      if (typeof ScrollTrigger !== "undefined" && typeof gsap !== "undefined") {
+        const folders = grid.querySelectorAll(".folder-wrapper");
+        if (folders.length > 0) {
+          gsap.fromTo(folders,
+            { opacity: 0.15, y: 32, scale: 0.94 },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              stagger: 0.06,
+              ease: "power1.out",
+              scrollTrigger: {
+                trigger: grid,
+                start: "top 85%",
+                end: "top 38%",
+                scrub: 0.6,
+                invalidateOnRefresh: true
+              }
+            }
+          );
+        }
+      }
 
       function openModal(mod, idx = 0) {
         activeModule = mod;
@@ -2148,6 +2355,93 @@ window.openLightbox = function(src) {
 
       // Initial Render
       renderPage(0, false);
+
+      // Scroll-linked entrance for testimonial cards track (bidirectional scrub)
+      if (typeof ScrollTrigger !== 'undefined' && typeof gsap !== 'undefined') {
+        const reviewSection = document.getElementById('reviews');
+        if (reviewSection) {
+          gsap.fromTo(track,
+            { opacity: 0.2, y: 36 },
+            {
+              opacity: 1,
+              y: 0,
+              ease: 'power1.out',
+              scrollTrigger: {
+                trigger: reviewSection,
+                start: 'top 85%',
+                end: 'top 40%',
+                scrub: 0.6,
+                invalidateOnRefresh: true
+              }
+            }
+          );
+        }
+      }
+    }
+
+    // ==========================================================================
+    // BENTO LIVING MOTION GRAPHICS THEATER CONTROLLER
+    // Handles interactive tabs and smooth auto-cycling for the 60% stage visuals
+    // ==========================================================================
+    function initBentoMotionTheater() {
+      const cards = document.querySelectorAll(".bento-motion-theater-card");
+      if (!cards || cards.length === 0) return;
+
+      const MODES = ["viewfinder", "faceless", "radar"];
+
+      cards.forEach(card => {
+        const tabs = card.querySelectorAll(".bento-motion-tab");
+        const panels = card.querySelectorAll(".bento-motion-panel");
+        const metas = card.querySelectorAll(".motion-meta-item");
+        let currentIdx = 0;
+        let autoCycleTimer = null;
+        let isHovered = false;
+
+        function switchMode(targetMode) {
+          card.setAttribute("data-active-tab", targetMode);
+
+          tabs.forEach(tab => {
+            const isMatch = tab.getAttribute("data-target-mode") === targetMode;
+            tab.classList.toggle("active", isMatch);
+            tab.setAttribute("aria-selected", isMatch ? "true" : "false");
+          });
+
+          panels.forEach(panel => {
+            panel.classList.toggle("active", panel.getAttribute("data-mode") === targetMode);
+          });
+
+          metas.forEach(meta => {
+            meta.classList.toggle("active", meta.getAttribute("data-meta-mode") === targetMode);
+          });
+
+          const foundIdx = MODES.indexOf(targetMode);
+          if (foundIdx !== -1) currentIdx = foundIdx;
+        }
+
+        tabs.forEach(tab => {
+          tab.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const mode = tab.getAttribute("data-target-mode");
+            if (mode) switchMode(mode);
+          });
+        });
+
+        // Auto-cycle every 4.5s unless hovered
+        function startAutoCycle() {
+          if (autoCycleTimer) clearInterval(autoCycleTimer);
+          autoCycleTimer = setInterval(() => {
+            if (!isHovered) {
+              currentIdx = (currentIdx + 1) % MODES.length;
+              switchMode(MODES[currentIdx]);
+            }
+          }, 4500);
+        }
+
+        card.addEventListener("mouseenter", () => { isHovered = true; });
+        card.addEventListener("mouseleave", () => { isHovered = false; });
+
+        startAutoCycle();
+      });
     }
 
     function initMegaBonusParallax() {
@@ -2270,28 +2564,78 @@ window.openLightbox = function(src) {
         });
     }
 
-    function initInteractivePricing() {
-        const dynAmount = document.getElementById('pricingDynAmount');
-        const dynStrike = document.getElementById('pricingDynStrike');
-        const dynSave = document.getElementById('pricingSaveBadge');
-        const tierTitle = document.getElementById('pricingTierTitle');
-        const tierDesc = document.getElementById('pricingTierDesc');
-        const ctaLabel = document.getElementById('pricingBtnLabel');
-        const mentorshipItem = document.getElementById('pricingFeatureMentorship');
+    // ==========================================================================
+    // EDITORIAL PRICING SECTION CONTROLLER
+    // Price count-up, magnetic CTA hover, and feature row hover interactions
+    // ==========================================================================
+    function initEditorialPricingSection() {
+      const section = document.getElementById("offer");
+      if (!section) return;
 
-        if (dynAmount) dynAmount.textContent = '4,997';
-        if (dynStrike) dynStrike.textContent = '₹14,999';
-        if (dynSave) dynSave.textContent = 'SAVE 67%';
-        if (tierTitle) tierTitle.textContent = 'MOYA Complete Enrollment';
-        if (tierDesc) tierDesc.textContent = 'Instant, unrestricted access to the complete MOYA operating system, all 19 bonuses, implementation toolkits, and weekly live sessions.';
-        if (ctaLabel) {
-            if (ctaLabel.classList.contains("char")) {
-                set3dButtonText(ctaLabel, 'CLAIM MY 6-FIGURE DESIGN SEAT');
-            } else {
-                ctaLabel.textContent = 'CLAIM MY 6-FIGURE DESIGN SEAT';
-            }
-        }
-        if (mentorshipItem) mentorshipItem.style.opacity = '1.0';
+      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const counter = section.querySelector("#counter");
+      const cta = section.querySelector("#cta");
+
+      if (isReduced) {
+        if (counter) counter.textContent = "4,997";
+        return;
+      }
+
+      // 1. Price Count-Up Animation
+      if (counter && typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
+        const obj = { v: 0 };
+        gsap.to(obj, {
+          v: 4997,
+          duration: 1.35,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: section,
+            start: "top 78%",
+            once: true
+          },
+          onUpdate: () => {
+            counter.textContent = Math.round(obj.v).toLocaleString("en-IN");
+          }
+        });
+      }
+
+      // 2. Feature Rows Hover Animation
+      const rows = section.querySelectorAll(".feature");
+      rows.forEach(row => {
+        const noEl = row.querySelector(".feature-no");
+        if (!noEl) return;
+        row.addEventListener("mouseenter", () => {
+          gsap.to(noEl, { color: "#ff5263", duration: 0.25 });
+        });
+        row.addEventListener("mouseleave", () => {
+          gsap.to(noEl, { color: "#606b7c", duration: 0.25 });
+        });
+      });
+
+      // 3. CTA Magnetic Movement
+      if (cta && typeof gsap !== "undefined") {
+        cta.addEventListener("mousemove", e => {
+          const r = cta.getBoundingClientRect();
+          const x = e.clientX - r.left - r.width / 2;
+          const y = e.clientY - r.top - r.height / 2;
+
+          gsap.to(cta, {
+            x: x * 0.055,
+            y: y * 0.08,
+            duration: 0.22,
+            ease: "power2.out"
+          });
+        });
+
+        cta.addEventListener("mouseleave", () => {
+          gsap.to(cta, {
+            x: 0,
+            y: 0,
+            duration: 0.5,
+            ease: "elastic.out(1, 0.45)"
+          });
+        });
+      }
     }
 
 
@@ -2504,7 +2848,8 @@ onReady(() => {
   initChart();
   initExpandableGallery();
   initMegaBonusParallax();
-  initInteractivePricing();
+  initEditorialPricingSection();
+  initBentoMotionTheater();
   animateChartOnLoad();
   animateDashboardCounters();
 

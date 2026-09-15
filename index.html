@@ -463,52 +463,146 @@
       </div>
     </div>
 
-    <!-- Slot 3: Feature Tags with Living Micro Motion Graphics (Col 3, Row 1) -->
+    <!-- Slot 3: Feature Living Motion Graphics Theater (Col 3, Row 1) -->
     <div class="bento-slot-tags">
-      <div class="bento-card bento-tags-card">
-        <!-- Badge 1: Zero Camera Required (Viewfinder Scan) -->
-        <div class="bento-badge-item bento-motion-badge badge-viewfinder">
-          <div class="bento-badge-motion-icon">
-            <svg class="svg-viewfinder" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
-              <circle class="viewfinder-rec-dot" cx="12" cy="12" r="2.8" fill="#E52E3F" stroke="none" />
+      <div class="bento-card bento-motion-theater-card" data-active-tab="viewfinder">
+        <!-- Interactive Mode Switcher Strip -->
+        <div class="bento-motion-nav-tabs" role="tablist">
+          <button type="button" class="bento-motion-tab active" data-target-mode="viewfinder" aria-selected="true" title="Autonomous AI Viewfinder">
+            <span class="motion-tab-dot dot-red"></span>
+            <span class="motion-tab-label">Zero Camera</span>
+          </button>
+          <button type="button" class="bento-motion-tab" data-target-mode="faceless" aria-selected="false" title="100% Faceless Avatar Engine">
+            <span class="motion-tab-dot dot-blue"></span>
+            <span class="motion-tab-label">100% Faceless</span>
+          </button>
+          <button type="button" class="bento-motion-tab" data-target-mode="radar" aria-selected="false" title="Research CPM Matrix">
+            <span class="motion-tab-dot dot-green"></span>
+            <span class="motion-tab-label">Research Matrix</span>
+          </button>
+        </div>
+
+        <!-- 60% Visual Area: The Animated Living Motion Graphic Stage -->
+        <div class="bento-motion-stage-canvas">
+          <!-- Canvas 1: Zero Camera Viewfinder HUD -->
+          <div class="bento-motion-panel panel-viewfinder active" data-mode="viewfinder">
+            <svg class="svg-motion-viewfinder" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="vfGlowGradK" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#E52E3F" stop-opacity="0.8"/>
+                  <stop offset="100%" stop-color="#FF5A6B" stop-opacity="0.2"/>
+                </linearGradient>
+              </defs>
+              <rect x="15" y="12" width="250" height="106" rx="8" class="vf-outer-border" stroke="rgba(229,46,63,0.25)" stroke-dasharray="6 4" fill="none" />
+              <path d="M 22 28 L 22 18 L 32 18" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <path d="M 248 18 L 258 18 L 258 28" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <path d="M 22 102 L 22 112 L 32 112" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <path d="M 248 112 L 258 112 L 258 102" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <circle cx="140" cy="65" r="22" class="vf-reticle-outer" stroke="rgba(229,46,63,0.5)" stroke-width="1.5" stroke-dasharray="4 2" fill="rgba(229,46,63,0.04)" />
+              <circle cx="140" cy="65" r="5" class="vf-reticle-center" fill="#E52E3F" />
+              <line x1="108" y1="65" x2="124" y2="65" stroke="#E52E3F" stroke-width="1.8" />
+              <line x1="156" y1="65" x2="172" y2="65" stroke="#E52E3F" stroke-width="1.8" />
+              <line x1="140" y1="33" x2="140" y2="49" stroke="#E52E3F" stroke-width="1.8" />
+              <line x1="140" y1="81" x2="140" y2="97" stroke="#E52E3F" stroke-width="1.8" />
+              <circle cx="36" cy="30" r="3.5" class="vf-rec-glow" fill="#E52E3F" />
+              <text x="46" y="33" class="vf-rec-text" fill="#E52E3F" font-size="9" font-weight="800" letter-spacing="1">REC 4K • 60FPS</text>
+              <text x="244" y="33" text-anchor="end" class="vf-hud-telemetry" fill="rgba(255,255,255,0.7)" font-size="8" font-family="monospace">ISO 100 • f/1.4</text>
+              <text x="140" y="100" text-anchor="middle" class="vf-hud-lock" fill="#E52E3F" font-size="8" font-weight="700" letter-spacing="1.5">[ AUTONOMOUS AI FRAMING ]</text>
+              <line x1="25" y1="65" x2="255" y2="65" class="vf-scan-laser" stroke="url(#vfGlowGradK)" stroke-width="1.5" />
             </svg>
           </div>
-          <div class="bento-badge-text-group">
-            <span class="bento-badge-title">Zero Camera Required</span>
-            <span class="bento-badge-sub">Autonomous AI Framing</span>
+
+          <!-- Canvas 2: 100% Faceless Avatar Engine -->
+          <div class="bento-motion-panel panel-faceless" data-mode="faceless">
+            <svg class="svg-motion-faceless" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="flGradK" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.2"/>
+                </linearGradient>
+                <linearGradient id="beamGradK" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="transparent"/>
+                  <stop offset="50%" stop-color="#60A5FA"/>
+                  <stop offset="100%" stop-color="transparent"/>
+                </linearGradient>
+              </defs>
+              <path d="M 140 18 C 153 18, 163 29, 163 43 C 163 56, 154 66, 140 66 C 126 66, 117 56, 117 43 C 117 29, 127 18, 140 18 Z" class="fl-silhouette-head" stroke="#3B82F6" stroke-width="2" fill="rgba(59,130,246,0.08)" />
+              <path d="M 102 110 C 102 86, 120 74, 140 74 C 160 74, 178 86, 178 110" class="fl-silhouette-shoulders" stroke="#3B82F6" stroke-width="2" stroke-dasharray="4 2" fill="none" />
+              <line x1="110" y1="42" x2="170" y2="42" class="fl-laser-sweep" stroke="url(#beamGradK)" stroke-width="2.5" />
+              <g class="fl-equalizer-group" transform="translate(45, 92)">
+                <rect x="0" y="0" width="3" height="18" rx="1.5" class="fl-eq-bar eq-b1" fill="#3B82F6" />
+                <rect x="7" y="0" width="3" height="26" rx="1.5" class="fl-eq-bar eq-b2" fill="#60A5FA" />
+                <rect x="14" y="0" width="3" height="12" rx="1.5" class="fl-eq-bar eq-b3" fill="#3B82F6" />
+                <rect x="21" y="0" width="3" height="28" rx="1.5" class="fl-eq-bar eq-b4" fill="#60A5FA" />
+                <rect x="28" y="0" width="3" height="16" rx="1.5" class="fl-eq-bar eq-b5" fill="#3B82F6" />
+              </g>
+              <g class="fl-equalizer-group-r" transform="translate(205, 92)">
+                <rect x="0" y="0" width="3" height="16" rx="1.5" class="fl-eq-bar eq-b5" fill="#3B82F6" />
+                <rect x="7" y="0" width="3" height="28" rx="1.5" class="fl-eq-bar eq-b4" fill="#60A5FA" />
+                <rect x="14" y="0" width="3" height="12" rx="1.5" class="fl-eq-bar eq-b3" fill="#3B82F6" />
+                <rect x="21" y="0" width="3" height="26" rx="1.5" class="fl-eq-bar eq-b2" fill="#60A5FA" />
+                <rect x="28" y="0" width="3" height="18" rx="1.5" class="fl-eq-bar eq-b1" fill="#3B82F6" />
+              </g>
+              <g class="fl-asset-pill p-left" transform="translate(26, 26)">
+                <rect width="64" height="18" rx="9" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.4)" stroke-width="1"/>
+                <text x="32" y="12" text-anchor="middle" fill="#93C5FD" font-size="8" font-weight="700">SCRIPT AI</text>
+              </g>
+              <g class="fl-asset-pill p-right" transform="translate(190, 26)">
+                <rect width="64" height="18" rx="9" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.4)" stroke-width="1"/>
+                <text x="32" y="12" text-anchor="middle" fill="#93C5FD" font-size="8" font-weight="700">VOICE FX</text>
+              </g>
+              <text x="140" y="114" text-anchor="middle" class="fl-hud-caption" fill="#60A5FA" font-size="8" font-weight="700" letter-spacing="1">100% ANONYMOUS • ASSET-FIRST</text>
+            </svg>
+          </div>
+
+          <!-- Canvas 3: Research CPM Matrix Radar -->
+          <div class="bento-motion-panel panel-radar" data-mode="radar">
+            <svg class="svg-motion-radar" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <radialGradient id="radarSweepGradK" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#10B981" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <circle cx="140" cy="62" r="54" stroke="rgba(16,185,129,0.2)" stroke-width="1" fill="none" />
+              <circle cx="140" cy="62" r="36" stroke="rgba(16,185,129,0.35)" stroke-width="1" stroke-dasharray="3 3" fill="none" />
+              <circle cx="140" cy="62" r="18" stroke="rgba(16,185,129,0.5)" stroke-width="1" fill="rgba(16,185,129,0.04)" />
+              <circle cx="140" cy="62" r="3" fill="#10B981" />
+              <line x1="82" y1="62" x2="198" y2="62" stroke="rgba(16,185,129,0.25)" stroke-width="1" />
+              <line x1="140" y1="6" x2="140" y2="118" stroke="rgba(16,185,129,0.25)" stroke-width="1" />
+              <g class="radar-sweep-assembly">
+                <line x1="140" y1="62" x2="194" y2="62" stroke="#10B981" stroke-width="2" stroke-linecap="round" />
+                <path d="M 140 62 L 194 62 A 54 54 0 0 0 178 24 Z" fill="url(#radarSweepGradK)" />
+              </g>
+              <g class="radar-blip-group blip-finance" transform="translate(170, 36)">
+                <circle cx="0" cy="0" r="3" fill="#10B981" class="radar-blip-dot" />
+                <circle cx="0" cy="0" r="7" stroke="#10B981" stroke-width="1" class="radar-blip-ring" fill="none" />
+                <text x="10" y="3" fill="#34D399" font-size="8" font-weight="700">$42 RPM</text>
+              </g>
+              <g class="radar-blip-group blip-tech" transform="translate(100, 84)">
+                <circle cx="0" cy="0" r="3" fill="#10B981" class="radar-blip-dot" />
+                <circle cx="0" cy="0" r="7" stroke="#10B981" stroke-width="1" class="radar-blip-ring" fill="none" />
+                <text x="-10" y="3" text-anchor="end" fill="#34D399" font-size="8" font-weight="700">$38 RPM</text>
+              </g>
+              <path d="M 30 114 Q 70 102 110 112 T 180 105 T 250 110" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" fill="none" class="radar-spline-wave" />
+              <text x="140" y="115" text-anchor="middle" class="radar-score-caption" fill="#34D399" font-size="8" font-weight="700" letter-spacing="1.2">98.4% HIGH-CPM TOPIC VALIDATION</text>
+            </svg>
           </div>
         </div>
 
-        <!-- Badge 2: 100% Faceless Niche (Scanning Beam) -->
-        <div class="bento-badge-item bento-motion-badge badge-faceless">
-          <div class="bento-badge-motion-icon">
-            <svg class="svg-faceless" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 3a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V8a5 5 0 0 1 5-5z" />
-              <path d="M4 21v-2a6 6 0 0 1 12 0v2" stroke-dasharray="3 2" />
-              <line class="faceless-scan-beam" x1="5" y1="9" x2="19" y2="9" stroke="#60A5FA" stroke-width="1.8" />
-            </svg>
+        <!-- Meta Text Block -->
+        <div class="bento-motion-meta-footer">
+          <div class="motion-meta-item active" data-meta-mode="viewfinder">
+            <h4 class="motion-meta-title">Zero Camera Required</h4>
+            <p class="motion-meta-desc">Autonomous AI Framing &amp; 100% Digital Asset Production</p>
           </div>
-          <div class="bento-badge-text-group">
-            <span class="bento-badge-title">100% Faceless Niche</span>
-            <span class="bento-badge-sub">Asset-First Digital Media</span>
+          <div class="motion-meta-item" data-meta-mode="faceless">
+            <h4 class="motion-meta-title">100% Faceless Niche</h4>
+            <p class="motion-meta-desc">Asset-First Digital Media &amp; High-Retention Voice Engines</p>
           </div>
-        </div>
-
-        <!-- Badge 3: Research Matrix Applied (Radar Sweep) -->
-        <div class="bento-badge-item bento-motion-badge badge-radar">
-          <div class="bento-badge-motion-icon">
-            <svg class="svg-radar" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="12" cy="12" r="9" stroke="rgba(16, 185, 129, 0.4)" />
-              <circle cx="12" cy="12" r="5" stroke="rgba(16, 185, 129, 0.7)" />
-              <line class="radar-sweep-needle" x1="12" y1="12" x2="21" y2="12" stroke="#10B981" stroke-width="2" stroke-linecap="round" />
-              <circle class="radar-blip blip-1" cx="16" cy="8" r="1.5" fill="#10B981" />
-              <circle class="radar-blip blip-2" cx="8" cy="15" r="1.5" fill="#10B981" />
-            </svg>
-          </div>
-          <div class="bento-badge-text-group">
-            <span class="bento-badge-title">Research Matrix Applied</span>
-            <span class="bento-badge-sub">High-CPM Topic Validation</span>
+          <div class="motion-meta-item" data-meta-mode="radar">
+            <h4 class="motion-meta-title">Research Matrix Applied</h4>
+            <p class="motion-meta-desc">High-CPM Topic Validation Before Touching Software</p>
           </div>
         </div>
       </div>
@@ -702,52 +796,146 @@
       </div>
     </div>
 
-    <!-- Slot 3: Feature Tags with Living Micro Motion Graphics (Col 3, Row 1) -->
+    <!-- Slot 3: Feature Living Motion Graphics Theater (Col 3, Row 1) -->
     <div class="bento-slot-tags">
-      <div class="bento-card bento-tags-card">
-        <!-- Badge 1: Zero Camera Required (Viewfinder Scan) -->
-        <div class="bento-badge-item bento-motion-badge badge-viewfinder">
-          <div class="bento-badge-motion-icon">
-            <svg class="svg-viewfinder" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
-              <circle class="viewfinder-rec-dot" cx="12" cy="12" r="2.8" fill="#E52E3F" stroke="none" />
+      <div class="bento-card bento-motion-theater-card" data-active-tab="viewfinder">
+        <!-- Interactive Mode Switcher Strip -->
+        <div class="bento-motion-nav-tabs" role="tablist">
+          <button type="button" class="bento-motion-tab active" data-target-mode="viewfinder" aria-selected="true" title="Autonomous AI Viewfinder">
+            <span class="motion-tab-dot dot-red"></span>
+            <span class="motion-tab-label">Zero Camera</span>
+          </button>
+          <button type="button" class="bento-motion-tab" data-target-mode="faceless" aria-selected="false" title="100% Faceless Avatar Engine">
+            <span class="motion-tab-dot dot-blue"></span>
+            <span class="motion-tab-label">100% Faceless</span>
+          </button>
+          <button type="button" class="bento-motion-tab" data-target-mode="radar" aria-selected="false" title="Research CPM Matrix">
+            <span class="motion-tab-dot dot-green"></span>
+            <span class="motion-tab-label">Research Matrix</span>
+          </button>
+        </div>
+
+        <!-- 60% Visual Area: The Animated Living Motion Graphic Stage -->
+        <div class="bento-motion-stage-canvas">
+          <!-- Canvas 1: Zero Camera Viewfinder HUD -->
+          <div class="bento-motion-panel panel-viewfinder active" data-mode="viewfinder">
+            <svg class="svg-motion-viewfinder" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="vfGlowGradR" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#E52E3F" stop-opacity="0.8"/>
+                  <stop offset="100%" stop-color="#FF5A6B" stop-opacity="0.2"/>
+                </linearGradient>
+              </defs>
+              <rect x="15" y="12" width="250" height="106" rx="8" class="vf-outer-border" stroke="rgba(229,46,63,0.25)" stroke-dasharray="6 4" fill="none" />
+              <path d="M 22 28 L 22 18 L 32 18" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <path d="M 248 18 L 258 18 L 258 28" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <path d="M 22 102 L 22 112 L 32 112" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <path d="M 248 112 L 258 112 L 258 102" class="vf-corner-bracket" stroke="#E52E3F" stroke-width="2.5" fill="none" stroke-linecap="round" />
+              <circle cx="140" cy="65" r="22" class="vf-reticle-outer" stroke="rgba(229,46,63,0.5)" stroke-width="1.5" stroke-dasharray="4 2" fill="rgba(229,46,63,0.04)" />
+              <circle cx="140" cy="65" r="5" class="vf-reticle-center" fill="#E52E3F" />
+              <line x1="108" y1="65" x2="124" y2="65" stroke="#E52E3F" stroke-width="1.8" />
+              <line x1="156" y1="65" x2="172" y2="65" stroke="#E52E3F" stroke-width="1.8" />
+              <line x1="140" y1="33" x2="140" y2="49" stroke="#E52E3F" stroke-width="1.8" />
+              <line x1="140" y1="81" x2="140" y2="97" stroke="#E52E3F" stroke-width="1.8" />
+              <circle cx="36" cy="30" r="3.5" class="vf-rec-glow" fill="#E52E3F" />
+              <text x="46" y="33" class="vf-rec-text" fill="#E52E3F" font-size="9" font-weight="800" letter-spacing="1">REC 4K • 60FPS</text>
+              <text x="244" y="33" text-anchor="end" class="vf-hud-telemetry" fill="rgba(255,255,255,0.7)" font-size="8" font-family="monospace">ISO 100 • f/1.4</text>
+              <text x="140" y="100" text-anchor="middle" class="vf-hud-lock" fill="#E52E3F" font-size="8" font-weight="700" letter-spacing="1.5">[ AUTONOMOUS AI FRAMING ]</text>
+              <line x1="25" y1="65" x2="255" y2="65" class="vf-scan-laser" stroke="url(#vfGlowGradR)" stroke-width="1.5" />
             </svg>
           </div>
-          <div class="bento-badge-text-group">
-            <span class="bento-badge-title">Zero Camera Required</span>
-            <span class="bento-badge-sub">Autonomous AI Framing</span>
+
+          <!-- Canvas 2: 100% Faceless Avatar Engine -->
+          <div class="bento-motion-panel panel-faceless" data-mode="faceless">
+            <svg class="svg-motion-faceless" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="flGradR" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.9"/>
+                  <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.2"/>
+                </linearGradient>
+                <linearGradient id="beamGradR" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="transparent"/>
+                  <stop offset="50%" stop-color="#60A5FA"/>
+                  <stop offset="100%" stop-color="transparent"/>
+                </linearGradient>
+              </defs>
+              <path d="M 140 18 C 153 18, 163 29, 163 43 C 163 56, 154 66, 140 66 C 126 66, 117 56, 117 43 C 117 29, 127 18, 140 18 Z" class="fl-silhouette-head" stroke="#3B82F6" stroke-width="2" fill="rgba(59,130,246,0.08)" />
+              <path d="M 102 110 C 102 86, 120 74, 140 74 C 160 74, 178 86, 178 110" class="fl-silhouette-shoulders" stroke="#3B82F6" stroke-width="2" stroke-dasharray="4 2" fill="none" />
+              <line x1="110" y1="42" x2="170" y2="42" class="fl-laser-sweep" stroke="url(#beamGradR)" stroke-width="2.5" />
+              <g class="fl-equalizer-group" transform="translate(45, 92)">
+                <rect x="0" y="0" width="3" height="18" rx="1.5" class="fl-eq-bar eq-b1" fill="#3B82F6" />
+                <rect x="7" y="0" width="3" height="26" rx="1.5" class="fl-eq-bar eq-b2" fill="#60A5FA" />
+                <rect x="14" y="0" width="3" height="12" rx="1.5" class="fl-eq-bar eq-b3" fill="#3B82F6" />
+                <rect x="21" y="0" width="3" height="28" rx="1.5" class="fl-eq-bar eq-b4" fill="#60A5FA" />
+                <rect x="28" y="0" width="3" height="16" rx="1.5" class="fl-eq-bar eq-b5" fill="#3B82F6" />
+              </g>
+              <g class="fl-equalizer-group-r" transform="translate(205, 92)">
+                <rect x="0" y="0" width="3" height="16" rx="1.5" class="fl-eq-bar eq-b5" fill="#3B82F6" />
+                <rect x="7" y="0" width="3" height="28" rx="1.5" class="fl-eq-bar eq-b4" fill="#60A5FA" />
+                <rect x="14" y="0" width="3" height="12" rx="1.5" class="fl-eq-bar eq-b3" fill="#3B82F6" />
+                <rect x="21" y="0" width="3" height="26" rx="1.5" class="fl-eq-bar eq-b2" fill="#60A5FA" />
+                <rect x="28" y="0" width="3" height="18" rx="1.5" class="fl-eq-bar eq-b1" fill="#3B82F6" />
+              </g>
+              <g class="fl-asset-pill p-left" transform="translate(26, 26)">
+                <rect width="64" height="18" rx="9" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.4)" stroke-width="1"/>
+                <text x="32" y="12" text-anchor="middle" fill="#93C5FD" font-size="8" font-weight="700">SCRIPT AI</text>
+              </g>
+              <g class="fl-asset-pill p-right" transform="translate(190, 26)">
+                <rect width="64" height="18" rx="9" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.4)" stroke-width="1"/>
+                <text x="32" y="12" text-anchor="middle" fill="#93C5FD" font-size="8" font-weight="700">VOICE FX</text>
+              </g>
+              <text x="140" y="114" text-anchor="middle" class="fl-hud-caption" fill="#60A5FA" font-size="8" font-weight="700" letter-spacing="1">100% ANONYMOUS • ASSET-FIRST</text>
+            </svg>
+          </div>
+
+          <!-- Canvas 3: Research CPM Matrix Radar -->
+          <div class="bento-motion-panel panel-radar" data-mode="radar">
+            <svg class="svg-motion-radar" viewBox="0 0 280 130" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <radialGradient id="radarSweepGradR" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#10B981" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#10B981" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <circle cx="140" cy="62" r="54" stroke="rgba(16,185,129,0.2)" stroke-width="1" fill="none" />
+              <circle cx="140" cy="62" r="36" stroke="rgba(16,185,129,0.35)" stroke-width="1" stroke-dasharray="3 3" fill="none" />
+              <circle cx="140" cy="62" r="18" stroke="rgba(16,185,129,0.5)" stroke-width="1" fill="rgba(16,185,129,0.04)" />
+              <circle cx="140" cy="62" r="3" fill="#10B981" />
+              <line x1="82" y1="62" x2="198" y2="62" stroke="rgba(16,185,129,0.25)" stroke-width="1" />
+              <line x1="140" y1="6" x2="140" y2="118" stroke="rgba(16,185,129,0.25)" stroke-width="1" />
+              <g class="radar-sweep-assembly">
+                <line x1="140" y1="62" x2="194" y2="62" stroke="#10B981" stroke-width="2" stroke-linecap="round" />
+                <path d="M 140 62 L 194 62 A 54 54 0 0 0 178 24 Z" fill="url(#radarSweepGradR)" />
+              </g>
+              <g class="radar-blip-group blip-finance" transform="translate(170, 36)">
+                <circle cx="0" cy="0" r="3" fill="#10B981" class="radar-blip-dot" />
+                <circle cx="0" cy="0" r="7" stroke="#10B981" stroke-width="1" class="radar-blip-ring" fill="none" />
+                <text x="10" y="3" fill="#34D399" font-size="8" font-weight="700">$42 RPM</text>
+              </g>
+              <g class="radar-blip-group blip-tech" transform="translate(100, 84)">
+                <circle cx="0" cy="0" r="3" fill="#10B981" class="radar-blip-dot" />
+                <circle cx="0" cy="0" r="7" stroke="#10B981" stroke-width="1" class="radar-blip-ring" fill="none" />
+                <text x="-10" y="3" text-anchor="end" fill="#34D399" font-size="8" font-weight="700">$38 RPM</text>
+              </g>
+              <path d="M 30 114 Q 70 102 110 112 T 180 105 T 250 110" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" fill="none" class="radar-spline-wave" />
+              <text x="140" y="115" text-anchor="middle" class="radar-score-caption" fill="#34D399" font-size="8" font-weight="700" letter-spacing="1.2">98.4% HIGH-CPM TOPIC VALIDATION</text>
+            </svg>
           </div>
         </div>
 
-        <!-- Badge 2: 100% Faceless Niche (Scanning Beam) -->
-        <div class="bento-badge-item bento-motion-badge badge-faceless">
-          <div class="bento-badge-motion-icon">
-            <svg class="svg-faceless" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 3a5 5 0 0 1 5 5v2a5 5 0 0 1-10 0V8a5 5 0 0 1 5-5z" />
-              <path d="M4 21v-2a6 6 0 0 1 12 0v2" stroke-dasharray="3 2" />
-              <line class="faceless-scan-beam" x1="5" y1="9" x2="19" y2="9" stroke="#60A5FA" stroke-width="1.8" />
-            </svg>
+        <!-- Meta Text Block -->
+        <div class="bento-motion-meta-footer">
+          <div class="motion-meta-item active" data-meta-mode="viewfinder">
+            <h4 class="motion-meta-title">Zero Camera Required</h4>
+            <p class="motion-meta-desc">Autonomous AI Framing &amp; 100% Digital Asset Production</p>
           </div>
-          <div class="bento-badge-text-group">
-            <span class="bento-badge-title">100% Faceless Niche</span>
-            <span class="bento-badge-sub">Asset-First Digital Media</span>
+          <div class="motion-meta-item" data-meta-mode="faceless">
+            <h4 class="motion-meta-title">100% Faceless Niche</h4>
+            <p class="motion-meta-desc">Asset-First Digital Media &amp; High-Retention Voice Engines</p>
           </div>
-        </div>
-
-        <!-- Badge 3: Research Matrix Applied (Radar Sweep) -->
-        <div class="bento-badge-item bento-motion-badge badge-radar">
-          <div class="bento-badge-motion-icon">
-            <svg class="svg-radar" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="12" cy="12" r="9" stroke="rgba(16, 185, 129, 0.4)" />
-              <circle cx="12" cy="12" r="5" stroke="rgba(16, 185, 129, 0.7)" />
-              <line class="radar-sweep-needle" x1="12" y1="12" x2="21" y2="12" stroke="#10B981" stroke-width="2" stroke-linecap="round" />
-              <circle class="radar-blip blip-1" cx="16" cy="8" r="1.5" fill="#10B981" />
-              <circle class="radar-blip blip-2" cx="8" cy="15" r="1.5" fill="#10B981" />
-            </svg>
-          </div>
-          <div class="bento-badge-text-group">
-            <span class="bento-badge-title">Research Matrix Applied</span>
-            <span class="bento-badge-sub">High-CPM Topic Validation</span>
+          <div class="motion-meta-item" data-meta-mode="radar">
+            <h4 class="motion-meta-title">Research Matrix Applied</h4>
+            <p class="motion-meta-desc">High-CPM Topic Validation Before Touching Software</p>
           </div>
         </div>
       </div>
@@ -2079,160 +2267,155 @@
 <!-- ========================================================================
      PRICING SECTION: JOIN MOYA COMPLETE ACCESS
      ======================================================================== -->
-<section class="pricing-sec-wrapper reveal-on-scroll" id="offer">
-  <div class="pricing-sec-ambient-glow"></div>
-  <div class="pricing-sec-inner">
-    <!-- Header: High-Impact Post-Webinar Offer Badge & Typography -->
-    <div class="pricing-header-block">
-      <h2 class="pricing-sec-title">Join MOYA Complete Access</h2>
-      <p class="pricing-sec-subtitle">Get the proven step-by-step operating system, launch your faceless channel, save hundreds of hours, and scale to monetization.</p>
-    </div>
+<section class="section moya-pricing-section reveal-on-scroll" id="offer">
+  <div class="wrap">
 
-    <!-- 2-Column High-Velocity Sales Architecture Grid -->
-    <div class="pricing-twocol-grid">
-      <!-- Left Column: Categorized Inclusions (What You Get) -->
-      <div class="pricing-inside-col">
-        <div class="pricing-inside-header">
-          <h3 class="pricing-inside-title">What You Get Inside</h3>
+    <div class="eyebrow reveal"><i></i> MOYA COMPLETE ACCESS</div>
+
+    <h1 class="reveal">
+      The system is built.<br>
+      <em>Now build the channel.</em>
+    </h1>
+
+    <p class="sub reveal">
+      One complete operating system for launching and scaling a faceless channel —
+      with the workflows, assets and support to execute.
+    </p>
+
+    <div class="sales-stage">
+
+      <!-- ALL FEATURES — FILLED, OPEN UI -->
+      <div class="features fromL">
+
+        <div class="features-head">
+          <div>
+            <div class="label">What's inside</div>
+            <h2>Everything to execute.</h2>
+          </div>
+          <div class="total-bonus">+ 19 IMPLEMENTATION BONUSES</div>
         </div>
 
-        <div class="pricing-categories-container">
-          <!-- 1. Core System -->
-          <div class="pricing-cat-group">
-            <span class="pricing-cat-tag">01 • CORE SYSTEM</span>
-            <div class="pricing-feature-item">
-              <div class="pricing-feature-check-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="pricing-feature-info">
-                <strong>MOYA Core Operating System</strong>
-                <span>Step-by-step faceless channel automation architecture &amp; workflows</span>
-              </div>
+        <div class="feature">
+          <div class="feature-no">01</div>
+          <div class="feature-copy">
+            <div class="feature-title">MOYA Core Operating System <span class="feature-tag">CORE</span></div>
+            <div class="feature-desc">
+              Step-by-step faceless channel architecture, production workflows,
+              automation structure and the operating system behind the model.
             </div>
           </div>
-
-          <!-- 2. Bonuses (Free) -->
-          <div class="pricing-cat-group">
-            <span class="pricing-cat-tag highlight-tag">02 • BONUSES (FREE)</span>
-            <div class="pricing-feature-item">
-              <div class="pricing-feature-check-icon highlight-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="pricing-feature-info">
-                <strong>All 19 Implementation Bonuses Included Free</strong>
-                <span class="pricing-bonus-val">Total Standalone Value: ₹73,990 • 100% Included at ₹0</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. Implementation -->
-          <div class="pricing-cat-group">
-            <span class="pricing-cat-tag">03 • IMPLEMENTATION</span>
-            <div class="pricing-feature-item">
-              <div class="pricing-feature-check-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="pricing-feature-info">
-                <strong>5-Phase Outcome Execution Roadmap &amp; SOPs</strong>
-                <span>Daily validation checklists, niche masterfiles, Canva templates &amp; thumbnail PSD files</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. Community & Support -->
-          <div class="pricing-cat-group">
-            <span class="pricing-cat-tag">04 • COMMUNITY &amp; SUPPORT</span>
-            <div class="pricing-feature-item">
-              <div class="pricing-feature-check-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="pricing-feature-info">
-                <strong>Private Creator Mastermind Community</strong>
-                <span>Direct networking with active creators, daily peer feedback &amp; channel Q&amp;A</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. Live Calls & Updates -->
-          <div class="pricing-cat-group">
-            <span class="pricing-cat-tag">05 • LIVE CALLS &amp; UPDATES</span>
-            <div class="pricing-feature-item" id="pricingFeatureMentorship">
-              <div class="pricing-feature-check-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="pricing-feature-info">
-                <strong>Weekly Live Review &amp; Doubt-Clearing Calls</strong>
-                <span>Live YouTube algorithm updates, channel audits &amp; 2-day fast-track setup bootcamp</span>
-              </div>
-            </div>
-          </div>
+          <div class="feature-arrow">↗</div>
         </div>
 
-        <!-- Value Anchor Callout Bar -->
-        <div class="pricing-value-anchor-bar">
-          <span class="val-anchor-label">TOTAL ACCUMULATED VALUE:</span>
-          <span class="val-anchor-strike">₹73,990+</span>
-          <span class="val-anchor-today">TODAY: JUST ₹4,997</span>
+        <div class="feature">
+          <div class="feature-no">02</div>
+          <div class="feature-copy">
+            <div class="feature-title">19 Implementation Bonuses <span class="feature-tag">FREE</span></div>
+            <div class="feature-desc">
+              Daily validation checklists, niche masterfiles, Canva templates,
+              thumbnail PSD files, research assets and practical implementation tools.
+            </div>
+          </div>
+          <div class="feature-arrow">↗</div>
         </div>
+
+        <div class="feature">
+          <div class="feature-no">03</div>
+          <div class="feature-copy">
+            <div class="feature-title">5-Phase Outcome Execution Roadmap <span class="feature-tag">ROADMAP</span></div>
+            <div class="feature-desc">
+              A structured path from niche validation and channel setup through
+              content production, optimization and monetization.
+            </div>
+          </div>
+          <div class="feature-arrow">↗</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-no">04</div>
+          <div class="feature-copy">
+            <div class="feature-title">Private Creator Mastermind Community <span class="feature-tag">COMMUNITY</span></div>
+            <div class="feature-desc">
+              Direct networking with active creators, peer feedback,
+              channel discussions and ongoing creator Q&amp;A.
+            </div>
+          </div>
+          <div class="feature-arrow">↗</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-no">05</div>
+          <div class="feature-copy">
+            <div class="feature-title">Weekly Live Review &amp; Doubt-Clearing Calls <span class="feature-tag">LIVE</span></div>
+            <div class="feature-desc">
+              Live algorithm updates, channel audits, implementation reviews
+              and 2-day fast-track setup bootcamp support.
+            </div>
+          </div>
+          <div class="feature-arrow">↗</div>
+        </div>
+
+        <div class="value-line">
+          <div class="value-copy">
+            Total accumulated value
+            <span>All components included in your one-time access.</span>
+          </div>
+          <div class="value-number">₹73,990+</div>
+        </div>
+
       </div>
 
-      <!-- Right Column: High-Velocity Sales Hero Card -->
-      <div class="pricing-interactive-col">
-        <!-- Card Header: Clean, Uncluttered, Authoritative -->
-        <div class="pricing-switch-box" style="text-align: center; padding: 4px 0 8px 0;">
-          <h4 class="pricing-switch-title" style="margin: 0 0 8px 0; font-size: 1.35rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.01em;">One-Time Investment &bull; Zero Recurring Fees</h4>
-          <p class="pricing-switch-caption" style="margin: 0; font-size: 0.90rem; color: rgba(255,255,255,0.72); line-height: 1.5;" id="pricingTierDesc">Instant, unrestricted access to the complete MOYA operating system, all 19 bonuses, implementation toolkits, and weekly live sessions.</p>
-          <span id="pricingTierTitle" style="display:none;">MOYA Complete Enrollment</span>
+      <!-- OFFER — OPEN EDITORIAL PANEL -->
+      <div class="offer fromR">
+
+        <div class="offer-top">
+          <div class="live"><i></i> ONE-TIME ACCESS</div>
+          <div class="no-fee">NO RECURRING FEES</div>
         </div>
 
-        <!-- Dominant Price & High-Velocity CTA Box -->
-        <div class="pricing-checkout-row">
-          <div class="pricing-price-display" style="margin-bottom: 12px; align-items: baseline;">
-            <span class="pricing-currency-symbol">₹</span>
-            <span class="pricing-current-num" id="pricingDynAmount">4,997</span>
-            <span class="pricing-strike-amount" id="pricingDynStrike" style="font-size: 1.35rem; margin-left: 10px;">₹14,999</span>
-            <span class="pricing-save-pill" id="pricingSaveBadge" style="margin-left: 10px; font-size: 0.80rem; font-weight: 800; background: rgba(229, 46, 63, 0.22); color: #FF6674; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(229, 46, 63, 0.45);">SAVE 67%</span>
+        <h2>Everything you need.<br>One payment.</h2>
+
+        <p class="offer-desc">
+          Get the full MOYA system, all 19 implementation bonuses and ongoing
+          live support — without another monthly bill.
+        </p>
+
+        <div class="price-block">
+          <div class="price-label">Today’s access price</div>
+
+          <div class="price-row">
+            <span class="currency">₹</span>
+            <span class="big" id="counter">0</span>
+            <span class="old">₹14,999</span>
+            <span class="save">SAVE 67%</span>
           </div>
 
-          <div class="pricing-value-callout" style="margin-bottom: 18px;">
-            Total Value: ₹73,990+ &bull; Today Only: Just ₹4,997
-          </div>
-
-          <!-- Hero CTA Button with Smooth 3D Elevation, Red Glow, and No Clipping -->
-          <button type="button" class="moya-btn-primary js-cta moya-3d-btn btn-block pricing-hero-cta" id="pricingCtaBtn" style="overflow: visible !important;">
-  <div class="bg"></div>
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 342 208" class="splash">
-    <path stroke-linecap="round" stroke-width="3" d="M54.1054 99.7837C54.1054 99.7837 40.0984 90.7874 26.6893 97.6362C13.2802 104.485 1.5 97.6362 1.5 97.6362"></path>
-    <path stroke-linecap="round" stroke-width="3" d="M285.273 99.7841C285.273 99.7841 299.28 90.7879 312.689 97.6367C326.098 104.486 340.105 95.4893 340.105 95.4893"></path>
-    <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M281.133 64.9917C281.133 64.9917 287.96 49.8089 302.934 48.2295C317.908 46.6501 319.712 36.5272 319.712 36.5272"></path>
-    <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M281.133 138.984C281.133 138.984 287.96 154.167 302.934 155.746C317.908 157.326 319.712 167.449 319.712 167.449"></path>
-    <path stroke-linecap="round" stroke-width="3" d="M230.578 57.4476C230.578 57.4476 225.785 41.5051 236.061 30.4998C246.337 19.4945 244.686 12.9998 244.686 12.9998"></path>
-    <path stroke-linecap="round" stroke-width="3" d="M230.578 150.528C230.578 150.528 225.785 166.471 236.061 177.476C246.337 188.481 244.686 194.976 244.686 194.976"></path>
-    <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M170.392 57.0278C170.392 57.0278 173.89 42.1322 169.571 29.54C165.252 16.9478 168.751 2.05227 168.751 2.05227"></path>
-    <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M170.392 150.948C170.392 150.948 173.89 165.844 169.571 178.436C165.252 191.028 168.751 205.924 168.751 205.924"></path>
-    <path stroke-linecap="round" stroke-width="3" d="M112.609 57.4476C112.609 57.4476 117.401 41.5051 107.125 30.4998C96.8492 19.4945 98.5 12.9998 98.5 12.9998"></path>
-    <path stroke-linecap="round" stroke-width="3" d="M112.609 150.528C112.609 150.528 117.401 166.471 107.125 177.476C96.8492 188.481 98.5 194.976 98.5 194.976"></path>
-    <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M62.2941 64.9917C62.2941 64.9917 55.4671 49.8089 40.4932 48.2295C25.5194 46.6501 23.7159 36.5272 23.7159 36.5272"></path>
-    <path stroke-linecap="round" stroke-width="3" stroke-opacity="0.3" d="M62.2941 145.984C62.2941 145.984 55.4671 161.167 40.4932 162.746C25.5194 164.326 23.7159 174.449 23.7159 174.449"></path>
-  </svg>
-  <div class="wrap">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 221 42" class="path">
-      <path stroke-linecap="round" stroke-width="3" d="M182.674 2H203C211.837 2 219 9.16344 219 18V24C219 32.8366 211.837 40 203 40H18C9.16345 40 2 32.8366 2 24V18C2 9.16344 9.16344 2 18 2H47.8855"></path>
-    </svg>
-    <div class="outline"></div>
-    <div class="content">
-      <span class="char state-1" id="pricingBtnLabel"><span data-label="C" style="--i: 1">C</span><span data-label="L" style="--i: 2">L</span><span data-label="A" style="--i: 3">A</span><span data-label="I" style="--i: 4">I</span><span data-label="M" style="--i: 5">M</span><span data-label="&nbsp;" style="--i: 6">&nbsp;</span><span data-label="M" style="--i: 7">M</span><span data-label="Y" style="--i: 8">Y</span><span data-label="&nbsp;" style="--i: 9">&nbsp;</span><span data-label="6" style="--i: 10">6</span><span data-label="-" style="--i: 11">-</span><span data-label="F" style="--i: 12">F</span><span data-label="I" style="--i: 13">I</span><span data-label="G" style="--i: 14">G</span><span data-label="U" style="--i: 15">U</span><span data-label="R" style="--i: 16">R</span><span data-label="E" style="--i: 17">E</span><span data-label="&nbsp;" style="--i: 18">&nbsp;</span><span data-label="D" style="--i: 19">D</span><span data-label="E" style="--i: 20">E</span><span data-label="S" style="--i: 21">S</span><span data-label="I" style="--i: 22">I</span><span data-label="G" style="--i: 23">G</span><span data-label="N" style="--i: 24">N</span><span data-label="&nbsp;" style="--i: 25">&nbsp;</span><span data-label="S" style="--i: 26">S</span><span data-label="E" style="--i: 27">E</span><span data-label="A" style="--i: 28">A</span><span data-label="T" style="--i: 29">T</span></span>
-      <div class="icon"><div></div></div>
-    </div>
-  </div>
-</button>
+          <div class="value-note">₹73,990+ total value · today ₹4,997</div>
         </div>
 
-          <!-- Single, Authoritative, Mature Trust Verification Line -->
-          <div class="pricing-single-trust-badge">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <span>Authorized &bull; 256-Bit SSL Encrypted Checkout &bull; Instant Access</span>
+        <div class="cta-wrap">
+          <button class="cta js-cta" id="cta" type="button" aria-label="Claim My 6-Figure Design Seat">
+            <span>CLAIM MY 6-FIGURE DESIGN SEAT&nbsp; →</span>
+            <b class="shine"></b>
+          </button>
+          <div class="micro">Instant access · One-time payment · No recurring fees</div>
+        </div>
+
+        <div class="proof">
+          <div class="proof-item">
+            <b>19</b>
+            <span>implementation bonuses</span>
           </div>
+          <div class="proof-item">
+            <b>5-phase</b>
+            <span>execution roadmap</span>
+          </div>
+          <div class="proof-item">
+            <b>Weekly</b>
+            <span>live support &amp; reviews</span>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
