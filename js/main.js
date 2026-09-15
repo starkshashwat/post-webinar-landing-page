@@ -318,17 +318,17 @@ function initHeadlineTextAnimations() {
       heading.dataset.splitDone = "true";
 
       if (isMobile) {
-        // High-performance mobile scroll reveal: zero blur, zero scrub overhead
+        // High-performance mobile scroll reveal: immediate trigger, zero lag
         gsap.fromTo(heading,
-          { opacity: 0, y: 18 },
+          { opacity: 0, y: 16 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.5,
+            duration: 0.38,
             ease: "power2.out",
             scrollTrigger: {
               trigger: heading,
-              start: "top 90%",
+              start: "top 96%",
               once: true
             }
           }
@@ -382,6 +382,7 @@ function initHeadlineTextAnimations() {
 function initGlobalMotionArchitecture() {
   if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
   gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ ignoreMobileResize: true });
 
   const mm = gsap.matchMedia();
 
@@ -568,10 +569,11 @@ function initGlobalMotionArchitecture() {
       }
     });
     
-    // --- System SVG Pipe ---
+    // --- System SVG Pipe (Fluid Natural Scrub, Zero Viewport Freezing) ---
     const systemSection = document.getElementById("system");
     const systemContainer = document.querySelector(".how-it-works-container");
     const activePath = document.getElementById("connectingPipeActive");
+    const glowDot = document.getElementById("pipeGlowDot");
     const stepCards = document.querySelectorAll(".how-step-card-wrap");
 
     if (systemSection && systemContainer && activePath) {
@@ -582,23 +584,28 @@ function initGlobalMotionArchitecture() {
 
         ScrollTrigger.create({
           trigger: systemContainer,
-          start: "center center",
-          end: "+=100%",
-          pin: true,
-          scrub: 0.5,
+          start: "top 75%",
+          end: "bottom 85%",
+          scrub: 0.8,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
             const progress = self.progress;
             activePath.style.strokeDashoffset = totalLength * (1 - progress);
 
-            const thresholds = [0.1, 0.4, 0.7, 0.95];
+            if (glowDot && activePath.getPointAtLength) {
+              const currentPoint = activePath.getPointAtLength(totalLength * progress);
+              glowDot.setAttribute("cx", currentPoint.x);
+              glowDot.setAttribute("cy", currentPoint.y);
+            }
+
+            const thresholds = [0.08, 0.35, 0.65, 0.90];
             stepCards.forEach((card, idx) => {
               if (progress >= thresholds[idx]) {
                 if (!card.classList.contains("is-connected")) {
                    card.classList.add("is-connected");
                    gsap.fromTo(card, 
-                     { scale: 0.95, filter: "brightness(0.5)" },
-                     { scale: 1, filter: "brightness(1)", duration: 0.4, ease: "power2.out"}
+                     { scale: 0.96 },
+                     { scale: 1, duration: 0.35, ease: "power2.out"}
                    );
                 }
               } else {
@@ -621,58 +628,58 @@ function initGlobalMotionArchitecture() {
     const desc = document.getElementById("cinematicDesc");
     const pills = document.querySelectorAll("#cinematicPills .footer-glass-pill");
 
-    // Clean lightweight mobile transition: zero pinning, zero touch capture
+    // Clean lightweight mobile transition: immediate trigger, zero lag
     if (heading) {
       gsap.fromTo(heading,
-        { opacity: 0, y: 16 },
+        { opacity: 0, y: 14 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.5,
+          duration: 0.38,
           ease: "power2.out",
-          scrollTrigger: { trigger: heading, start: "top 90%", once: true }
+          scrollTrigger: { trigger: heading, start: "top 96%", once: true }
         }
       );
     }
 
     if (desc) {
       gsap.fromTo(desc,
-        { opacity: 0, y: 14 },
+        { opacity: 0, y: 12 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.5,
+          duration: 0.38,
           ease: "power2.out",
-          scrollTrigger: { trigger: desc, start: "top 90%", once: true }
+          scrollTrigger: { trigger: desc, start: "top 96%", once: true }
         }
       );
     }
 
     if (pills && pills.length > 0) {
       gsap.fromTo(pills,
-        { opacity: 0, y: 12 },
+        { opacity: 0, y: 10 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.5,
-          stagger: 0.06,
+          duration: 0.35,
+          stagger: 0.04,
           ease: "power2.out",
-          scrollTrigger: { trigger: "#cinematicPills", start: "top 90%", once: true }
+          scrollTrigger: { trigger: "#cinematicPills", start: "top 96%", once: true }
         }
       );
     }
 
     if (centerVideo) {
       gsap.fromTo(centerVideo,
-        { opacity: 0, y: 20 },
+        { opacity: 0, y: 16 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.6,
+          duration: 0.45,
           ease: "power2.out",
           scrollTrigger: {
             trigger: centerVideo,
-            start: "top 88%",
+            start: "top 94%",
             once: true
           }
         }
@@ -693,7 +700,7 @@ function initGlobalMotionArchitecture() {
         ease: "power2.out",
         scrollTrigger: {
           trigger: centerVideo,
-          start: "top 80%",
+          start: "top 90%",
           end: "bottom 30%",
           scrub: 0.4
         }
@@ -702,15 +709,15 @@ function initGlobalMotionArchitecture() {
 
     document.querySelectorAll(".bento-grid-showcase > div, .how-step-card-wrap, .folder-wrapper").forEach(card => {
       gsap.fromTo(card,
-        { opacity: 0, y: 22 },
+        { opacity: 0, y: 16 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.6,
+          duration: 0.4,
           ease: "power2.out",
           scrollTrigger: {
             trigger: card,
-            start: "top 90%",
+            start: "top 96%",
             once: true
           }
         }
@@ -731,8 +738,8 @@ function initParallaxCards() {
 
   function updateStepPositions() {
     const isMobile = window.innerWidth <= 768;
-    const baseTop = isMobile ? 96 : 154;
-    const stepOffset = isMobile ? 24 : 30;
+    const baseTop = isMobile ? 118 : 165;
+    const stepOffset = isMobile ? 24 : 33;
 
     steps.forEach((step, idx) => {
       step.style.top = `${baseTop + idx * stepOffset}px`;
@@ -744,6 +751,28 @@ function initParallaxCards() {
   window.addEventListener('resize', updateStepPositions, { passive: true });
 
   if (typeof ScrollTrigger !== 'undefined' && typeof gsap !== 'undefined') {
+    // Reveal sticky transparent header when entering Section 3
+    const proofHeader = document.querySelector('.parallax-section-header');
+    if (proofHeader) {
+      const heading = proofHeader.querySelector('h2');
+      const lead = proofHeader.querySelector('p');
+      gsap.fromTo([heading, lead],
+        { opacity: 0, y: 18 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.42,
+          stagger: 0.08,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: '#proof',
+            start: 'top 95%',
+            once: true
+          }
+        }
+      );
+    }
+
     // Gentle depth enhancement for stacked cards (no CPU thrashing)
     steps.forEach((step, idx) => {
       if (idx < total - 1) {
@@ -757,8 +786,8 @@ function initParallaxCards() {
             scrub: true,
             onUpdate: (self) => {
               const p = self.progress;
-              const scale = 1 - p * 0.03; // gentle 3% depth scale
-              const brightness = 1 - p * 0.15; // subtle 15% dimming of under-card
+              const scale = 1 - p * 0.025; // gentle 2.5% depth scale
+              const brightness = 1 - p * 0.12; // subtle 12% dimming of under-card
               cardInner.style.transform = `scale(${scale})`;
               cardInner.style.filter = `brightness(${brightness})`;
             }
