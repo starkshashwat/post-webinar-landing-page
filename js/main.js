@@ -289,7 +289,10 @@ function initLenisScroll() {
 }
 
 // ==========================================================================
-// GLOBAL HEADLINE WORD-BY-WORD SCROLL REVEAL ANIMATION (SPLITTYPE + GSAP)
+// GLOBAL BIDIRECTIONAL SCROLL-LINKED TYPOGRAPHY ENGINE (SPLITTYPE + GSAP)
+// Downward scroll: words build sequentially (0 -> 65%), lead text de-blurs (55% -> 100%)
+// Upward scroll: reverses cleanly back to initial state (100% -> 0%)
+// Respects prefers-reduced-motion: reduce
 // ==========================================================================
 function initHeadlineTextAnimations() {
   if (typeof gsap === "undefined") return;
@@ -306,66 +309,91 @@ function initHeadlineTextAnimations() {
 
   if (typeof SplitType === "undefined" || typeof ScrollTrigger === "undefined") return;
 
-  const targetHeadings = document.querySelectorAll(
-    ".parallax-section-header h2, .bento-section-title, .coverflow-header h2, .testi-v2-title, .how-it-works-section .section-heading-lg, .curriculum-section-title, #curriculum .section-heading-lg, #bonuses .section-heading-lg, #bonus-vault .section-heading-lg, #support .section-heading-lg, .mentor-phil-quote-text, .mentor-name-title, .results-headline-text, .pricing-sec-title, #faq .section-heading-lg, .final-cta-section h2, .section-heading-lg"
-  );
+  const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const isMobile = window.innerWidth <= 1024;
+  const sectionPairs = [
+    { section: '#heroCinematicCurtain', heading: 'h2, .cinematic-headline-center', lead: 'p, .cinematic-curtain-sub' },
+    { section: '#proof', heading: '.parallax-section-header h2', lead: '.parallax-section-header p' },
+    { section: '#featured-koushik', heading: '.bento-section-title', lead: '.bento-section-sub' },
+    { section: '#featured-reeshav', heading: '.bento-section-title', lead: '.bento-section-sub' },
+    { section: '#reviews', heading: '.coverflow-header h2', lead: '.coverflow-header .section-lead-text' },
+    { section: '#community-reviews', heading: '.testi-v2-header h2, .testi-v2-title', lead: '.testi-v2-desc' },
+    { section: '#system', heading: '.section-heading-lg', lead: '.section-lead-text' },
+    { section: '#curriculum', heading: '.curriculum-section-title, .section-heading-lg', lead: '.section-lead-text' },
+    { section: '#bonuses', heading: '.section-heading-lg', lead: '.section-lead-text' },
+    { section: '#bonus-vault', heading: '.mb-title, .section-heading-lg', lead: '.mb-desc, .section-lead-text' },
+    { section: '#support', heading: '.section-heading-lg', lead: '.section-lead-text' },
+    { section: '#mentor', heading: '.mentor-phil-quote-text', lead: '.mentor-phil-author' },
+    { section: '#mentor', heading: '.mentor-name-title', lead: '.mentor-bio-lead' },
+    { section: '#creator-results', heading: '.results-headline-text', lead: null },
+    { section: '#offer', heading: '.pricing-sec-title, .section-heading-lg', lead: '.pricing-sec-subtitle, .section-lead-text' },
+    { section: '#faq', heading: '.section-heading-lg', lead: '.section-lead-text' },
+    { section: '.final-cta-section', heading: 'h2', lead: 'p' }
+  ];
 
-  targetHeadings.forEach(heading => {
+  sectionPairs.forEach(cfg => {
     try {
-      if (heading.dataset.splitDone === "true") return;
+      const sec = document.querySelector(cfg.section);
+      if (!sec) return;
+      const heading = sec.querySelector(cfg.heading);
+      if (!heading || heading.dataset.splitDone === "true") return;
       heading.dataset.splitDone = "true";
 
-      if (isMobile) {
-        // High-performance mobile scroll reveal: immediate trigger, zero lag
-        gsap.fromTo(heading,
-          { opacity: 0, y: 16 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.38,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: heading,
-              start: "top 96%",
-              once: true
-            }
-          }
-        );
+      const lead = cfg.lead ? sec.querySelector(cfg.lead) : null;
+
+      if (prefersReducedMotion) {
+        heading.style.opacity = '1';
+        if (lead) lead.style.opacity = '1';
         return;
       }
 
-      const split = new SplitType(heading, { types: "words" });
-      if (!split.words || split.words.length === 0) return;
+      // Split heading into semantic words
+      const split = new SplitType(heading, { types: "words", tagName: "span" });
+      const words = split.words;
+      if (!words || words.length === 0) return;
 
-      split.words.forEach(w => {
+      words.forEach(w => {
         w.style.display = "inline-block";
         w.style.willChange = "opacity, transform";
       });
 
-      // Pure transform & opacity flip: Zero GPU blur re-rasterization during scroll!
-      gsap.fromTo(split.words,
-        { opacity: 0, y: 16, rotationX: -35 },
-        {
-          opacity: 1,
-          y: 0,
-          rotationX: 0,
-          stagger: 0.03,
-          duration: 0.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: heading,
-            start: "top 88%",
-            once: true,
-            onLeave: () => {
-              split.words.forEach(w => w.style.willChange = "auto");
-            }
+      // Master timeline linked directly to scroll progress (bidirectional scrub)
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: heading,
+          start: "top 88%",
+          end: "top 42%",
+          scrub: 0.8, // 100% bidirectional & reversible!
+          invalidateOnRefresh: true,
+          onLeave: () => {
+            words.forEach(w => w.style.willChange = "auto");
+            if (lead) lead.style.willChange = "auto";
+          },
+          onEnterBack: () => {
+            words.forEach(w => w.style.willChange = "opacity, transform");
+            if (lead) lead.style.willChange = "opacity, transform";
           }
         }
+      });
+
+      // Phase 1: Headline words stagger reveal (0% -> ~65%)
+      tl.fromTo(words,
+        { opacity: 0.15, y: 16, filter: "blur(3px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", stagger: 0.04, ease: "power1.out" },
+        0
       );
+
+      // Phase 2: Lead description smoothly de-blurs & slides into place (~55% -> 100%)
+      if (lead) {
+        lead.style.willChange = "opacity, transform";
+        tl.fromTo(lead,
+          { opacity: 0.15, y: 12, filter: "blur(2.5px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", ease: "power1.out" },
+          0.55
+        );
+      }
     } catch (e) {
-      console.warn("SplitType error on heading:", heading, e);
+      console.warn("Scroll typography init error for:", cfg.section, e);
     }
   });
 
@@ -738,8 +766,8 @@ function initParallaxCards() {
 
   function updateStepPositions() {
     const isMobile = window.innerWidth <= 768;
-    const baseTop = isMobile ? 118 : 165;
-    const stepOffset = isMobile ? 24 : 33;
+    const baseTop = isMobile ? 140 : 208;
+    const stepOffset = isMobile ? 22 : 32;
 
     steps.forEach((step, idx) => {
       step.style.top = `${baseTop + idx * stepOffset}px`;
@@ -751,27 +779,6 @@ function initParallaxCards() {
   window.addEventListener('resize', updateStepPositions, { passive: true });
 
   if (typeof ScrollTrigger !== 'undefined' && typeof gsap !== 'undefined') {
-    // Reveal sticky transparent header when entering Section 3
-    const proofHeader = document.querySelector('.parallax-section-header');
-    if (proofHeader) {
-      const heading = proofHeader.querySelector('h2');
-      const lead = proofHeader.querySelector('p');
-      gsap.fromTo([heading, lead],
-        { opacity: 0, y: 18 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.42,
-          stagger: 0.08,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: '#proof',
-            start: 'top 95%',
-            once: true
-          }
-        }
-      );
-    }
 
     // Gentle depth enhancement for stacked cards (no CPU thrashing)
     steps.forEach((step, idx) => {
@@ -1594,6 +1601,66 @@ window.openLightbox = function(src) {
       }, 400);
     }
 
+    // Number Counter Animation for Mentor Section Statistics
+    function initMentorStatsCounters() {
+      const statsContainer = document.querySelector('.mentor-phil-stats-grid');
+      if (!statsContainer) return;
+
+      const statCards = statsContainer.querySelectorAll('.mentor-phil-stat-num');
+      if (statCards.length === 0) return;
+
+      const formatNumber = (num) => num.toLocaleString('en-US');
+
+      const animateCounter = (el) => {
+        const rawTarget = el.getAttribute('data-target');
+        if (!rawTarget) return;
+        const target = parseFloat(rawTarget);
+        const prefix = el.getAttribute('data-prefix') || '';
+        const suffix = el.getAttribute('data-suffix') || '';
+        const duration = 1800; // ms
+        const startTime = performance.now();
+
+        const step = (now) => {
+          const progress = Math.min((now - startTime) / duration, 1);
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          const current = Math.floor(target * easeOut);
+
+          el.textContent = `${prefix}${formatNumber(current)}${suffix}`;
+
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          } else {
+            el.textContent = `${prefix}${formatNumber(target)}${suffix}`;
+          }
+        };
+        requestAnimationFrame(step);
+      };
+
+      if (typeof ScrollTrigger !== 'undefined' && typeof gsap !== 'undefined') {
+        ScrollTrigger.create({
+          trigger: statsContainer,
+          start: 'top 85%',
+          once: true,
+          onEnter: () => {
+            statCards.forEach((card, idx) => {
+              setTimeout(() => animateCounter(card), idx * 100);
+            });
+          }
+        });
+      } else {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              statCards.forEach((card, idx) => {
+                setTimeout(() => animateCounter(card), idx * 100);
+              });
+              observer.disconnect();
+            }
+          });
+        }, { threshold: 0.2 });
+        observer.observe(statsContainer);
+      }
+    }
 
     // 1. Robust Light/Dark Theme Switcher (Default: Light Mode)
     function initTheme() {
@@ -2451,6 +2518,7 @@ onReady(() => {
   initParallaxCards();
   initGlobalMotionArchitecture();
   initHeadlineTextAnimations();
+  initMentorStatsCounters();
 
   // 6. Lifecycle ScrollTrigger Refresh on font/image load
   window.addEventListener('load', () => {

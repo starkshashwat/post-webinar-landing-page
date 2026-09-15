@@ -44,6 +44,16 @@
       --radius-md:      16px;
       --radius-lg:      24px;
       --radius-full:    9999px;
+
+      /* Header & Sticky Spacing System (Calculated, Zero Magic Numbers) */
+      --header-height-desktop: 88px;
+      --header-height-mobile: 56px;
+      --sticky-breathing-space-desktop: 18px;
+      --sticky-breathing-space-mobile: 12px;
+      --sticky-heading-offset-desktop: calc(var(--header-height-desktop) + var(--sticky-breathing-space-desktop)); /* 106px */
+      --sticky-heading-offset-mobile: calc(var(--header-height-mobile) + var(--sticky-breathing-space-mobile));   /* 68px */
+      --section-content-gap-desktop: 24px;
+      --section-content-gap-mobile: 14px;
     }
 
     *, *::before, *::after {
@@ -4779,7 +4789,7 @@
       .parallax-section-header {
         position: -webkit-sticky;
         position: sticky;
-        top: 76px;
+        top: var(--sticky-heading-offset-desktop, 106px);
         z-index: 10;
         text-align: center;
         max-width: 820px;
@@ -4830,13 +4840,13 @@
         transition: transform 0.2s ease;
       }
 
-      /* Desktop Deck Stacking Coordinates (strictly below transparent headline + lead text) */
-      .parallax-sticky-step[data-index="0"] { top: 165px; z-index: 11; }
-      .parallax-sticky-step[data-index="1"] { top: 198px; z-index: 12; }
-      .parallax-sticky-step[data-index="2"] { top: 231px; z-index: 13; }
-      .parallax-sticky-step[data-index="3"] { top: 264px; z-index: 14; }
-      .parallax-sticky-step[data-index="4"] { top: 297px; z-index: 15; }
-      .parallax-sticky-step[data-index="5"] { top: 330px; z-index: 16; }
+      /* Desktop Deck Stacking Coordinates (strictly below calculated sticky header + gap: 208px) */
+      .parallax-sticky-step[data-index="0"] { top: 208px; z-index: 11; }
+      .parallax-sticky-step[data-index="1"] { top: 240px; z-index: 12; }
+      .parallax-sticky-step[data-index="2"] { top: 272px; z-index: 13; }
+      .parallax-sticky-step[data-index="3"] { top: 304px; z-index: 14; }
+      .parallax-sticky-step[data-index="4"] { top: 336px; z-index: 15; }
+      .parallax-sticky-step[data-index="5"] { top: 368px; z-index: 16; }
 
       .parallax-card-inner {
         position: relative;
@@ -4961,7 +4971,7 @@
           padding-bottom: 20px;
         }
         .parallax-section-header {
-          top: 54px;
+          top: var(--sticky-heading-offset-mobile, 68px);
           margin: 0 auto 12px;
           padding: 0 12px !important;
           background: transparent !important;
@@ -4992,13 +5002,13 @@
           margin-bottom: 22px;
           padding: 0 8px;
         }
-        /* Mobile Stacking Coordinates (strictly below sticky headline + lead text at 110px) */
-        .parallax-sticky-step[data-index="0"] { top: 118px; z-index: 11; }
-        .parallax-sticky-step[data-index="1"] { top: 142px; z-index: 12; }
-        .parallax-sticky-step[data-index="2"] { top: 166px; z-index: 13; }
-        .parallax-sticky-step[data-index="3"] { top: 190px; z-index: 14; }
-        .parallax-sticky-step[data-index="4"] { top: 214px; z-index: 15; }
-        .parallax-sticky-step[data-index="5"] { top: 238px; z-index: 16; }
+        /* Mobile Stacking Coordinates (strictly below calculated sticky header + gap: 140px) */
+        .parallax-sticky-step[data-index="0"] { top: 140px; z-index: 11; }
+        .parallax-sticky-step[data-index="1"] { top: 162px; z-index: 12; }
+        .parallax-sticky-step[data-index="2"] { top: 184px; z-index: 13; }
+        .parallax-sticky-step[data-index="3"] { top: 206px; z-index: 14; }
+        .parallax-sticky-step[data-index="4"] { top: 228px; z-index: 15; }
+        .parallax-sticky-step[data-index="5"] { top: 250px; z-index: 16; }
 
         .parallax-card-inner {
           border-radius: 16px;
@@ -8534,6 +8544,212 @@
       .mentor-phil-btn-wrap {
         justify-content: center !important;
       }
+    }
+
+    /* Mobile Mentor Badges Fix: Sleek Micro-Chips Anchored at Bottom Corners */
+    @media (max-width: 768px) {
+      .mentor-banner-fullwidth-wrap {
+        position: relative !important;
+        overflow: hidden !important;
+        border-radius: 16px !important;
+      }
+      .mentor-chip {
+        padding: 5px 9px !important;
+        border-radius: 8px !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        background: rgba(9, 10, 32, 0.90) !important;
+        border: 1px solid rgba(229, 46, 63, 0.45) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7) !important;
+        z-index: 6 !important;
+      }
+      .chip-top-right {
+        top: auto !important;
+        bottom: 10px !important;
+        right: 10px !important;
+      }
+      .chip-bottom-left {
+        bottom: 10px !important;
+        left: 10px !important;
+      }
+      .chip-num {
+        font-size: 0.88rem !important;
+        line-height: 1 !important;
+      }
+      .chip-num span {
+        font-size: 0.68rem !important;
+      }
+      .chip-txt {
+        font-size: 0.58rem !important;
+        margin-top: 1px !important;
+        white-space: nowrap !important;
+      }
+    }
+
+    /* ==========================================================================
+       BENTO LIVING MOTION GRAPHICS SYSTEM
+       Dedicated persistent micro-animations for each Bento card
+       ========================================================================== */
+    .bento-motion-badge {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      padding: 9px 14px !important;
+      border-radius: 12px !important;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .bento-motion-badge:hover {
+      transform: translateY(-2px);
+    }
+    .badge-viewfinder {
+      background: rgba(229, 46, 63, 0.08) !important;
+      border: 1px solid rgba(229, 46, 63, 0.35) !important;
+    }
+    .badge-viewfinder:hover {
+      border-color: rgba(229, 46, 63, 0.7) !important;
+      box-shadow: 0 4px 20px rgba(229, 46, 63, 0.25) !important;
+    }
+    .badge-faceless {
+      background: rgba(59, 130, 246, 0.08) !important;
+      border: 1px solid rgba(59, 130, 246, 0.35) !important;
+    }
+    .badge-faceless:hover {
+      border-color: rgba(59, 130, 246, 0.7) !important;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25) !important;
+    }
+    .badge-radar {
+      background: rgba(16, 185, 129, 0.08) !important;
+      border: 1px solid rgba(16, 185, 129, 0.35) !important;
+    }
+    .badge-radar:hover {
+      border-color: rgba(16, 185, 129, 0.7) !important;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25) !important;
+    }
+    .bento-badge-motion-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .bento-badge-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      text-align: left;
+    }
+    .bento-badge-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1.2;
+    }
+    .bento-badge-sub {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--moya-navy-300, #7A7FA7);
+      line-height: 1.2;
+    }
+    /* Viewfinder blinking & framing animation */
+    .viewfinder-rec-dot {
+      animation: recPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes recPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.2; transform: scale(0.7); }
+    }
+    .svg-viewfinder path {
+      animation: viewfinderBracket 3s ease-in-out infinite alternate;
+      transform-origin: center;
+    }
+    @keyframes viewfinderBracket {
+      0% { stroke: #E52E3F; }
+      100% { stroke: #FF6674; }
+    }
+    /* Faceless scanning beam animation */
+    .faceless-scan-beam {
+      animation: scanBeam 2.5s ease-in-out infinite;
+    }
+    @keyframes scanBeam {
+      0%, 100% { transform: translateY(-4px); opacity: 0.3; }
+      50% { transform: translateY(4px); opacity: 1; stroke: #60A5FA; }
+    }
+    /* Radar sweep animation */
+    .radar-sweep-needle {
+      transform-origin: 12px 12px;
+      animation: radarRotate 2.8s linear infinite;
+    }
+    @keyframes radarRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .radar-blip {
+      animation: blipGlow 2.8s ease-in-out infinite;
+    }
+    .blip-1 { animation-delay: 0.7s; }
+    .blip-2 { animation-delay: 1.8s; }
+    @keyframes blipGlow {
+      0%, 100% { opacity: 0.2; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.4); }
+    }
+    /* Weekly Journey Spline Curve Animation */
+    .bento-journey-spline-wrap {
+      position: relative;
+      width: 100%;
+      height: 44px;
+      margin-top: 10px;
+    }
+    .journey-spline-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .journey-spline-path-base {
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 2;
+      fill: none;
+    }
+    .journey-spline-path-active {
+      stroke: url(#journeyGradient);
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-dasharray: 200;
+      animation: splineDraw 4s ease-in-out infinite alternate;
+    }
+    @keyframes splineDraw {
+      0% { stroke-dashoffset: 200; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .journey-tracer-dot {
+      fill: #FFFFFF;
+      filter: drop-shadow(0 0 6px #10B981);
+    }
+    /* Bento Stat Card Living Glow Shimmer */
+    .bento-stat-card-tall {
+      position: relative;
+      overflow: hidden;
+    }
+    .bento-stat-card-tall::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 75% 25%, rgba(229, 46, 63, 0.12) 0%, transparent 60%);
+      pointer-events: none;
+      animation: ambientStatGlow 6s ease-in-out infinite alternate;
+    }
+    @keyframes ambientStatGlow {
+      0% { transform: scale(0.9) rotate(0deg); opacity: 0.6; }
+      100% { transform: scale(1.1) rotate(10deg); opacity: 1; }
     }
 
     /* 2. Pricing Section MOYA Brand Palette Overrides (No Tailwind Blue) */
