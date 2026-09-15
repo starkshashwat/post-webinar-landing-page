@@ -1049,7 +1049,7 @@ function initParallaxCards() {
     };
   });
 
-  // Mobile (max-width: 768px) - PINNED TIMELINE PREVENTING ANY HEADER OVERLAP
+  // Mobile (max-width: 768px) - NATIVE CSS STICKY (NO GSAP PINNING NEEDED)
   mm.add('(max-width: 768px)', () => {
     const header = proofSection.querySelector('.parallax-section-header');
     if (header) {
@@ -1063,48 +1063,12 @@ function initParallaxCards() {
       step.style.position = '';
       step.style.transform = '';
       step.style.opacity = '';
-    });
-
-    // Step 0 is the starting base card (visible at resting position)
-    // Steps 1 to 5 start offset down with opacity 0
-    gsap.set(steps.slice(1), { y: 180, opacity: 0 });
-
-    const mobileTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: proofSection,
-        start: 'top 68px',
-        end: '+=1200',
-        pin: true,
-        pinSpacing: true,
-        scrub: 0.4,
-        anticipatePin: 1
+      const cardInner = step.querySelector('.parallax-card-inner');
+      if (cardInner) {
+        cardInner.style.transform = '';
+        cardInner.style.filter = '';
       }
     });
-
-    // Animate cards 1 through 5 sequentially into stacked deck
-    for (let i = 1; i < total; i++) {
-      const step = steps[i];
-      const prevInner = steps[i - 1].querySelector('.parallax-card-inner');
-
-      mobileTl.to(step, {
-        y: 0,
-        opacity: 1,
-        duration: 1,
-        ease: 'power1.out'
-      });
-
-      if (prevInner) {
-        mobileTl.to(prevInner, {
-          scale: 0.98,
-          filter: 'brightness(0.90)',
-          duration: 1,
-          ease: 'power1.out'
-        }, '<');
-      }
-    }
-
-    // Short holding scrub so all stacked cards rest together before unpinning
-    mobileTl.to({}, { duration: 0.4 });
 
     return () => {
       steps.forEach((step) => {

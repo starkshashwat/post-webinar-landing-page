@@ -5010,31 +5010,31 @@
           width: 100% !important;
           max-width: 440px !important;
           margin: 0 auto !important;
-          padding-bottom: 0 !important;
-          min-height: clamp(330px, 75vw, 380px) !important;
-          height: clamp(330px, 75vw, 380px) !important;
+          padding-bottom: 40px !important;
+          min-height: auto !important;
+          height: auto !important;
           overflow: visible !important;
         }
         .parallax-sticky-step {
-          position: absolute !important;
-          top: 0 !important;
+          position: -webkit-sticky !important;
+          position: sticky !important;
           left: 0 !important;
           right: 0 !important;
           width: 100% !important;
-          margin: 0 auto !important;
+          margin: 0 auto 24px !important;
           padding: 0 8px !important;
           box-sizing: border-box !important;
           pointer-events: auto !important;
-          transition: none !important;
-          will-change: transform, opacity;
+          transition: transform 0.2s ease !important;
+          will-change: auto;
         }
         /* Mobile Stacking Coordinates (cascade resting deck) */
-        .parallax-sticky-step[data-index="0"] { top: 0px !important; z-index: 11 !important; }
-        .parallax-sticky-step[data-index="1"] { top: 16px !important; z-index: 12 !important; }
-        .parallax-sticky-step[data-index="2"] { top: 32px !important; z-index: 13 !important; }
-        .parallax-sticky-step[data-index="3"] { top: 48px !important; z-index: 14 !important; }
-        .parallax-sticky-step[data-index="4"] { top: 64px !important; z-index: 15 !important; }
-        .parallax-sticky-step[data-index="5"] { top: 80px !important; z-index: 16 !important; }
+        .parallax-sticky-step[data-index="0"] { top: 88px !important; z-index: 11 !important; }
+        .parallax-sticky-step[data-index="1"] { top: 104px !important; z-index: 12 !important; }
+        .parallax-sticky-step[data-index="2"] { top: 120px !important; z-index: 13 !important; }
+        .parallax-sticky-step[data-index="3"] { top: 136px !important; z-index: 14 !important; }
+        .parallax-sticky-step[data-index="4"] { top: 152px !important; z-index: 15 !important; }
+        .parallax-sticky-step[data-index="5"] { top: 168px !important; z-index: 16 !important; }
 
         .parallax-card-inner {
           border-radius: 16px;
