@@ -2243,93 +2243,152 @@ window.openLightbox = function(src) {
 
     (function initBonusUserMarquee() {
       const viewport = document.querySelector('.fw-marquee-viewport');
+      const track = document.getElementById('bonusMarqueeTrack') || (viewport ? viewport.querySelector('.fw-marquee-track') : null);
       const snackButtons = document.querySelectorAll('.js-snack-nav-btn');
-      if (!viewport) return;
+      if (!viewport || !track) return;
+
+      // Prevent HTML5 ghost image dragging throughout the marquee
+      viewport.addEventListener('dragstart', (e) => e.preventDefault());
+      track.addEventListener('dragstart', (e) => e.preventDefault());
+      viewport.querySelectorAll('img').forEach((img) => {
+        img.setAttribute('draggable', 'false');
+        img.addEventListener('dragstart', (e) => e.preventDefault());
+      });
 
       let isDown = false;
       let startX = 0;
-      let scrollLeft = 0;
+      let initialScrollLeft = 0;
+      let hasDragged = false;
       let isHovered = false;
-      let animId = null;
+      let isPausedBySnackClick = false;
+      let snackResumeTimer = null;
+      let isProgrammaticScrolling = false;
       const speed = 0.85;
 
+      // 1. Continuous auto-scroll animation loop
       function step() {
-        if (!isDown && !isHovered) {
+        if (!isDown && !isHovered && !isPausedBySnackClick && !isProgrammaticScrolling) {
           viewport.scrollLeft += speed;
-          if (viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth - 2) {
-            viewport.scrollLeft = 0;
+          const halfWidth = track.scrollWidth / 2;
+          if (halfWidth > 0 && viewport.scrollLeft >= halfWidth) {
+            viewport.scrollLeft -= halfWidth;
           }
         }
-        animId = requestAnimationFrame(step);
+        requestAnimationFrame(step);
       }
-      animId = requestAnimationFrame(step);
+      requestAnimationFrame(step);
 
-      // Mouse Events
+      // 2. Mouse Hover Listeners
       viewport.addEventListener('mouseenter', () => { isHovered = true; });
       viewport.addEventListener('mouseleave', () => {
         isHovered = false;
-        isDown = false;
-        viewport.classList.remove('grabbing');
+        if (!isDown) {
+          viewport.classList.remove('is-dragging');
+        }
       });
 
+      // 3. Desktop Mouse Grab & Pan (Zero Ghost Dragging)
       viewport.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return; // Only left-click
         isDown = true;
+        hasDragged = false;
         isHovered = true;
-        viewport.classList.add('grabbing');
-        startX = e.pageX - viewport.offsetLeft;
-        scrollLeft = viewport.scrollLeft;
+        viewport.classList.add('is-dragging');
+        startX = e.pageX;
+        initialScrollLeft = viewport.scrollLeft;
+        viewport.style.scrollBehavior = 'auto'; // Immediate 1:1 response during drag
       });
 
-      viewport.addEventListener('mouseup', () => {
-        isDown = false;
-        isHovered = false;
-        viewport.classList.remove('grabbing');
-      });
-
-      viewport.addEventListener('mousemove', (e) => {
+      window.addEventListener('mousemove', (e) => {
         if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - viewport.offsetLeft;
-        const walk = (x - startX) * 1.5;
-        viewport.scrollLeft = scrollLeft - walk;
+        const dx = e.pageX - startX;
+        if (Math.abs(dx) > 4) {
+          hasDragged = true;
+        }
+        viewport.scrollLeft = initialScrollLeft - dx;
       });
 
-      // Touch Events for Mobile / Tablet
+      window.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        viewport.classList.remove('is-dragging');
+        viewport.style.scrollBehavior = 'smooth';
+      });
+
+      // 4. Mobile & Tablet Touch Swipe Pan
       viewport.addEventListener('touchstart', (e) => {
         isDown = true;
+        hasDragged = false;
         isHovered = true;
-        startX = e.touches[0].pageX - viewport.offsetLeft;
-        scrollLeft = viewport.scrollLeft;
+        startX = e.touches[0].pageX;
+        initialScrollLeft = viewport.scrollLeft;
+        viewport.style.scrollBehavior = 'auto';
+      }, { passive: true });
+
+      viewport.addEventListener('touchmove', (e) => {
+        if (!isDown) return;
+        const dx = e.touches[0].pageX - startX;
+        if (Math.abs(dx) > 4) {
+          hasDragged = true;
+        }
+        viewport.scrollLeft = initialScrollLeft - dx;
       }, { passive: true });
 
       viewport.addEventListener('touchend', () => {
         isDown = false;
         isHovered = false;
+        viewport.style.scrollBehavior = 'smooth';
       });
 
-      viewport.addEventListener('touchmove', (e) => {
-        if (!isDown) return;
-        const x = e.touches[0].pageX - viewport.offsetLeft;
-        const walk = (x - startX) * 1.5;
-        viewport.scrollLeft = scrollLeft - walk;
-      }, { passive: true });
+      // 5. Card Click to Enlarge / Zoom (Distinguishing Click vs Pan)
+      const cards = track.querySelectorAll('.fw-marquee-card');
+      cards.forEach((card) => {
+        card.addEventListener('click', (e) => {
+          if (hasDragged) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          // User clicked cleanly! Highlight card and open enlarged lightbox preview
+          cards.forEach((c) => c.classList.remove('is-active-focus'));
+          card.classList.add('is-active-focus');
 
-      // Clickable Snack Navigation
-      snackButtons.forEach(btn => {
+          const img = card.querySelector('img');
+          if (img && img.src && typeof window.openLightbox === 'function') {
+            window.openLightbox(img.src);
+          }
+        });
+      });
+
+      // 6. Clickable Snack 1, Snack 2, Snack 3 Navigation
+      snackButtons.forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.preventDefault();
           const targetId = btn.getAttribute('data-snack-group');
           const targetEl = document.getElementById(targetId);
           if (!targetEl) return;
 
-          snackButtons.forEach(b => b.classList.remove('active'));
+          snackButtons.forEach((b) => b.classList.remove('active'));
           btn.classList.add('active');
 
-          const targetLeft = targetEl.offsetLeft;
+          // Pause marquee immediately
+          isPausedBySnackClick = true;
+          isProgrammaticScrolling = true;
+          if (snackResumeTimer) clearTimeout(snackResumeTimer);
+
+          // Calculate target scroll position
+          const targetOffset = targetEl.offsetLeft - (window.innerWidth <= 768 ? 16 : 40);
+          viewport.style.scrollBehavior = 'smooth';
           viewport.scrollTo({
-            left: Math.max(0, targetLeft - 20),
+            left: Math.max(0, targetOffset),
             behavior: 'smooth'
           });
+
+          // Stay paused at target snack for 3 seconds so user can clearly view it, then resume scrolling
+          snackResumeTimer = setTimeout(() => {
+            isPausedBySnackClick = false;
+            isProgrammaticScrolling = false;
+          }, 3000);
         });
       });
     })();
