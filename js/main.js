@@ -30,10 +30,25 @@ function triggerToast(msg) {
 
 // CTA Router
 function handleCtaClick(e) {
+  const config = window.MOYA_APP_CONFIG || {};
+  const targetUrl = config.checkoutUrl || "https://pay.mechanismofya.com/widget/form/FmYYoRVcghC0BOE0ky78";
+
+  // Direct checkout CTA handling (pricing seat, manifestation CTAs, or direct links)
+  const isDirectCheckout = e && e.currentTarget && (
+    e.currentTarget.classList.contains('js-cta-checkout') ||
+    e.currentTarget.id === 'cta' ||
+    (e.currentTarget.getAttribute('href') && e.currentTarget.getAttribute('href').includes('pay.mechanismofya.com'))
+  );
+
+  if (isDirectCheckout) {
+    if (e.preventDefault) e.preventDefault();
+    window.location.href = targetUrl;
+    return;
+  }
+
   if (e && e.currentTarget && e.currentTarget.getAttribute('href') && e.currentTarget.getAttribute('href').startsWith('#')) {
     return; // Allow anchor links to smooth scroll
   }
-  const config = window.MOYA_APP_CONFIG || {};
   if (config.checkoutUrl) {
     window.location.href = config.checkoutUrl;
   }
@@ -947,15 +962,69 @@ function initParallaxCards() {
   const total = steps.length;
   if (total === 0) return;
 
+  let mobileHeaderSyncTrigger = null;
+  function setupMobileHeaderSync() {
+    if (mobileHeaderSyncTrigger) {
+      mobileHeaderSyncTrigger.kill();
+      mobileHeaderSyncTrigger = null;
+    }
+    const header = document.querySelector('#proof .parallax-section-header');
+    if (!header) return;
+
+    if (window.innerWidth > 768) {
+      header.style.transform = '';
+      return;
+    }
+
+    const lastStep = steps[steps.length - 1];
+    if (!lastStep || typeof ScrollTrigger === 'undefined') return;
+
+    mobileHeaderSyncTrigger = ScrollTrigger.create({
+      trigger: track,
+      start: 'top bottom',
+      end: 'bottom top',
+      onUpdate: () => {
+        if (window.innerWidth > 768) {
+          header.style.transform = '';
+          return;
+        }
+        const lastStepRect = lastStep.getBoundingClientRect();
+        const trackRect = track.getBoundingClientRect();
+        const stackBottom = lastStepRect.bottom;
+        if (trackRect.bottom < stackBottom) {
+          const pushUp = Math.round(stackBottom - trackRect.bottom);
+          header.style.transform = `translate3d(0, -${pushUp}px, 0)`;
+        } else {
+          header.style.transform = '';
+        }
+      }
+    });
+  }
+
   function updateStepPositions() {
     const isMobile = window.innerWidth <= 768;
-    const baseTop = isMobile ? 140 : 208;
-    const stepOffset = isMobile ? 22 : 32;
+    if (isMobile) {
+      const header = document.querySelector('#proof .parallax-section-header');
+      const headerHeight = header ? header.offsetHeight : 110;
+      const stickyTop = 68; // CSS sticky top on mobile
+      const baseTop = Math.ceil(stickyTop + headerHeight + 14);
+      const stepOffset = 16;
 
-    steps.forEach((step, idx) => {
-      step.style.top = `${baseTop + idx * stepOffset}px`;
-      step.style.zIndex = `${11 + idx}`;
-    });
+      steps.forEach((step, idx) => {
+        step.style.top = `${baseTop + idx * stepOffset}px`;
+        step.style.zIndex = `${11 + idx}`;
+      });
+    } else {
+      const baseTop = 208;
+      const stepOffset = 32;
+
+      steps.forEach((step, idx) => {
+        step.style.top = `${baseTop + idx * stepOffset}px`;
+        step.style.zIndex = `${11 + idx}`;
+      });
+    }
+
+    setupMobileHeaderSync();
   }
 
   updateStepPositions();
@@ -2838,7 +2907,7 @@ window.openLightbox = function(src) {
 // ==========================================================================
 onReady(() => {
   // 1. Bind CTA Buttons
-  $$(".js-cta").forEach((btn) => btn.addEventListener("click", handleCtaClick));
+  $$(".js-cta, .js-cta-checkout, #cta").forEach((btn) => btn.addEventListener("click", handleCtaClick));
 
   // 2. Initialize Core Components
   init3DCourseFolders();

@@ -4978,6 +4978,7 @@
         }
         .parallax-section-header {
           top: var(--sticky-heading-offset-mobile, 68px);
+          z-index: 30 !important;
           margin: 0 auto 12px;
           padding: 0 12px !important;
           background: transparent !important;
@@ -5008,13 +5009,13 @@
           margin-bottom: 22px;
           padding: 0 8px;
         }
-        /* Mobile Stacking Coordinates (strictly below calculated sticky header + gap: 140px) */
-        .parallax-sticky-step[data-index="0"] { top: 140px; z-index: 11; }
-        .parallax-sticky-step[data-index="1"] { top: 162px; z-index: 12; }
-        .parallax-sticky-step[data-index="2"] { top: 184px; z-index: 13; }
-        .parallax-sticky-step[data-index="3"] { top: 206px; z-index: 14; }
-        .parallax-sticky-step[data-index="4"] { top: 228px; z-index: 15; }
-        .parallax-sticky-step[data-index="5"] { top: 250px; z-index: 16; }
+        /* Mobile Stacking Coordinates (strictly below calculated sticky header + gap) */
+        .parallax-sticky-step[data-index="0"] { top: 188px; z-index: 11; }
+        .parallax-sticky-step[data-index="1"] { top: 204px; z-index: 12; }
+        .parallax-sticky-step[data-index="2"] { top: 220px; z-index: 13; }
+        .parallax-sticky-step[data-index="3"] { top: 236px; z-index: 14; }
+        .parallax-sticky-step[data-index="4"] { top: 252px; z-index: 15; }
+        .parallax-sticky-step[data-index="5"] { top: 268px; z-index: 16; }
 
         .parallax-card-inner {
           border-radius: 16px;
@@ -10250,6 +10251,30 @@
 
     @keyframes moyaSplash {
       to { stroke-dasharray: 2 60; stroke-dashoffset: -60; }
+    }
+
+    /* Manifestation and 3D Button Mobile Responsive Scaling */
+    @media (max-width: 768px) {
+      .moya-3d-btn.btn-lg {
+        font-size: clamp(11.5px, 3.2vw, 15px) !important;
+        min-width: 220px !important;
+        max-width: 100% !important;
+        height: 56px !important;
+      }
+      .moya-3d-btn .content {
+        padding: 0 10px !important;
+        gap: 8px !important;
+      }
+      .moya-3d-btn .icon div {
+        width: 14px !important;
+      }
+    }
+
+    /* Curriculum Center Alignment */
+    #curriculum .section-lead-text {
+      text-align: center !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
     }
 
 
