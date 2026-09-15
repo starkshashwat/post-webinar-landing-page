@@ -722,39 +722,69 @@ function initGlobalMotionArchitecture() {
 // Parallax Stacked Cards in Section 3 (#proof)
 function initParallaxCards() {
   const track = document.getElementById('parallaxTrack');
-  if (!track || typeof ScrollTrigger === 'undefined') return;
+  if (!track) return;
 
+  const steps = track.querySelectorAll('.parallax-sticky-step');
   const cards = track.querySelectorAll('.parallax-card-inner');
-  const total = cards.length;
+  const total = steps.length;
   if (total === 0) return;
 
-  cards.forEach((card, idx) => {
-    card.style.top = `calc(10vh + ${idx * 20}px)`;
-  });
+  function updateStepPositions() {
+    const isMobile = window.innerWidth <= 768;
+    const baseTop = isMobile ? 122 : 160;
+    const stepOffset = isMobile ? 28 : 34;
 
-  ScrollTrigger.create({
-    trigger: track,
-    start: 'top top',
-    end: 'bottom bottom',
-    scrub: 0.4,
-    invalidateOnRefresh: true,
-    onUpdate: (self) => {
-      const progress = self.progress;
-      cards.forEach((card, idx) => {
-        const targetScale = Math.max(0.70, 1 - (total - idx - 1) * 0.058);
-        const rangeStart = idx * (1 / total);
+    steps.forEach((step, idx) => {
+      step.style.top = `${baseTop + idx * stepOffset}px`;
+      step.style.zIndex = `${11 + idx}`;
+    });
+  }
 
-        let scale = 1;
-        if (progress > rangeStart) {
-          const t = Math.min(1, (progress - rangeStart) / (1 - rangeStart));
-          scale = 1 - t * (1 - targetScale);
+  updateStepPositions();
+  window.addEventListener('resize', updateStepPositions, { passive: true });
+
+  if (typeof ScrollTrigger !== 'undefined' && typeof gsap !== 'undefined') {
+    // Gentle depth enhancement for stacked cards (no CPU thrashing)
+    steps.forEach((step, idx) => {
+      if (idx < total - 1) {
+        const cardInner = step.querySelector('.parallax-card-inner');
+        const nextStep = steps[idx + 1];
+        if (cardInner && nextStep) {
+          ScrollTrigger.create({
+            trigger: nextStep,
+            start: 'top 85%',
+            end: 'top 45%',
+            scrub: true,
+            onUpdate: (self) => {
+              const p = self.progress;
+              const scale = 1 - p * 0.03; // gentle 3% depth scale
+              const brightness = 1 - p * 0.15; // subtle 15% dimming of under-card
+              cardInner.style.transform = `scale(${scale})`;
+              cardInner.style.filter = `brightness(${brightness})`;
+            }
+          });
         }
-        const brightness = Math.max(0.78, 1 - (1 - scale) * 0.65);
-        card.style.transform = `scale(${scale})`;
-        card.style.filter = `brightness(${brightness})`;
-      });
+      }
+    });
+
+    // Parallax Entrance of Section 3 (#featured-koushik) over #proof
+    const sec3 = document.getElementById('featured-koushik');
+    if (sec3) {
+      gsap.fromTo(sec3,
+        { y: 50 },
+        {
+          y: 0,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: sec3,
+            start: 'top bottom',
+            end: 'top 70%',
+            scrub: 0.3
+          }
+        }
+      );
     }
-  });
+  }
 
   // Proof Modal Lightbox Support
   const modal = document.getElementById('proofModal');
@@ -778,10 +808,10 @@ function initParallaxCards() {
     const card = proofCards[currentModalIndex];
     if (!card) return;
 
-    const img = card.querySelector('.parallax-mockup-img');
-    const badge = card.querySelector('.parallax-badge-pill');
-    const name = card.querySelector('.parallax-header-name');
-    const niche = card.querySelector('.parallax-header-niche');
+    const img = card.querySelector('.parallax-card-img-box img, .parallax-mockup-img, img');
+    const badge = card.querySelector('.parallax-card-badge, .parallax-badge-pill');
+    const name = card.querySelector('.parallax-card-meta, .parallax-header-name');
+    const niche = card.querySelector('.parallax-card-niche, .parallax-header-niche');
     const quote = card.querySelector('.parallax-quote-text');
 
     if (modalImg && img) modalImg.src = img.src;
