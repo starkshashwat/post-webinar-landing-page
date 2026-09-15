@@ -731,8 +731,8 @@ function initParallaxCards() {
 
   function updateStepPositions() {
     const isMobile = window.innerWidth <= 768;
-    const baseTop = isMobile ? 122 : 160;
-    const stepOffset = isMobile ? 28 : 34;
+    const baseTop = isMobile ? 96 : 154;
+    const stepOffset = isMobile ? 24 : 30;
 
     steps.forEach((step, idx) => {
       step.style.top = `${baseTop + idx * stepOffset}px`;
