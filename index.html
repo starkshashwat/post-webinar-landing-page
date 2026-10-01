@@ -2978,12 +2978,12 @@
       </div>
     </div>
 
-    <div class="checkout-price-card">
+    <div class="checkout-price-card" id="checkoutPriceCard">
       <div class="price-left">
         <div class="price-label">Special Post-Webinar Investment</div>
-        <div class="price-val">₹4,997 <span class="price-strikethrough">₹14,997</span></div>
+        <div class="price-val" id="checkoutDisplayPrice">₹4,997 <span class="price-strikethrough" id="checkoutOriginalStrike">₹14,997</span></div>
       </div>
-      <div class="price-badge">67% OFF</div>
+      <div class="price-badge" id="checkoutDiscountBadge">67% OFF</div>
     </div>
 
     <form id="razorpayPaymentForm" class="moya-modal-form" novalidate>
@@ -3007,6 +3007,16 @@
             <input type="tel" id="checkoutPhoneInput" name="phone" placeholder="+91 98765 43210" required autocomplete="tel" />
           </div>
         </div>
+      </div>
+
+      <!-- Live GHL Coupon Code Section -->
+      <div class="moya-form-group moya-coupon-section">
+        <label for="checkoutCouponInput">Have a Coupon Code?</label>
+        <div class="moya-coupon-input-wrap">
+          <input type="text" id="checkoutCouponInput" name="coupon" placeholder="Enter coupon (e.g. MOYA55)" autocomplete="off" autocapitalize="characters" />
+          <button type="button" class="moya-coupon-btn" id="applyCouponBtn">Apply Code</button>
+        </div>
+        <div id="couponStatusMsg" class="moya-coupon-msg" aria-live="polite"></div>
       </div>
 
       <button type="submit" class="moya-modal-submit-btn checkout-pay-btn" id="checkoutPayBtn">

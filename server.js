@@ -26,7 +26,7 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true }));
 
 // Helper: GoHighLevel (GHL) Contact Sync
-async function syncGHLContact({ name, email, phone, tags = [], note = '' }) {
+async function syncGHLContact({ name, email, phone, tags = [], note = '', customFields = [] }) {
   const locationId = process.env.GHL_LOCATION_ID || 'jsuZqhDRfnfSBFMgdfs2';
   const apiKey = process.env.GHL_API_KEY;
   const webhookUrl = process.env.GHL_WEBHOOK_URL;
@@ -50,7 +50,8 @@ async function syncGHLContact({ name, email, phone, tags = [], note = '' }) {
           name,
           email: email || undefined,
           phone: phone || undefined,
-          tags
+          tags,
+          customFields: customFields.length > 0 ? customFields : undefined
         })
       });
 
@@ -128,14 +129,131 @@ app.post('/api/leads', async (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
+// GHL Custom Values & Live Coupon Management Engine
+// -----------------------------------------------------------------------------
+let couponCache = {
+  data: null,
+  expiresAt: 0
+};
+
+async function getActiveCouponFromGHL() {
+  const now = Date.now();
+  if (couponCache.data && couponCache.expiresAt > now) {
+    return couponCache.data;
+  }
+
+  const locationId = process.env.GHL_LOCATION_ID || 'jsuZqhDRfnfSBFMgdfs2';
+  const apiKey = process.env.GHL_API_KEY;
+
+  let coupon = {
+    code: process.env.DEFAULT_COUPON_CODE || 'MOYA55',
+    discount: Number(process.env.DEFAULT_COUPON_DISCOUNT) || 4000,
+    status: process.env.DEFAULT_COUPON_STATUS || 'ENABLED'
+  };
+
+  if (apiKey) {
+    try {
+      const res = await fetch(`https://services.leadconnectorhq.com/locations/${locationId}/customValues`, {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Version': '2021-07-28',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const customValues = data?.customValues || [];
+        const codeVal = customValues.find(cv => cv.name === 'VSL Coupon Code')?.value;
+        const discountVal = customValues.find(cv => cv.name === 'VSL Coupon Discount')?.value;
+        const statusVal = customValues.find(cv => cv.name === 'VSL Coupon Status')?.value;
+
+        if (codeVal) coupon.code = codeVal.trim();
+        if (discountVal) coupon.discount = Number(discountVal) || 0;
+        if (statusVal) coupon.status = statusVal.trim().toUpperCase();
+
+        couponCache = {
+          data: coupon,
+          expiresAt: now + 60000 // Cache for 60 seconds
+        };
+        console.log(`[GHL Live Coupon] Active: Code=${coupon.code} | Discount=₹${coupon.discount} | Status=${coupon.status}`);
+        return coupon;
+      }
+    } catch (err) {
+      console.warn('[GHL Live Coupon Error]', err.message);
+    }
+  }
+
+  return coupon;
+}
+
+// -----------------------------------------------------------------------------
+// API: Validate Coupon Code (Live Check Against GHL Custom Values)
+// -----------------------------------------------------------------------------
+app.post('/api/coupon/validate', async (req, res) => {
+  try {
+    const { couponCode } = req.body;
+    if (!couponCode || !couponCode.trim()) {
+      return res.status(400).json({ valid: false, message: 'Please enter a valid coupon code.' });
+    }
+
+    const activeCoupon = await getActiveCouponFromGHL();
+    const basePrice = Number(process.env.COURSE_PRICE) || 4997;
+
+    const isMatch = activeCoupon.code && activeCoupon.code.toUpperCase() === couponCode.trim().toUpperCase();
+    const isEnabled = activeCoupon.status === 'ENABLED' || activeCoupon.status === 'ACTIVE';
+
+    if (isMatch && isEnabled) {
+      const discount = Math.min(basePrice, activeCoupon.discount);
+      const finalAmount = Math.max(1, basePrice - discount);
+
+      return res.json({
+        valid: true,
+        code: activeCoupon.code,
+        discount: discount,
+        originalPrice: basePrice,
+        finalAmount: finalAmount,
+        message: `✓ Coupon "${activeCoupon.code}" applied! Flat ₹${discount.toLocaleString('en-IN')} OFF.`
+      });
+    } else {
+      return res.json({
+        valid: false,
+        message: 'Invalid, inactive, or expired coupon code.'
+      });
+    }
+  } catch (err) {
+    console.error('Error validating coupon:', err);
+    res.status(500).json({ valid: false, message: 'Could not validate coupon at this time.' });
+  }
+});
+
+// -----------------------------------------------------------------------------
 // API: Create Razorpay Order
 // -----------------------------------------------------------------------------
 app.post('/api/razorpay/create-order', async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email, phone, couponCode } = req.body;
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    const amountInPaise = (Number(process.env.COURSE_PRICE) || 4997) * 100;
+    const basePrice = Number(process.env.COURSE_PRICE) || 4997;
+
+    let finalAmount = basePrice;
+    let appliedCoupon = null;
+    let discount = 0;
+
+    if (couponCode && couponCode.trim()) {
+      const activeCoupon = await getActiveCouponFromGHL();
+      const isMatch = activeCoupon.code && activeCoupon.code.toUpperCase() === couponCode.trim().toUpperCase();
+      const isEnabled = activeCoupon.status === 'ENABLED' || activeCoupon.status === 'ACTIVE';
+
+      if (isMatch && isEnabled) {
+        discount = Math.min(basePrice, activeCoupon.discount);
+        finalAmount = Math.max(1, basePrice - discount);
+        appliedCoupon = activeCoupon.code;
+      }
+    }
+
+    const amountInPaise = finalAmount * 100;
 
     if (!keyId || !keySecret) {
       return res.status(500).json({
@@ -152,17 +270,23 @@ app.post('/api/razorpay/create-order', async (req, res) => {
         name: name || '',
         email: email || '',
         phone: phone || '',
+        coupon_code: appliedCoupon || 'NONE',
+        discount: discount.toString(),
+        total_paid: finalAmount.toString(),
         program: 'MOYA Complete Access'
       }
     };
 
     const order = await rzp.orders.create(options);
-    console.log('[Razorpay Order Created]', order.id, 'Amount:', order.amount);
+    console.log('[Razorpay Order Created]', order.id, 'Amount:', order.amount, 'Coupon:', appliedCoupon || 'None');
 
     res.json({
       success: true,
       order,
-      keyId
+      keyId,
+      finalAmount,
+      appliedCoupon,
+      discount
     });
   } catch (error) {
     console.error('Error creating Razorpay order:', error);
@@ -171,7 +295,7 @@ app.post('/api/razorpay/create-order', async (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
-// API: Verify Successful Payment & Tag "Students" in GHL
+// API: Verify Successful Payment & Tag "vsl students" in GHL
 // -----------------------------------------------------------------------------
 app.post('/api/razorpay/verify-payment', async (req, res) => {
   try {
@@ -181,7 +305,9 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
       razorpay_signature,
       name,
       email,
-      phone
+      phone,
+      couponCode,
+      paidAmount: clientPaidAmount
     } = req.body;
 
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -206,13 +332,30 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
 
     console.log('[Razorpay Verified] Payment ID:', razorpay_payment_id);
 
-    // Sync to GHL with "Students" tag
+    // Prepare tags & custom fields
+    const tags = ['vsl students', 'VSL Enrolled'];
+    const cleanCoupon = couponCode ? couponCode.trim().toUpperCase() : null;
+    if (cleanCoupon) {
+      tags.push(`coupon-${cleanCoupon}`);
+    }
+
+    const paidStr = clientPaidAmount ? clientPaidAmount.toString() : (cleanCoupon ? '997' : '4997');
+
+    // Contact Custom Fields in GHL
+    const customFields = [
+      { id: 'OxYVPF3lZNekTPCUrfYV', value: cleanCoupon || 'NONE (Full Price)' },
+      { id: 'jY5kE16LGuyCbzmuxwWe', value: `₹${paidStr}` }
+    ];
+
+    const note = `🎉 Enrollment Confirmed via Razorpay!\n• Course: MOYA Complete Access\n• Total Paid: ₹${paidStr}\n• Coupon Applied: ${cleanCoupon || 'None (Full Price)'}\n• Razorpay Payment ID: ${razorpay_payment_id}\n• Order ID: ${razorpay_order_id}\n• Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
+
     await syncGHLContact({
       name,
       email,
       phone,
-      tags: ['vsl students', 'VSL Enrolled'],
-      note: `Payment Successful! Amount: ₹${process.env.COURSE_PRICE || '4,997'} | Razorpay Payment ID: ${razorpay_payment_id} | Order ID: ${razorpay_order_id}`
+      tags,
+      note,
+      customFields
     });
 
     res.json({ success: true, redirect: '/thankyou' });
@@ -276,13 +419,26 @@ app.post('/api/razorpay/webhook', async (req, res) => {
     if (event === 'payment.captured' || event === 'order.paid') {
       const payment = payload?.payment?.entity;
       const notes = payment?.notes || {};
+      const couponCode = notes.coupon_code && notes.coupon_code !== 'NONE' ? notes.coupon_code.toUpperCase() : null;
+      const paidAmount = (payment.amount / 100).toFixed(0);
+
+      const tags = ['vsl students', 'VSL Enrolled'];
+      if (couponCode) {
+        tags.push(`coupon-${couponCode}`);
+      }
+
+      const customFields = [
+        { id: 'OxYVPF3lZNekTPCUrfYV', value: couponCode || 'NONE (Full Price)' },
+        { id: 'jY5kE16LGuyCbzmuxwWe', value: `₹${paidAmount}` }
+      ];
 
       await syncGHLContact({
         name: notes.name || payment?.contact || 'Student',
         email: notes.email || payment?.email,
         phone: notes.phone || payment?.contact,
-        tags: ['vsl students', 'VSL Enrolled'],
-        note: `Webhook Verified: ₹${(payment.amount / 100).toFixed(2)} | Razorpay ID: ${payment.id}`
+        tags,
+        note: `Webhook Verified: ₹${paidAmount} | Coupon: ${couponCode || 'None (Full Price)'} | Razorpay ID: ${payment.id}`,
+        customFields
       });
     } else if (event === 'payment.failed') {
       const payment = payload?.payment?.entity;

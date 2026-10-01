@@ -3057,6 +3057,7 @@ function initSection5LeadCapture() {
 }
 
 // ==========================================================================
+// ==========================================================================
 // RAZORPAY CHECKOUT & PAYMENT TRACKING ENGINE
 // ==========================================================================
 function initRazorpayCheckoutFlow() {
@@ -3064,8 +3065,153 @@ function initRazorpayCheckoutFlow() {
   const form = document.getElementById("razorpayPaymentForm");
   const closeBtn = document.getElementById("closeCheckoutModal");
   const msgEl = document.getElementById("checkoutFormMsg");
+  const couponInput = document.getElementById("checkoutCouponInput");
+  const applyBtn = document.getElementById("applyCouponBtn");
+  const couponMsgEl = document.getElementById("couponStatusMsg");
+  const displayPriceEl = document.getElementById("checkoutDisplayPrice");
+  const discountBadgeEl = document.getElementById("checkoutDiscountBadge");
+
+  let appliedCouponCode = null;
+  let currentPayableAmount = 4997;
+  const originalBasePrice = 4997;
 
   if (!modal) return;
+
+  // Coupon Apply Handler
+  async function handleApplyCoupon() {
+    const code = couponInput ? couponInput.value.trim() : "";
+    if (!code) {
+      if (couponMsgEl) {
+        couponMsgEl.className = "moya-coupon-msg error";
+        couponMsgEl.textContent = "Please enter a coupon code.";
+      }
+      return;
+    }
+
+    if (applyBtn) {
+      applyBtn.disabled = true;
+      applyBtn.textContent = "Checking...";
+    }
+
+    try {
+      const res = await fetch("/api/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ couponCode: code })
+      });
+      const data = await res.json();
+
+      if (data.valid) {
+        appliedCouponCode = data.code;
+        currentPayableAmount = data.finalAmount;
+
+        if (displayPriceEl) {
+          displayPriceEl.innerHTML = `₹${data.finalAmount.toLocaleString('en-IN')} <span class="price-strikethrough">₹${originalBasePrice.toLocaleString('en-IN')}</span>`;
+        }
+        if (discountBadgeEl) {
+          discountBadgeEl.textContent = `COUPON APPLIED (-₹${data.discount.toLocaleString('en-IN')})`;
+          discountBadgeEl.classList.add("coupon-applied");
+        }
+        const submitBtn = document.getElementById("checkoutPayBtn");
+        if (submitBtn) {
+          const btnText = submitBtn.querySelector(".btn-text");
+          if (btnText) btnText.textContent = `Enroll Now & Pay ₹${data.finalAmount.toLocaleString('en-IN')}`;
+        }
+
+        if (applyBtn) {
+          applyBtn.textContent = "Applied ✓";
+          applyBtn.classList.add("is-applied");
+          applyBtn.disabled = true;
+        }
+        if (couponInput) {
+          couponInput.disabled = true;
+        }
+
+        if (couponMsgEl) {
+          couponMsgEl.className = "moya-coupon-msg success";
+          couponMsgEl.innerHTML = `<span>${data.message}</span> <span class="coupon-remove-link" id="removeCouponLink">Remove</span>`;
+
+          const removeLink = document.getElementById("removeCouponLink");
+          if (removeLink) {
+            removeLink.addEventListener("click", handleRemoveCoupon);
+          }
+        }
+      } else {
+        appliedCouponCode = null;
+        if (couponMsgEl) {
+          couponMsgEl.className = "moya-coupon-msg error";
+          couponMsgEl.textContent = data.message || "Invalid or expired coupon code.";
+        }
+        if (applyBtn) {
+          applyBtn.disabled = false;
+          applyBtn.textContent = "Apply Code";
+        }
+      }
+    } catch (err) {
+      console.error("Coupon validation error:", err);
+      if (couponMsgEl) {
+        couponMsgEl.className = "moya-coupon-msg error";
+        couponMsgEl.textContent = "Could not validate coupon. Please try again.";
+      }
+      if (applyBtn) {
+        applyBtn.disabled = false;
+        applyBtn.textContent = "Apply Code";
+      }
+    }
+  }
+
+  function handleRemoveCoupon() {
+    appliedCouponCode = null;
+    currentPayableAmount = originalBasePrice;
+
+    if (displayPriceEl) {
+      displayPriceEl.innerHTML = `₹${originalBasePrice.toLocaleString('en-IN')} <span class="price-strikethrough">₹14,997</span>`;
+    }
+    if (discountBadgeEl) {
+      discountBadgeEl.textContent = "67% OFF";
+      discountBadgeEl.classList.remove("coupon-applied");
+    }
+    const submitBtn = document.getElementById("checkoutPayBtn");
+    if (submitBtn) {
+      const btnText = submitBtn.querySelector(".btn-text");
+      if (btnText) btnText.textContent = `Enroll Now & Pay ₹${originalBasePrice.toLocaleString('en-IN')}`;
+    }
+
+    if (applyBtn) {
+      applyBtn.disabled = false;
+      applyBtn.textContent = "Apply Code";
+      applyBtn.classList.remove("is-applied");
+    }
+    if (couponInput) {
+      couponInput.disabled = false;
+      couponInput.value = "";
+    }
+    if (couponMsgEl) {
+      couponMsgEl.className = "moya-coupon-msg";
+      couponMsgEl.innerHTML = "";
+    }
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener("click", handleApplyCoupon);
+  }
+
+  if (couponInput) {
+    couponInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleApplyCoupon();
+      }
+    });
+  }
+
+  // Auto-check URL parameters (e.g. ?coupon=MOYA55 or ?code=MOYA55)
+  const urlParams = new URLSearchParams(window.location.search);
+  const promoParam = urlParams.get('coupon') || urlParams.get('code');
+  if (promoParam && couponInput) {
+    couponInput.value = promoParam.trim();
+    setTimeout(handleApplyCoupon, 400);
+  }
 
   if (closeBtn) {
     closeBtn.addEventListener("click", closeRazorpayCheckoutModal);
@@ -3101,11 +3247,16 @@ function initRazorpayCheckoutFlow() {
         // Save in sessionStorage
         sessionStorage.setItem("moya_lead_contact", JSON.stringify({ name, email, phone }));
 
-        // 1. Create Order via backend API
+        // 1. Create Order via backend API (with live coupon support)
         const orderRes = await fetch("/api/razorpay/create-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone })
+          body: JSON.stringify({
+            name,
+            email,
+            phone,
+            couponCode: appliedCouponCode
+          })
         });
 
         const orderData = await orderRes.json();
@@ -3116,6 +3267,7 @@ function initRazorpayCheckoutFlow() {
 
         const order = orderData.order;
         const keyId = orderData.keyId;
+        const finalPayable = orderData.finalAmount || currentPayableAmount;
 
         // 2. Launch Razorpay Checkout Popup
         const options = {
@@ -3123,7 +3275,9 @@ function initRazorpayCheckoutFlow() {
           amount: order.amount,
           currency: order.currency || "INR",
           name: "Mechanism of YouTube Automation",
-          description: "MOYA Complete Access + 19 Bonus Vaults",
+          description: appliedCouponCode
+            ? `MOYA Complete Access (Coupon ${appliedCouponCode} Applied)`
+            : "MOYA Complete Access + 19 Bonus Vaults",
           image: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c89c9b37b5fd4d3d92.webp",
           order_id: order.id,
           prefill: {
@@ -3151,12 +3305,14 @@ function initRazorpayCheckoutFlow() {
                   razorpay_signature: response.razorpay_signature,
                   name,
                   email,
-                  phone
+                  phone,
+                  couponCode: appliedCouponCode,
+                  paidAmount: finalPayable
                 })
               });
 
               if (typeof fbq === "function") {
-                fbq("track", "Purchase", { value: 4997, currency: "INR" });
+                fbq("track", "Purchase", { value: finalPayable, currency: "INR" });
               }
 
               window.location.href = "/thankyou";
@@ -3170,7 +3326,7 @@ function initRazorpayCheckoutFlow() {
               if (submitBtn) {
                 submitBtn.disabled = false;
                 const btnText = submitBtn.querySelector(".btn-text");
-                if (btnText) btnText.textContent = "Enroll Now & Pay ₹4,997";
+                if (btnText) btnText.textContent = `Enroll Now & Pay ₹${finalPayable.toLocaleString('en-IN')}`;
               }
               // Log dismissed/cancelled as potential drop-off
               fetch("/api/razorpay/payment-failed", {
@@ -3207,7 +3363,7 @@ function initRazorpayCheckoutFlow() {
           if (submitBtn) {
             submitBtn.disabled = false;
             const btnText = submitBtn.querySelector(".btn-text");
-            if (btnText) btnText.textContent = "Retry Payment (₹4,997)";
+            if (btnText) btnText.textContent = `Retry Payment (₹${finalPayable.toLocaleString('en-IN')})`;
           }
 
           // Send to backend failed payment logger
@@ -3239,7 +3395,7 @@ function initRazorpayCheckoutFlow() {
         if (submitBtn) {
           submitBtn.disabled = false;
           const btnText = submitBtn.querySelector(".btn-text");
-          if (btnText) btnText.textContent = "Enroll Now & Pay ₹4,997";
+          if (btnText) btnText.textContent = `Enroll Now & Pay ₹${currentPayableAmount.toLocaleString('en-IN')}`;
         }
       }
     });

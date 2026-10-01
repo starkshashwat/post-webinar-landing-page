@@ -12625,3 +12625,111 @@ body::before {
   text-align: center;
   margin-top: 12px;
 }
+
+/* Coupon Code Section inside Checkout Modal */
+.moya-coupon-section {
+  margin-top: 2px;
+  margin-bottom: 14px;
+}
+.moya-coupon-section label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #c4c9e2;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.moya-coupon-input-wrap {
+  display: flex;
+  gap: 8px;
+  position: relative;
+}
+.moya-coupon-input-wrap input {
+  flex: 1;
+  background: rgba(10, 12, 28, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.25s ease;
+}
+.moya-coupon-input-wrap input:focus {
+  outline: none;
+  border-color: #ff3346;
+  box-shadow: 0 0 0 3px rgba(255, 51, 70, 0.18);
+}
+.moya-coupon-btn {
+  background: linear-gradient(135deg, rgba(255, 51, 70, 0.25) 0%, rgba(255, 51, 70, 0.1) 100%);
+  border: 1px solid rgba(255, 51, 70, 0.4);
+  color: #ff6674;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.moya-coupon-btn:hover {
+  background: #ff3346;
+  color: #fff;
+  border-color: #ff3346;
+  box-shadow: 0 4px 15px rgba(255, 51, 70, 0.35);
+  transform: translateY(-1px);
+}
+.moya-coupon-btn:active {
+  transform: translateY(0);
+}
+.moya-coupon-btn.is-applied {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+.moya-coupon-msg {
+  font-size: 0.78rem;
+  margin-top: 6px;
+  font-weight: 600;
+  display: none;
+}
+.moya-coupon-msg.success {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+.moya-coupon-msg.error {
+  display: block;
+  color: #ff4d5e;
+  background: rgba(255, 77, 94, 0.1);
+  border: 1px solid rgba(255, 77, 94, 0.2);
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+.coupon-remove-link {
+  color: #ff6674;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.coupon-remove-link:hover {
+  color: #ff3346;
+}
+.price-badge.coupon-applied {
+  background: #10b981;
+  color: #061e14;
+  font-weight: 900;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+}
