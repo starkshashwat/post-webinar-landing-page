@@ -155,7 +155,10 @@ class VideoController {
       video.setAttribute('controls', 'true');
       const card = video.closest('.bento-card, .cinematic-center-video-wrapper, .cinematic-clean-video-frame');
       if (card) card.classList.add('is-playing');
-      document.body.classList.add('is-cinema-mode');
+      // Only enable cinema mode for inline in-page videos, NEVER for the lightbox modal player which has its own backdrop
+      if (video.id !== 'cfModalPlayer') {
+        document.body.classList.add('is-cinema-mode');
+      }
     });
 
     video.addEventListener('pause', () => {
@@ -217,6 +220,7 @@ class VideoController {
       video.pause();
     } catch (err) {}
     if (this.activeVideo === video) this.activeVideo = null;
+    document.body.classList.remove('is-cinema-mode');
   }
 
   pauseAll() {
@@ -232,6 +236,7 @@ class VideoController {
       } catch (err) {}
     }
     document.querySelectorAll('.bento-card.is-playing, .cinematic-center-video-card.is-playing').forEach(c => c.classList.remove('is-playing'));
+    document.body.classList.remove('is-cinema-mode');
     this.activeVideo = null;
   }
 }
@@ -2392,7 +2397,11 @@ window.openLightbox = function(src) {
         if (videoModal) {
           videoModal.classList.remove('is-open');
           videoModal.setAttribute('aria-hidden', 'true');
-          document.body.classList.remove('modal-open');
+        }
+        document.body.classList.remove('modal-open');
+        document.body.classList.remove('is-cinema-mode');
+        if (window.videoController) {
+          window.videoController.activeVideo = null;
         }
       }
 

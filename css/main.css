@@ -11644,20 +11644,13 @@
 
 
 /* ==========================================================================
-   CINEMATIC VIDEO FOCUS MODE
+   CINEMATIC VIDEO FOCUS MODE - SAFE & NON-DESTRUCTIVE
    ========================================================================== */
 body.is-cinema-mode {
   background-color: #040510 !important;
 }
-body.is-cinema-mode section:not(:has(video[controls])) {
-  opacity: 0.2;
-  transition: opacity 0.5s ease;
-}
-body.is-cinema-mode section:has(video[controls]) .bento-card:not(.is-playing),
-body.is-cinema-mode section:has(video[controls]) .hero-clean-title,
-body.is-cinema-mode section:has(video[controls]) .section-heading-lg {
-  opacity: 0.15;
-  transition: opacity 0.5s ease;
+body.is-cinema-mode section {
+  opacity: 1 !important;
 }
 
 
