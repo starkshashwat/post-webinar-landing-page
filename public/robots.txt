@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Disallow: /thankyou
+Disallow: /thankyou.html
+Disallow: /404
+Disallow: /404.html
+
+# Major Crawlers explicitly allowed
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# XML Sitemap
+Sitemap: https://vsl.mechanismofya.com/sitemap.xml

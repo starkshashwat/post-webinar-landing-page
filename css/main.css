@@ -11866,7 +11866,8 @@ body::before {
   box-shadow: 0 0 0 5px rgba(255,51,70,.09), 0 0 24px rgba(255,51,70,.7);
 }
 
-.moya-pricing-section h1 {
+.moya-pricing-section h1,
+.moya-pricing-section h2 {
   font-family: Manrope, sans-serif;
   text-align: center;
   font-size: clamp(38px, 5.5vw, 76px);
@@ -11876,7 +11877,8 @@ body::before {
   font-weight: 800;
   color: #f7f8fb;
 }
-.moya-pricing-section h1 em {
+.moya-pricing-section h1 em,
+.moya-pricing-section h2 em {
   font-style: normal;
   color: var(--moya-red, #ff3346);
   text-shadow: 0 0 45px rgba(255,51,70,.16);
@@ -12295,7 +12297,8 @@ body::before {
   .moya-pricing-section {
     padding: 80px 16px !important;
   }
-  .moya-pricing-section h1 {
+  .moya-pricing-section h1,
+  .moya-pricing-section h2 {
     font-size: 42px;
   }
   .moya-pricing-section .sub {

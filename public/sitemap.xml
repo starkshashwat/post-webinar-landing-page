@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Primary Landing Page -->
+  <url>
+    <loc>https://vsl.mechanismofya.com/</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- Contact Page -->
+  <url>
+    <loc>https://vsl.mechanismofya.com/contact-us</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://vsl.mechanismofya.com/privacy</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <!-- Terms of Service -->
+  <url>
+    <loc>https://vsl.mechanismofya.com/terms-of-service</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <!-- Refund Policy -->
+  <url>
+    <loc>https://vsl.mechanismofya.com/refund-policy</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <!-- Earnings & Legal Disclaimer -->
+  <url>
+    <loc>https://vsl.mechanismofya.com/disclaimer</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>
