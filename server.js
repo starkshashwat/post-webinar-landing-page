@@ -211,7 +211,7 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
       name,
       email,
       phone,
-      tags: ['Students', 'VSL Enrolled'],
+      tags: ['vsl students', 'VSL Enrolled'],
       note: `Payment Successful! Amount: ₹${process.env.COURSE_PRICE || '4,997'} | Razorpay Payment ID: ${razorpay_payment_id} | Order ID: ${razorpay_order_id}`
     });
 
@@ -281,7 +281,7 @@ app.post('/api/razorpay/webhook', async (req, res) => {
         name: notes.name || payment?.contact || 'Student',
         email: notes.email || payment?.email,
         phone: notes.phone || payment?.contact,
-        tags: ['Students', 'VSL Enrolled'],
+        tags: ['vsl students', 'VSL Enrolled'],
         note: `Webhook Verified: ₹${(payment.amount / 100).toFixed(2)} | Razorpay ID: ${payment.id}`
       });
     } else if (event === 'payment.failed') {
