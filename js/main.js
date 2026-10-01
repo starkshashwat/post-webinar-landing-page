@@ -28,11 +28,47 @@ function triggerToast(msg) {
   setTimeout(() => toast.classList.remove("is-active"), 3200);
 }
 
+// Modal Helper Functions
+function openRazorpayCheckoutModal() {
+  const modal = document.getElementById("razorpayCheckoutModal");
+  if (!modal) return;
+
+  // Pre-fill from previous Section 5 lead capture
+  try {
+    const saved = JSON.parse(sessionStorage.getItem("moya_lead_contact") || "{}");
+    const nameInp = document.getElementById("checkoutNameInput");
+    const emailInp = document.getElementById("checkoutEmailInput");
+    const phoneInp = document.getElementById("checkoutPhoneInput");
+    if (nameInp && saved.name && !nameInp.value) nameInp.value = saved.name;
+    if (emailInp && saved.email && !emailInp.value) emailInp.value = saved.email;
+    if (phoneInp && saved.phone && !phoneInp.value) phoneInp.value = saved.phone;
+  } catch (err) {}
+
+  if (typeof fbq === "function") {
+    fbq("track", "InitiateCheckout", { value: 4997, currency: "INR" });
+  }
+
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  } else {
+    modal.setAttribute("open", "true");
+  }
+}
+window.openRazorpayCheckoutModal = openRazorpayCheckoutModal;
+
+function closeRazorpayCheckoutModal() {
+  const modal = document.getElementById("razorpayCheckoutModal");
+  if (!modal) return;
+  if (typeof modal.close === "function") {
+    modal.close();
+  } else {
+    modal.removeAttribute("open");
+  }
+}
+window.closeRazorpayCheckoutModal = closeRazorpayCheckoutModal;
+
 // CTA Router
 function handleCtaClick(e) {
-  const config = window.MOYA_APP_CONFIG || {};
-  const targetUrl = config.checkoutUrl || "https://pay.mechanismofya.com/widget/form/FmYYoRVcghC0BOE0ky78";
-
   // Direct checkout CTA handling (pricing seat, manifestation CTAs, or direct links)
   const isDirectCheckout = e && e.currentTarget && (
     e.currentTarget.classList.contains('js-cta-checkout') ||
@@ -41,16 +77,13 @@ function handleCtaClick(e) {
   );
 
   if (isDirectCheckout) {
-    if (e.preventDefault) e.preventDefault();
-    window.location.href = targetUrl;
+    if (e && e.preventDefault) e.preventDefault();
+    openRazorpayCheckoutModal();
     return;
   }
 
   if (e && e.currentTarget && e.currentTarget.getAttribute('href') && e.currentTarget.getAttribute('href').startsWith('#')) {
     return; // Allow anchor links to smooth scroll
-  }
-  if (config.checkoutUrl) {
-    window.location.href = config.checkoutUrl;
   }
 }
 window.handleCtaClick = handleCtaClick;
@@ -2910,6 +2943,310 @@ window.openLightbox = function(src) {
     })();
 
 // ==========================================================================
+// SECTION 5 AUTO-POPUP LEAD CAPTURE ENGINE
+// ==========================================================================
+function initSection5LeadCapture() {
+  const section5 = document.getElementById("system");
+  const modal = document.getElementById("leadCaptureModal");
+  const form = document.getElementById("leadCaptureForm");
+  const closeBtn = document.getElementById("closeLeadModal");
+  const msgEl = document.getElementById("leadFormMsg");
+
+  if (!section5 || !modal) return;
+
+  // Close handlers
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      if (typeof modal.close === "function") modal.close();
+      else modal.removeAttribute("open");
+    });
+  }
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      if (typeof modal.close === "function") modal.close();
+      else modal.removeAttribute("open");
+    }
+  });
+
+  // Auto-trigger when Section 5 (#system) enters viewport
+  let shown = sessionStorage.getItem("moya_lead_shown") === "true";
+  if (!shown) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !shown) {
+          shown = true;
+          sessionStorage.setItem("moya_lead_shown", "true");
+          observer.disconnect();
+
+          setTimeout(() => {
+            if (typeof modal.showModal === "function") {
+              modal.showModal();
+            } else {
+              modal.setAttribute("open", "true");
+            }
+          }, 800);
+        }
+      });
+    }, { threshold: 0.25 });
+
+    observer.observe(section5);
+  }
+
+  // Form submit handler
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById("leadSubmitBtn");
+      const name = document.getElementById("leadNameInput")?.value?.trim() || "";
+      const email = document.getElementById("leadEmailInput")?.value?.trim() || "";
+      const phone = document.getElementById("leadPhoneInput")?.value?.trim() || "";
+
+      if (!name || (!email && !phone)) {
+        if (msgEl) {
+          msgEl.className = "moya-form-msg error";
+          msgEl.textContent = "Please provide your name and phone number.";
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        const btnText = submitBtn.querySelector(".btn-text");
+        if (btnText) btnText.textContent = "Securing Access...";
+      }
+
+      try {
+        // Fire Meta Pixel Lead event
+        if (typeof fbq === "function") {
+          fbq("track", "Lead");
+        }
+
+        // Save in sessionStorage for Razorpay checkout prefill
+        sessionStorage.setItem("moya_lead_contact", JSON.stringify({ name, email, phone }));
+
+        // Send to backend API
+        await fetch("/api/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, phone })
+        });
+
+        if (msgEl) {
+          msgEl.className = "moya-form-msg success";
+          msgEl.textContent = "✓ Access granted! Check your WhatsApp/Email.";
+        }
+
+        setTimeout(() => {
+          if (typeof modal.close === "function") modal.close();
+          else modal.removeAttribute("open");
+        }, 1200);
+      } catch (err) {
+        console.error("Lead sync error:", err);
+        if (msgEl) {
+          msgEl.className = "moya-form-msg success";
+          msgEl.textContent = "✓ Access granted! Proceed below.";
+        }
+        setTimeout(() => {
+          if (typeof modal.close === "function") modal.close();
+          else modal.removeAttribute("open");
+        }, 1200);
+      }
+    });
+  }
+}
+
+// ==========================================================================
+// RAZORPAY CHECKOUT & PAYMENT TRACKING ENGINE
+// ==========================================================================
+function initRazorpayCheckoutFlow() {
+  const modal = document.getElementById("razorpayCheckoutModal");
+  const form = document.getElementById("razorpayPaymentForm");
+  const closeBtn = document.getElementById("closeCheckoutModal");
+  const msgEl = document.getElementById("checkoutFormMsg");
+
+  if (!modal) return;
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeRazorpayCheckoutModal);
+  }
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeRazorpayCheckoutModal();
+  });
+
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById("checkoutPayBtn");
+      const name = document.getElementById("checkoutNameInput")?.value?.trim() || "";
+      const email = document.getElementById("checkoutEmailInput")?.value?.trim() || "";
+      const phone = document.getElementById("checkoutPhoneInput")?.value?.trim() || "";
+
+      if (!name || !email || !phone) {
+        if (msgEl) {
+          msgEl.className = "moya-form-msg error";
+          msgEl.textContent = "Please fill in your name, email, and phone number.";
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        const btnText = submitBtn.querySelector(".btn-text");
+        if (btnText) btnText.textContent = "Initializing Secure Checkout...";
+      }
+
+      try {
+        // Save in sessionStorage
+        sessionStorage.setItem("moya_lead_contact", JSON.stringify({ name, email, phone }));
+
+        // 1. Create Order via backend API
+        const orderRes = await fetch("/api/razorpay/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, phone })
+        });
+
+        const orderData = await orderRes.json();
+
+        if (!orderRes.ok || !orderData.order) {
+          throw new Error(orderData.error || "Failed to initialize payment gateway");
+        }
+
+        const order = orderData.order;
+        const keyId = orderData.keyId;
+
+        // 2. Launch Razorpay Checkout Popup
+        const options = {
+          key: keyId,
+          amount: order.amount,
+          currency: order.currency || "INR",
+          name: "Mechanism of YouTube Automation",
+          description: "MOYA Complete Access + 19 Bonus Vaults",
+          image: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c89c9b37b5fd4d3d92.webp",
+          order_id: order.id,
+          prefill: {
+            name: name,
+            email: email,
+            contact: phone
+          },
+          theme: {
+            color: "#ff3346"
+          },
+          handler: async function (response) {
+            if (msgEl) {
+              msgEl.className = "moya-form-msg success";
+              msgEl.textContent = "Payment successful! Verifying enrollment...";
+            }
+
+            try {
+              // 3. Verify Payment on Backend
+              await fetch("/api/razorpay/verify-payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  name,
+                  email,
+                  phone
+                })
+              });
+
+              if (typeof fbq === "function") {
+                fbq("track", "Purchase", { value: 4997, currency: "INR" });
+              }
+
+              window.location.href = "/thankyou";
+            } catch (err) {
+              console.error("Verification error:", err);
+              window.location.href = "/thankyou";
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                const btnText = submitBtn.querySelector(".btn-text");
+                if (btnText) btnText.textContent = "Enroll Now & Pay ₹4,997";
+              }
+              // Log dismissed/cancelled as potential drop-off
+              fetch("/api/razorpay/payment-failed", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  orderId: order.id,
+                  paymentId: "",
+                  error: { description: "User closed Razorpay popup without paying", reason: "checkout_dismissed" },
+                  name,
+                  email,
+                  phone
+                })
+              }).catch(() => {});
+            }
+          }
+        };
+
+        if (typeof window.Razorpay !== "function") {
+          throw new Error("Razorpay SDK not loaded. Please check your connection.");
+        }
+
+        const rzp = new window.Razorpay(options);
+
+        // Capture payment failure directly
+        rzp.on("payment.failed", function (response) {
+          console.warn("Payment failed:", response.error);
+
+          if (msgEl) {
+            msgEl.className = "moya-form-msg error";
+            msgEl.textContent = response.error.description || "Payment failed. Please try UPI or another card.";
+          }
+
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            const btnText = submitBtn.querySelector(".btn-text");
+            if (btnText) btnText.textContent = "Retry Payment (₹4,997)";
+          }
+
+          // Send to backend failed payment logger
+          fetch("/api/razorpay/payment-failed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId: order.id,
+              paymentId: response.error?.metadata?.payment_id || "",
+              error: {
+                description: response.error.description,
+                reason: response.error.reason,
+                code: response.error.code
+              },
+              name,
+              email,
+              phone
+            })
+          }).catch(() => {});
+        });
+
+        rzp.open();
+      } catch (err) {
+        console.error("Checkout init error:", err);
+        if (msgEl) {
+          msgEl.className = "moya-form-msg error";
+          msgEl.textContent = err.message || "Failed to initialize checkout. Please retry.";
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          const btnText = submitBtn.querySelector(".btn-text");
+          if (btnText) btnText.textContent = "Enroll Now & Pay ₹4,997";
+        }
+      }
+    });
+  }
+}
+
+// ==========================================================================
 // MASTER APPLICATION INITIALIZER
 // ==========================================================================
 onReady(() => {
@@ -2929,19 +3266,23 @@ onReady(() => {
   animateChartOnLoad();
   animateDashboardCounters();
 
-  // 3. Initialize Video Controller
+  // 3. Initialize Section 5 Lead Capture & Razorpay Checkout Flows
+  initSection5LeadCapture();
+  initRazorpayCheckoutFlow();
+
+  // 4. Initialize Video Controller
   window.videoController.init();
 
-  // 4. Initialize Lenis Smooth Scroll Engine & Navigation
+  // 5. Initialize Lenis Smooth Scroll Engine & Navigation
   initLenisScroll();
 
-  // 5. Initialize Parallax Cards & Section-to-Section Motion Architecture
+  // 6. Initialize Parallax Cards & Section-to-Section Motion Architecture
   initParallaxCards();
   initGlobalMotionArchitecture();
   initHeadlineTextAnimations();
   initMentorStatsCounters();
 
-  // 6. Lifecycle ScrollTrigger Refresh on font/image load
+  // 7. Lifecycle ScrollTrigger Refresh on font/image load
   window.addEventListener('load', () => {
     if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
   });

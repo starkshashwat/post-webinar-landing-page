@@ -12342,3 +12342,286 @@ body::before {
     border-left: 0;
   }
 }
+
+/* ==========================================================================
+   MOYA LEAD CAPTURE & RAZORPAY CHECKOUT MODAL STYLES
+   ========================================================================== */
+.moya-modal-dialog {
+  border: none;
+  background: transparent;
+  padding: 16px;
+  margin: auto;
+  max-width: 95vw;
+  overflow: visible;
+  z-index: 999999;
+}
+.moya-modal-dialog::backdrop {
+  background: rgba(3, 4, 12, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.moya-modal-box {
+  background: #0c0e1e;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75), 0 0 50px rgba(255, 51, 70, 0.15);
+  color: #fff;
+  animation: moyaModalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.checkout-modal-box {
+  max-width: 540px;
+  padding: 36px 32px;
+}
+@keyframes moyaModalIn {
+  from { opacity: 0; transform: scale(0.94) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.moya-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cdd2ea;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.moya-modal-close:hover {
+  background: rgba(255, 51, 70, 0.2);
+  color: #ff3346;
+  border-color: #ff3346;
+  transform: rotate(90deg);
+}
+.moya-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: rgba(255, 51, 70, 0.12);
+  border: 1px solid rgba(255, 51, 70, 0.28);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ff4757;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+.moya-pulse-dot {
+  width: 7px;
+  height: 7px;
+  background: #ff3346;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(255, 51, 70, 0.7);
+  animation: moyaPulse 1.8s infinite;
+}
+@keyframes moyaPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 51, 70, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(255, 51, 70, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 51, 70, 0); }
+}
+.moya-modal-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+.moya-modal-desc {
+  font-size: 0.88rem;
+  color: #98a0c2;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+.moya-modal-form .moya-form-group {
+  margin-bottom: 14px;
+}
+.moya-modal-form label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #bcc3e3;
+  margin-bottom: 6px;
+}
+.moya-modal-form label .req {
+  color: #ff3346;
+}
+.moya-input-wrap input {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.92rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+.moya-input-wrap input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #ff3346;
+  box-shadow: 0 0 0 3px rgba(255, 51, 70, 0.22);
+}
+.moya-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .moya-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .checkout-modal-box {
+    padding: 26px 18px;
+  }
+}
+.moya-modal-submit-btn {
+  width: 100%;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, #ff3346 0%, #cc182a 100%);
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(255, 51, 70, 0.4);
+  transition: all 0.2s ease;
+  margin-top: 18px;
+}
+.moya-modal-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255, 51, 70, 0.55);
+}
+.moya-modal-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.moya-form-note {
+  font-size: 0.72rem;
+  color: #7d85a6;
+  text-align: center;
+  margin-top: 12px;
+  line-height: 1.4;
+}
+.moya-form-msg {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 10px;
+  min-height: 18px;
+}
+.moya-form-msg.success { color: #10b981; }
+.moya-form-msg.error { color: #ef4444; }
+
+/* Checkout Modal Specifics */
+.checkout-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.checkout-logo {
+  height: 28px;
+  object-fit: contain;
+}
+.checkout-secure-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.checkout-package-summary {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.checkout-package-summary .package-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #cfd4eb;
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+.checkout-package-summary .package-item:last-child {
+  margin-bottom: 0;
+}
+.checkout-package-summary .check-icon {
+  color: #10b981;
+  font-weight: 900;
+}
+.checkout-price-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(255, 51, 70, 0.12) 0%, rgba(255, 51, 70, 0.04) 100%);
+  border: 1px solid rgba(255, 51, 70, 0.28);
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+}
+.checkout-price-card .price-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #ff7583;
+}
+.checkout-price-card .price-val {
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.checkout-price-card .price-strikethrough {
+  font-size: 0.9rem;
+  color: #7e87ab;
+  text-decoration: line-through;
+  font-weight: 500;
+  margin-left: 6px;
+}
+.checkout-price-card .price-badge {
+  background: #ff3346;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+}
+.checkout-payment-methods {
+  font-size: 0.72rem;
+  color: #8c94b7;
+  text-align: center;
+  margin-top: 12px;
+}

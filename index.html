@@ -11,6 +11,24 @@
     gtag('config', 'G-9JSPL976DE');
   </script>
 
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1116283324686477');
+  fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+
+  <!-- Razorpay Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mechanism of YouTube Automation — MOYA Official Post-Webinar Portal</title>
@@ -2870,6 +2888,139 @@
 <div class="modal-image-wrap">
 <img alt="Proof Screenshot" id="modalImg" src=""/>
 </div>
+</dialog>
+
+<!-- ========================================================================
+     SECTION 5 AUTO-POPUP LEAD CAPTURE MODAL
+     ======================================================================== -->
+<dialog id="leadCaptureModal" class="moya-modal-dialog" aria-labelledby="leadModalTitle">
+  <div class="moya-modal-box">
+    <button type="button" class="moya-modal-close" id="closeLeadModal" aria-label="Close form">&times;</button>
+    
+    <div class="moya-modal-badge">
+      <span class="moya-pulse-dot"></span> Free Blueprint &amp; Roadmap Access
+    </div>
+    
+    <h3 id="leadModalTitle" class="moya-modal-title">Unlock The MOYA Operating System</h3>
+    <p class="moya-modal-desc">
+      Enter your details to receive the complete faceless niche validation matrix, batch scripting SOPs, and algorithmic launch checklist.
+    </p>
+
+    <form id="leadCaptureForm" class="moya-modal-form" novalidate>
+      <div class="moya-form-group">
+        <label for="leadNameInput">Full Name <span class="req">*</span></label>
+        <div class="moya-input-wrap">
+          <input type="text" id="leadNameInput" name="name" placeholder="e.g. Rahul Sharma" required autocomplete="name" />
+        </div>
+      </div>
+
+      <div class="moya-form-group">
+        <label for="leadEmailInput">Email Address <span class="req">*</span></label>
+        <div class="moya-input-wrap">
+          <input type="email" id="leadEmailInput" name="email" placeholder="rahul@gmail.com" required autocomplete="email" />
+        </div>
+      </div>
+
+      <div class="moya-form-group">
+        <label for="leadPhoneInput">WhatsApp Phone Number <span class="req">*</span></label>
+        <div class="moya-input-wrap">
+          <input type="tel" id="leadPhoneInput" name="phone" placeholder="+91 98765 43210" required autocomplete="tel" />
+        </div>
+      </div>
+
+      <button type="submit" class="moya-modal-submit-btn" id="leadSubmitBtn">
+        <span class="btn-text">Get Instant Access</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+
+      <div class="moya-form-note">
+        🔒 100% Privacy. Zero spam. We send direct implementation resources.
+      </div>
+      <div id="leadFormMsg" class="moya-form-msg"></div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ========================================================================
+     RAZORPAY PREMIUM CHECKOUT & PACKAGE OVERVIEW MODAL
+     ======================================================================== -->
+<dialog id="razorpayCheckoutModal" class="moya-modal-dialog" aria-labelledby="checkoutModalTitle">
+  <div class="moya-modal-box checkout-modal-box">
+    <button type="button" class="moya-modal-close" id="closeCheckoutModal" aria-label="Close checkout">&times;</button>
+    
+    <div class="checkout-header">
+      <div class="checkout-brand-row">
+        <img src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c89c9b37b5fd4d3d92.webp" alt="MOYA Logo" class="checkout-logo" />
+        <span class="checkout-secure-badge">🔒 256-Bit SSL Secure Checkout</span>
+      </div>
+      <h3 id="checkoutModalTitle" class="moya-modal-title">MOYA Complete Access</h3>
+      <p class="moya-modal-desc">
+        The complete algorithmic operating system for launching and scaling profitable faceless YouTube channels.
+      </p>
+    </div>
+
+    <div class="checkout-package-summary">
+      <div class="package-item">
+        <span class="check-icon">✓</span>
+        <span><strong>The 5-Phase Operating System</strong> (Niche Validation, Packaging, 2-Hr Assembly, Release, Scale)</span>
+      </div>
+      <div class="package-item">
+        <span class="check-icon">✓</span>
+        <span><strong>19 Proprietary Bonus Vaults</strong> (Viral Templates, Voiceover Synthesizers, Prompts — ₹73,990 Value)</span>
+      </div>
+      <div class="package-item">
+        <span class="check-icon">✓</span>
+        <span><strong>2-Day Live Onboarding Bootcamp</strong> with Savan Matariya</span>
+      </div>
+      <div class="package-item">
+        <span class="check-icon">✓</span>
+        <span><strong>Private Mastermind &amp; Weekly Live Review Clinics</strong></span>
+      </div>
+    </div>
+
+    <div class="checkout-price-card">
+      <div class="price-left">
+        <div class="price-label">Special Post-Webinar Investment</div>
+        <div class="price-val">₹4,997 <span class="price-strikethrough">₹14,997</span></div>
+      </div>
+      <div class="price-badge">67% OFF</div>
+    </div>
+
+    <form id="razorpayPaymentForm" class="moya-modal-form" novalidate>
+      <div class="moya-form-group">
+        <label for="checkoutNameInput">Student Name <span class="req">*</span></label>
+        <div class="moya-input-wrap">
+          <input type="text" id="checkoutNameInput" name="name" placeholder="Full Name" required autocomplete="name" />
+        </div>
+      </div>
+
+      <div class="moya-form-row">
+        <div class="moya-form-group">
+          <label for="checkoutEmailInput">Email Address <span class="req">*</span></label>
+          <div class="moya-input-wrap">
+            <input type="email" id="checkoutEmailInput" name="email" placeholder="you@email.com" required autocomplete="email" />
+          </div>
+        </div>
+        <div class="moya-form-group">
+          <label for="checkoutPhoneInput">WhatsApp / Phone <span class="req">*</span></label>
+          <div class="moya-input-wrap">
+            <input type="tel" id="checkoutPhoneInput" name="phone" placeholder="+91 98765 43210" required autocomplete="tel" />
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="moya-modal-submit-btn checkout-pay-btn" id="checkoutPayBtn">
+        <span class="btn-text">Enroll Now &amp; Pay ₹4,997</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+
+      <div class="checkout-payment-methods">
+        <span>Instant UPI (GPay / PhonePe / Paytm), Cards, Net Banking &amp; EMI via Razorpay</span>
+      </div>
+
+      <div id="checkoutFormMsg" class="moya-form-msg"></div>
+    </form>
+  </div>
 </dialog>
 <!-- System Toast -->
 <div class="system-toast" id="systemToast">Notification</div>
