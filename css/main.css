@@ -12557,28 +12557,42 @@ body::before {
   border-radius: 999px;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
-.checkout-package-summary {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
+.moya-edition-tag {
+  background: rgba(255, 51, 70, 0.18);
+  border: 1px solid rgba(255, 51, 70, 0.4);
+  color: #ff5263;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
 }
-.checkout-package-summary .package-item {
+.checkout-trust-strip {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 0.82rem;
-  color: #cfd4eb;
-  line-height: 1.45;
-  margin-bottom: 8px;
+  align-items: center;
+  justify-content: space-around;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
 }
-.checkout-package-summary .package-item:last-child {
-  margin-bottom: 0;
+.checkout-trust-strip .trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #c0c6e0;
 }
-.checkout-package-summary .check-icon {
+.checkout-trust-strip .trust-check {
   color: #10b981;
   font-weight: 900;
+  font-size: 0.8rem;
 }
 .checkout-price-card {
   display: flex;

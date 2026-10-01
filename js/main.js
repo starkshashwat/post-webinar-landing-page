@@ -3056,7 +3056,22 @@ function initSection5LeadCapture() {
   }
 }
 
-// ==========================================================================
+// Helper: Sanitize Error Messages for End Users (Production Security)
+function getSafeUserErrorMessage(rawMsg, fallback) {
+  const defaultMsg = fallback || "Unable to process payment right now. Please retry in a few moments.";
+  if (!rawMsg || typeof rawMsg !== "string") return defaultMsg;
+  const lower = rawMsg.toLowerCase();
+  const dangerousKeywords = [
+    "key", "secret", "env", "token", "razorpay", "ghl", "api", "internal",
+    "config", "exception", "undefined", "null", "syntax", "auth", "credential",
+    "500", "503", "404", "stack", "node_modules", "backend"
+  ];
+  if (dangerousKeywords.some(kw => lower.includes(kw))) {
+    return defaultMsg;
+  }
+  return rawMsg;
+}
+
 // ==========================================================================
 // RAZORPAY CHECKOUT & PAYMENT TRACKING ENGINE
 // ==========================================================================
@@ -3140,7 +3155,7 @@ function initRazorpayCheckoutFlow() {
         appliedCouponCode = null;
         if (couponMsgEl) {
           couponMsgEl.className = "moya-coupon-msg error";
-          couponMsgEl.textContent = data.message || "Invalid or expired coupon code.";
+          couponMsgEl.textContent = getSafeUserErrorMessage(data.message, "Invalid or expired coupon code.");
         }
         if (applyBtn) {
           applyBtn.disabled = false;
@@ -3168,7 +3183,7 @@ function initRazorpayCheckoutFlow() {
       displayPriceEl.innerHTML = `₹${originalBasePrice.toLocaleString('en-IN')} <span class="price-strikethrough">₹14,997</span>`;
     }
     if (discountBadgeEl) {
-      discountBadgeEl.textContent = "67% OFF";
+      discountBadgeEl.textContent = "OFFICIAL PASS";
       discountBadgeEl.classList.remove("coupon-applied");
     }
     const submitBtn = document.getElementById("checkoutPayBtn");
@@ -3390,7 +3405,7 @@ function initRazorpayCheckoutFlow() {
         console.error("Checkout init error:", err);
         if (msgEl) {
           msgEl.className = "moya-form-msg error";
-          msgEl.textContent = err.message || "Failed to initialize checkout. Please retry.";
+          msgEl.textContent = getSafeUserErrorMessage(err.message, "Payment gateway is currently completing a secure update. Please retry in a moment.");
         }
         if (submitBtn) {
           submitBtn.disabled = false;

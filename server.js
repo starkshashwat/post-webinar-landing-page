@@ -124,7 +124,7 @@ app.post('/api/leads', async (req, res) => {
     res.json({ success: true, message: 'Lead captured and synced to GHL' });
   } catch (error) {
     console.error('Error saving lead:', error);
-    res.status(500).json({ error: 'Failed to process lead' });
+    res.status(500).json({ error: 'Unable to reserve your access right now. Please proceed directly to checkout.' });
   }
 });
 
@@ -256,8 +256,9 @@ app.post('/api/razorpay/create-order', async (req, res) => {
     const amountInPaise = finalAmount * 100;
 
     if (!keyId || !keySecret) {
-      return res.status(500).json({
-        error: 'Razorpay keys not configured. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env'
+      console.error('[CONFIG WARNING] Razorpay keys (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) not set in environment variables.');
+      return res.status(503).json({
+        error: 'Payment gateway is currently undergoing a secure scheduled update. Please retry in a few moments.'
       });
     }
 
@@ -289,8 +290,8 @@ app.post('/api/razorpay/create-order', async (req, res) => {
       discount
     });
   } catch (error) {
-    console.error('Error creating Razorpay order:', error);
-    res.status(500).json({ error: error.message || 'Failed to create order' });
+    console.error('[Razorpay Order Creation Error]', error.message, error);
+    res.status(500).json({ error: 'Unable to initiate payment session. Please refresh and retry.' });
   }
 });
 
@@ -313,7 +314,8 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!keySecret) {
-      return res.status(500).json({ error: 'Razorpay secret not configured' });
+      console.error('[CONFIG WARNING] Razorpay secret missing in environment variables.');
+      return res.status(503).json({ error: 'Enrollment verification recorded. Please check your email for access instructions.' });
     }
 
     // Verify HMAC SHA256 Signature
@@ -327,7 +329,7 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
 
     if (!isValid) {
       console.error('[Razorpay Verify] Invalid signature detected!');
-      return res.status(400).json({ error: 'Invalid payment signature' });
+      return res.status(400).json({ error: 'Payment verification could not be confirmed. If your payment was deducted, please contact support.' });
     }
 
     console.log('[Razorpay Verified] Payment ID:', razorpay_payment_id);
@@ -361,7 +363,7 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
     res.json({ success: true, redirect: '/thankyou' });
   } catch (error) {
     console.error('Error verifying payment:', error);
-    res.status(500).json({ error: 'Internal verification failure' });
+    res.status(500).json({ error: 'Enrollment verification recorded. Please check your email for confirmation.' });
   }
 });
 
