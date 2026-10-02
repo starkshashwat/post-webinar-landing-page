@@ -2897,10 +2897,6 @@
   <div class="moya-modal-box">
     <button type="button" class="moya-modal-close" id="closeLeadModal" aria-label="Close form">&times;</button>
     
-    <div class="moya-modal-badge">
-      <span class="moya-pulse-dot"></span> Free Blueprint &amp; Roadmap Access
-    </div>
-    
     <h3 id="leadModalTitle" class="moya-modal-title">Unlock The MOYA Operating System</h3>
     <p class="moya-modal-desc">
       Enter your details to receive the complete faceless niche validation matrix, batch scripting SOPs, and algorithmic launch checklist.
@@ -2910,14 +2906,14 @@
       <div class="moya-form-group">
         <label for="leadNameInput">Full Name <span class="req">*</span></label>
         <div class="moya-input-wrap">
-          <input type="text" id="leadNameInput" name="name" placeholder="e.g. Rahul Sharma" required autocomplete="name" />
+          <input type="text" id="leadNameInput" name="name" placeholder="Full Name" required autocomplete="name" />
         </div>
       </div>
 
       <div class="moya-form-group">
         <label for="leadEmailInput">Email Address <span class="req">*</span></label>
         <div class="moya-input-wrap">
-          <input type="email" id="leadEmailInput" name="email" placeholder="rahul@gmail.com" required autocomplete="email" />
+          <input type="email" id="leadEmailInput" name="email" placeholder="you@email.com" required autocomplete="email" />
         </div>
       </div>
 
@@ -2925,6 +2921,33 @@
         <label for="leadPhoneInput">WhatsApp Phone Number <span class="req">*</span></label>
         <div class="moya-input-wrap">
           <input type="tel" id="leadPhoneInput" name="phone" placeholder="+91 98765 43210" required autocomplete="tel" />
+        </div>
+      </div>
+
+      <!-- Monthly Income Circle Selectors (Universal Size, Non-bulky) -->
+      <div class="moya-form-group">
+        <label>Current Monthly Income <span class="req">*</span></label>
+        <div class="moya-income-grid" role="radiogroup" aria-label="Monthly Income">
+          <label class="moya-income-opt">
+            <input type="radio" name="income" value="$0 - $250 / mo" checked />
+            <span class="moya-income-circle"></span>
+            <span class="moya-income-text">$0 – $250 / mo</span>
+          </label>
+          <label class="moya-income-opt">
+            <input type="radio" name="income" value="$250 - $750 / mo" />
+            <span class="moya-income-circle"></span>
+            <span class="moya-income-text">$250 – $750 / mo</span>
+          </label>
+          <label class="moya-income-opt">
+            <input type="radio" name="income" value="$750 - $1,500 / mo" />
+            <span class="moya-income-circle"></span>
+            <span class="moya-income-text">$750 – $1,500 / mo</span>
+          </label>
+          <label class="moya-income-opt">
+            <input type="radio" name="income" value="$1,500 - $2,000+ / mo" />
+            <span class="moya-income-circle"></span>
+            <span class="moya-income-text">$1,500 – $2,000+ / mo</span>
+          </label>
         </div>
       </div>
 
@@ -2942,17 +2965,16 @@
 </dialog>
 
 <!-- ========================================================================
-     RAZORPAY PREMIUM CHECKOUT & PACKAGE OVERVIEW MODAL
+     RAZORPAY PREMIUM CHECKOUT & PACKAGE OVERVIEW MODAL (MINIMAL & ZERO CLUTTER)
      ======================================================================== -->
 <dialog id="razorpayCheckoutModal" class="moya-modal-dialog" aria-labelledby="checkoutModalTitle">
   <div class="moya-modal-box checkout-modal-box">
     <button type="button" class="moya-modal-close" id="closeCheckoutModal" aria-label="Close checkout">&times;</button>
     <div class="checkout-header">
-      <div class="checkout-brand-row">
-        <span class="moya-edition-tag">MOYA 1.0</span>
-        <span class="checkout-secure-badge">🔒 256-Bit SSL Encrypted</span>
+      <div class="checkout-header-top">
+        <h3 id="checkoutModalTitle" class="moya-modal-title">MOYA 1.0 — Official Enrollment</h3>
+        <span class="checkout-secure-badge">🔒 256-Bit SSL</span>
       </div>
-      <h3 id="checkoutModalTitle" class="moya-modal-title">MOYA 1.0 — Official Enrollment</h3>
       <p class="moya-modal-desc">
         Instant Lifetime Access &bull; Verified YouTube Operating System &bull; Direct Mentorship
       </p>
@@ -2960,13 +2982,12 @@
 
     <div class="checkout-trust-strip">
       <div class="trust-item"><span class="trust-check">✓</span> Instant Full Access</div>
-      <div class="trust-item"><span class="trust-check">✓</span> 19 Bonus Vaults Included</div>
+      <div class="trust-item"><span class="trust-check">✓</span> 19 Bonus Vaults</div>
       <div class="trust-item"><span class="trust-check">✓</span> Official Certification</div>
     </div>
 
     <div class="checkout-price-card" id="checkoutPriceCard">
       <div class="price-left">
-        <div class="price-label">Official License &bull; MOYA 1.0</div>
         <div class="price-val" id="checkoutDisplayPrice">₹4,997 <span class="price-strikethrough" id="checkoutOriginalStrike">₹14,997</span></div>
       </div>
       <div class="price-badge" id="checkoutDiscountBadge">OFFICIAL PASS</div>
@@ -3018,6 +3039,57 @@
     </form>
   </div>
 </dialog>
+
+<!-- ========================================================================
+     FESTIVE GAMIFIED SPIN WHEEL WIDGET & MODAL (REUSABLE FOR ALL FESTIVALS)
+     ======================================================================== -->
+<aside class="festive-spin-widget" id="festiveSpinWidget" aria-label="Festive Discount Spinner">
+  <button type="button" class="spin-launcher-btn" id="openSpinModalBtn" aria-label="Spin Wheel to Win Guaranteed Discount">
+    <span class="spin-launcher-icon">🎡</span>
+    <span class="spin-launcher-label" id="spinLauncherLabel">Spin &amp; Win Discount</span>
+    <span class="spin-launcher-glow"></span>
+  </button>
+</aside>
+
+<div id="festiveSpinModal" class="festive-spin-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="spinModalTitle">
+  <div class="festive-spin-backdrop" id="closeSpinModalBackdrop"></div>
+  <div class="festive-spin-box">
+    <button type="button" class="festive-spin-close" id="closeSpinModalBtn" aria-label="Close spin wheel">&times;</button>
+    
+    <div class="spin-header">
+      <div class="spin-festive-tag">✨ FESTIVE SHUBH LABH SPECIAL</div>
+      <h3 id="spinModalTitle" class="spin-title">Spin The Wheel — Win Up to ₹4,000 OFF</h3>
+      <p class="spin-subtitle">100% Guaranteed Instant Discount on MOYA Complete Access</p>
+    </div>
+
+    <div class="spin-wheel-container">
+      <div class="spin-wheel-pointer" aria-hidden="true"></div>
+      <canvas id="festiveSpinCanvas" width="340" height="340" class="spin-canvas"></canvas>
+      <button type="button" class="spin-center-trigger-btn" id="spinTriggerBtn">SPIN NOW</button>
+    </div>
+
+    <!-- Celebration Prize Reveal Overlay (Revealed upon win) -->
+    <div class="spin-prize-card" id="spinPrizeCard" aria-hidden="true">
+      <div class="prize-sparkle">🎉</div>
+      <h4 class="prize-headline">Festival Discount Unlocked!</h4>
+      <div class="prize-amount" id="prizeDisplayAmount">₹4,000 OFF</div>
+      <p class="prize-note">Your special festive coupon code has been unlocked:</p>
+      
+      <div class="prize-code-wrap">
+        <span class="prize-code" id="prizeCouponCode">MOYA55</span>
+        <button type="button" class="prize-copy-btn" id="prizeCopyBtn">Copy Code</button>
+      </div>
+
+      <button type="button" class="prize-claim-btn" id="prizeClaimBtn">
+        <span>Claim &amp; Enroll Now &rarr;</span>
+      </button>
+    </div>
+
+    <!-- Confetti Overlay Canvas -->
+    <canvas id="festiveConfettiCanvas" class="festive-confetti-canvas"></canvas>
+  </div>
+</div>
+
 <!-- System Toast -->
 <div class="system-toast" id="systemToast">Notification</div>
 <!-- ========================================================================

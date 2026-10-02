@@ -67,24 +67,13 @@ function closeRazorpayCheckoutModal() {
 }
 window.closeRazorpayCheckoutModal = closeRazorpayCheckoutModal;
 
-// CTA Router
+// CTA Router - Opens Razorpay Checkout Form on ALL Enrollment & Action Buttons
 function handleCtaClick(e) {
-  // Direct checkout CTA handling (pricing seat, manifestation CTAs, or direct links)
-  const isDirectCheckout = e && e.currentTarget && (
-    e.currentTarget.classList.contains('js-cta-checkout') ||
-    e.currentTarget.id === 'cta' ||
-    (e.currentTarget.getAttribute('href') && e.currentTarget.getAttribute('href').includes('pay.mechanismofya.com'))
-  );
-
-  if (isDirectCheckout) {
-    if (e && e.preventDefault) e.preventDefault();
-    openRazorpayCheckoutModal();
-    return;
+  if (e) {
+    if (e.preventDefault) e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
   }
-
-  if (e && e.currentTarget && e.currentTarget.getAttribute('href') && e.currentTarget.getAttribute('href').startsWith('#')) {
-    return; // Allow anchor links to smooth scroll
-  }
+  openRazorpayCheckoutModal();
 }
 window.handleCtaClick = handleCtaClick;
 
@@ -2979,13 +2968,14 @@ function initSection5LeadCapture() {
   });
 
   // Auto-trigger when Section 5 (#system) enters viewport
-  let shown = sessionStorage.getItem("moya_lead_shown") === "true";
-  if (!shown) {
+  // Persistent rule: triggers upon scrolling to Section 5 on every visit/refresh (unless already submitted in this session)
+  const isAlreadySubmitted = sessionStorage.getItem("moya_lead_submitted") === "true";
+  let hasTriggeredInCurrentView = false;
+  if (!isAlreadySubmitted) {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting && !shown) {
-          shown = true;
-          sessionStorage.setItem("moya_lead_shown", "true");
+        if (entry.isIntersecting && !hasTriggeredInCurrentView) {
+          hasTriggeredInCurrentView = true;
           observer.disconnect();
 
           setTimeout(() => {
@@ -3010,6 +3000,7 @@ function initSection5LeadCapture() {
       const name = document.getElementById("leadNameInput")?.value?.trim() || "";
       const email = document.getElementById("leadEmailInput")?.value?.trim() || "";
       const phone = document.getElementById("leadPhoneInput")?.value?.trim() || "";
+      const income = form.querySelector('input[name="income"]:checked')?.value || "$0 - $250 / mo";
 
       if (!name || (!email && !phone)) {
         if (msgEl) {
@@ -3031,14 +3022,15 @@ function initSection5LeadCapture() {
           fbq("track", "Lead");
         }
 
-        // Save in sessionStorage for Razorpay checkout prefill
-        sessionStorage.setItem("moya_lead_contact", JSON.stringify({ name, email, phone }));
+        // Save in sessionStorage for Razorpay checkout prefill & suppression
+        sessionStorage.setItem("moya_lead_contact", JSON.stringify({ name, email, phone, income }));
+        sessionStorage.setItem("moya_lead_submitted", "true");
 
         // Send to backend API
         await fetch("/api/leads", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone })
+          body: JSON.stringify({ name, email, phone, income })
         });
 
         if (msgEl) {
@@ -3173,22 +3165,30 @@ function initRazorpayCheckoutFlow() {
       }
     } catch (err) {
       console.warn("Coupon remote check notice, checking fallback:", err.message);
-      // Client-side fail-safe fallback: If backend cannot be reached, validate default coupon seamlessly
-      if (code && code.toUpperCase() === "MOYA55") {
-        appliedCouponCode = "MOYA55";
-        currentPayableAmount = 997;
+      const FESTIVAL_DEFAULTS = {
+        'MOYA55': 4000,
+        'MOYA44': 3000,
+        'MOYA22': 2000,
+        'MOYA11': 1000
+      };
+      const cleanUpper = code.trim().toUpperCase();
+      if (FESTIVAL_DEFAULTS[cleanUpper]) {
+        const discount = FESTIVAL_DEFAULTS[cleanUpper];
+        const finalAmt = Math.max(1, originalBasePrice - discount);
+        appliedCouponCode = cleanUpper;
+        currentPayableAmount = finalAmt;
 
         if (displayPriceEl) {
-          displayPriceEl.innerHTML = `₹997 <span class="price-strikethrough">₹4,997</span>`;
+          displayPriceEl.innerHTML = `₹${finalAmt.toLocaleString('en-IN')} <span class="price-strikethrough">₹${originalBasePrice.toLocaleString('en-IN')}</span>`;
         }
         if (discountBadgeEl) {
-          discountBadgeEl.textContent = "₹4,000 OFF APPLIED";
+          discountBadgeEl.textContent = `₹${discount.toLocaleString('en-IN')} OFF APPLIED`;
           discountBadgeEl.classList.add("coupon-applied");
         }
         const submitBtn = document.getElementById("checkoutPayBtn");
         if (submitBtn) {
           const btnText = submitBtn.querySelector(".btn-text");
-          if (btnText) btnText.textContent = "Enroll Now & Pay ₹997";
+          if (btnText) btnText.textContent = `Enroll Now & Pay ₹${finalAmt.toLocaleString('en-IN')}`;
         }
         if (applyBtn) {
           applyBtn.disabled = true;
@@ -3201,7 +3201,7 @@ function initRazorpayCheckoutFlow() {
 
         if (couponMsgEl) {
           couponMsgEl.className = "moya-coupon-msg success";
-          couponMsgEl.innerHTML = `<span>✓ Coupon "MOYA55" applied! Flat ₹4,000 OFF.</span> <span class="coupon-remove-link" id="removeCouponLink">Remove</span>`;
+          couponMsgEl.innerHTML = `<span>✓ Coupon "${cleanUpper}" applied! Flat ₹${discount.toLocaleString('en-IN')} OFF.</span> <span class="coupon-remove-link" id="removeCouponLink">Remove</span>`;
 
           const removeLink = document.getElementById("removeCouponLink");
           if (removeLink) {
@@ -3389,6 +3389,12 @@ function initRazorpayCheckoutFlow() {
                 const btnText = submitBtn.querySelector(".btn-text");
                 if (btnText) btnText.textContent = `Enroll Now & Pay ₹${finalPayable.toLocaleString('en-IN')}`;
               }
+              // Restore checkout modal so user can review/edit details or retry!
+              if (typeof modal.showModal === "function") {
+                modal.showModal();
+              } else {
+                modal.setAttribute("open", "true");
+              }
               // Log dismissed/cancelled as potential drop-off
               fetch("/api/razorpay/payment-failed", {
                 method: "POST",
@@ -3415,6 +3421,13 @@ function initRazorpayCheckoutFlow() {
         // Capture payment failure directly
         rzp.on("payment.failed", function (response) {
           console.warn("Payment failed:", response.error);
+
+          // Restore checkout modal so user can see error and retry
+          if (typeof modal.showModal === "function") {
+            modal.showModal();
+          } else {
+            modal.setAttribute("open", "true");
+          }
 
           if (msgEl) {
             msgEl.className = "moya-form-msg error";
@@ -3446,6 +3459,13 @@ function initRazorpayCheckoutFlow() {
           }).catch(() => {});
         });
 
+        // Close checkout dialog so Razorpay iframe renders with 100% full unobstructed front focus!
+        if (typeof modal.close === "function") {
+          modal.close();
+        } else {
+          modal.removeAttribute("open");
+        }
+
         rzp.open();
       } catch (err) {
         console.error("Checkout init error:", err);
@@ -3464,11 +3484,340 @@ function initRazorpayCheckoutFlow() {
 }
 
 // ==========================================================================
+// FESTIVE GAMIFIED SPIN WHEEL ENGINE (REUSABLE FOR ALL FESTIVALS)
+// 100% Guaranteed Win, Sales-Boosting Probability (Max ₹4,000, 0% for ₹1,000)
+// ==========================================================================
+function initFestiveSpinGame() {
+  const launcherWidget = document.getElementById("festiveSpinWidget");
+  const launcherBtn = document.getElementById("openSpinModalBtn");
+  const launcherLabel = document.getElementById("spinLauncherLabel");
+  const spinModal = document.getElementById("festiveSpinModal");
+  const closeBtn = document.getElementById("closeSpinModalBtn");
+  const backdrop = document.getElementById("closeSpinModalBackdrop");
+  const canvas = document.getElementById("festiveSpinCanvas");
+  const spinTriggerBtn = document.getElementById("spinTriggerBtn");
+  const prizeCard = document.getElementById("spinPrizeCard");
+  const prizeDisplayAmount = document.getElementById("prizeDisplayAmount");
+  const prizeCouponCode = document.getElementById("prizeCouponCode");
+  const prizeCopyBtn = document.getElementById("prizeCopyBtn");
+  const prizeClaimBtn = document.getElementById("prizeClaimBtn");
+  const confettiCanvas = document.getElementById("festiveConfettiCanvas");
+
+  if (!canvas || !spinModal || !spinTriggerBtn) return;
+
+  const ctx = canvas.getContext("2d");
+  const numSlices = 8;
+  const sliceAngle = (2 * Math.PI) / numSlices;
+  let currentRotation = 0;
+  let isSpinning = false;
+  let wonCoupon = null;
+
+  // Wheel Segments (Display amounts ONLY - Decoy slices included)
+  // Slices: 0: 4000, 1: 2000, 2: 3000, 3: 1000, 4: 4000, 5: 2000, 6: 3000, 7: 1000
+  const slices = [
+    { text: "₹4,000 OFF", bg: "#7a0c1e", accent: "#ffd700", textCol: "#ffffff" },
+    { text: "₹2,000 OFF", bg: "#1f1435", accent: "#e0e7ff", textCol: "#ffffff" },
+    { text: "₹3,000 OFF", bg: "#991b1b", accent: "#fed7aa", textCol: "#ffffff" },
+    { text: "₹1,000 OFF", bg: "#13231b", accent: "#86efac", textCol: "#ffffff" },
+    { text: "₹4,000 OFF", bg: "#7a0c1e", accent: "#ffd700", textCol: "#ffffff" },
+    { text: "₹2,000 OFF", bg: "#1f1435", accent: "#e0e7ff", textCol: "#ffffff" },
+    { text: "₹3,000 OFF", bg: "#991b1b", accent: "#fed7aa", textCol: "#ffffff" },
+    { text: "₹1,000 OFF", bg: "#13231b", accent: "#86efac", textCol: "#ffffff" }
+  ];
+
+  // Draw Wheel on Canvas
+  function drawWheel(angleOffset = 0) {
+    const width = canvas.width;
+    const height = canvas.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = width / 2 - 8;
+
+    ctx.clearRect(0, 0, width, height);
+
+    for (let i = 0; i < numSlices; i++) {
+      const angle = angleOffset + i * sliceAngle;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+      ctx.closePath();
+      ctx.fillStyle = slices[i].bg;
+      ctx.fill();
+
+      // Outer ring border
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(255, 215, 0, 0.4)";
+      ctx.stroke();
+
+      // Draw Slice Text
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(angle + sliceAngle / 2);
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = slices[i].textCol;
+      ctx.font = "bold 15px 'Plus Jakarta Sans', sans-serif";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+      ctx.shadowBlur = 4;
+      ctx.fillText(slices[i].text, radius - 22, 0);
+      ctx.restore();
+    }
+
+    // Outer decorative gold rim dots
+    for (let j = 0; j < 24; j++) {
+      const dotAngle = (j * 2 * Math.PI) / 24;
+      const dotX = centerX + (radius - 2) * Math.cos(dotAngle);
+      const dotY = centerY + (radius - 2) * Math.sin(dotAngle);
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 2.5, 0, 2 * Math.PI);
+      ctx.fillStyle = j % 2 === 0 ? "#ffd700" : "#ffffff";
+      ctx.fill();
+    }
+  }
+
+  drawWheel(0);
+
+  // Check if user already won a coupon in this browser
+  try {
+    const savedWon = JSON.parse(localStorage.getItem("moya_festive_won_coupon") || "null");
+    if (savedWon && savedWon.code && savedWon.discount) {
+      wonCoupon = savedWon;
+      if (launcherLabel) {
+        launcherLabel.textContent = `${savedWon.code}: ₹${savedWon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
+      }
+      if (launcherBtn) {
+        launcherBtn.classList.add("is-pinned");
+      }
+    }
+  } catch (e) {}
+
+  // Open & Close Modal
+  function openSpinModal() {
+    if (wonCoupon && prizeCard && prizeDisplayAmount && prizeCouponCode) {
+      // If already spun, show celebration card directly
+      prizeDisplayAmount.textContent = `₹${wonCoupon.discount.toLocaleString('en-IN')} OFF`;
+      prizeCouponCode.textContent = wonCoupon.code;
+      prizeCard.classList.add("is-visible");
+      prizeCard.setAttribute("aria-hidden", "false");
+    }
+    spinModal.classList.add("is-open");
+    spinModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
+
+  function closeSpinModal() {
+    spinModal.classList.remove("is-open");
+    spinModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
+
+  if (launcherBtn) launcherBtn.addEventListener("click", openSpinModal);
+  if (closeBtn) closeBtn.addEventListener("click", closeSpinModal);
+  if (backdrop) backdrop.addEventListener("click", closeSpinModal);
+
+  // Sales-Boosting Winning Algorithm
+  // 70% chance -> ₹4,000 OFF (MOYA55, Slices 0 or 4)
+  // 20% chance -> ₹3,000 OFF (MOYA44, Slices 2 or 6)
+  // 10% chance -> ₹2,000 OFF (MOYA22, Slices 1 or 5)
+  //  0% chance -> ₹1,000 OFF (MOYA11, Decoy only - never landed!)
+  function selectWinningPrize() {
+    const rand = Math.random() * 100;
+    if (rand < 70) {
+      // 70% of participants win ₹4,000 OFF!
+      const pickSlice = Math.random() < 0.5 ? 0 : 4;
+      return { discount: 4000, code: "MOYA55", sliceIndex: pickSlice };
+    } else if (rand < 90) {
+      // 20% win ₹3,000 OFF
+      const pickSlice = Math.random() < 0.5 ? 2 : 6;
+      return { discount: 3000, code: "MOYA44", sliceIndex: pickSlice };
+    } else {
+      // 10% win ₹2,000 OFF
+      const pickSlice = Math.random() < 0.5 ? 1 : 5;
+      return { discount: 2000, code: "MOYA22", sliceIndex: pickSlice };
+    }
+  }
+
+  // Spin Wheel Action
+  spinTriggerBtn.addEventListener("click", () => {
+    if (isSpinning) return;
+    if (wonCoupon) {
+      // If already spun, directly show the unlocked card
+      if (prizeCard) {
+        prizeCard.classList.add("is-visible");
+        prizeCard.setAttribute("aria-hidden", "false");
+      }
+      return;
+    }
+
+    isSpinning = true;
+    spinTriggerBtn.disabled = true;
+
+    const winningPrize = selectWinningPrize();
+    const winningIndex = winningPrize.sliceIndex;
+
+    // Pointer is at TOP: 270 degrees (3 * PI / 2)
+    // To land winningIndex at top:
+    const targetSliceMid = winningIndex * sliceAngle + sliceAngle / 2;
+    const pointerAngle = (3 * Math.PI) / 2;
+    const finalOffset = pointerAngle - targetSliceMid;
+
+    // Spin 6 full circles + final offset
+    const totalSpins = 6;
+    const startAngle = currentRotation % (2 * Math.PI);
+    const targetAngle = totalSpins * (2 * Math.PI) + finalOffset;
+    const spinDuration = 4200; // ms
+    const startTime = performance.now();
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function animateSpin(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / spinDuration, 1);
+      const eased = easeOutCubic(progress);
+
+      currentRotation = startAngle + (targetAngle - startAngle) * eased;
+      drawWheel(currentRotation);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateSpin);
+      } else {
+        // Spin Finished!
+        isSpinning = false;
+        wonCoupon = { code: winningPrize.code, discount: winningPrize.discount };
+
+        // Save in localStorage
+        try {
+          localStorage.setItem("moya_festive_won_coupon", JSON.stringify(wonCoupon));
+        } catch (e) {}
+
+        // Fire Confetti Celebration
+        launchFestiveConfetti();
+
+        // Reveal Prize Card
+        setTimeout(() => {
+          if (prizeDisplayAmount) prizeDisplayAmount.textContent = `₹${wonCoupon.discount.toLocaleString('en-IN')} OFF`;
+          if (prizeCouponCode) prizeCouponCode.textContent = wonCoupon.code;
+          if (prizeCard) {
+            prizeCard.classList.add("is-visible");
+            prizeCard.setAttribute("aria-hidden", "false");
+          }
+          if (launcherLabel) {
+            launcherLabel.textContent = `${wonCoupon.code}: ₹${wonCoupon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
+          }
+          if (launcherBtn) {
+            launcherBtn.classList.add("is-pinned");
+          }
+        }, 500);
+      }
+    }
+
+    requestAnimationFrame(animateSpin);
+  });
+
+  // Copy Code Button
+  if (prizeCopyBtn) {
+    prizeCopyBtn.addEventListener("click", () => {
+      if (!wonCoupon) return;
+      navigator.clipboard.writeText(wonCoupon.code).then(() => {
+        prizeCopyBtn.textContent = "Copied! ✓";
+        triggerToast(`Code "${wonCoupon.code}" copied to clipboard!`);
+        setTimeout(() => {
+          prizeCopyBtn.textContent = "Copy Code";
+        }, 2500);
+      }).catch(() => {
+        triggerToast(`Your Code: ${wonCoupon.code}`);
+      });
+    });
+  }
+
+  // Claim & Enroll Now Button -> Auto-applies to Checkout Modal
+  if (prizeClaimBtn) {
+    prizeClaimBtn.addEventListener("click", () => {
+      if (!wonCoupon) return;
+      closeSpinModal();
+
+      // Open Razorpay Checkout Modal
+      openRazorpayCheckoutModal();
+
+      // Pre-fill and auto-trigger coupon
+      const checkoutCouponInput = document.getElementById("checkoutCouponInput");
+      const applyCouponBtn = document.getElementById("applyCouponBtn");
+      if (checkoutCouponInput) {
+        checkoutCouponInput.value = wonCoupon.code;
+      }
+      if (applyCouponBtn) {
+        setTimeout(() => {
+          applyCouponBtn.click();
+        }, 300);
+      }
+    });
+  }
+
+  // Confetti Particle Engine
+  function launchFestiveConfetti() {
+    if (!confettiCanvas) return;
+    const cctx = confettiCanvas.getContext("2d");
+    confettiCanvas.width = confettiCanvas.offsetWidth;
+    confettiCanvas.height = confettiCanvas.offsetHeight;
+
+    const particles = [];
+    const colors = ["#ffd700", "#ff3346", "#38bdf8", "#4ade80", "#c084fc", "#fb923c"];
+
+    for (let p = 0; p < 75; p++) {
+      particles.push({
+        x: confettiCanvas.width / 2,
+        y: confettiCanvas.height / 2,
+        vx: (Math.random() - 0.5) * 12,
+        vy: (Math.random() - 0.7) * 14,
+        size: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        rSpeed: (Math.random() - 0.5) * 8,
+        alpha: 1
+      });
+    }
+
+    let confettiStart = performance.now();
+    function renderConfetti(now) {
+      cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      const elapsed = now - confettiStart;
+
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.28; // gravity
+        p.rotation += p.rSpeed;
+        p.alpha = Math.max(0, 1 - elapsed / 3200);
+
+        cctx.save();
+        cctx.translate(p.x, p.y);
+        cctx.rotate((p.rotation * Math.PI) / 180);
+        cctx.fillStyle = p.color;
+        cctx.globalAlpha = p.alpha;
+        cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+        cctx.restore();
+      });
+
+      if (elapsed < 3200) {
+        requestAnimationFrame(renderConfetti);
+      } else {
+        cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+    requestAnimationFrame(renderConfetti);
+  }
+}
+
+// ==========================================================================
 // MASTER APPLICATION INITIALIZER
 // ==========================================================================
 onReady(() => {
-  // 1. Bind CTA Buttons
-  $$(".js-cta, .js-cta-checkout, #cta").forEach((btn) => btn.addEventListener("click", handleCtaClick));
+  // 1. Bind ALL Enrollment & Action CTAs across the entire page to open Razorpay Checkout Modal
+  $$(".js-cta, .js-cta-checkout, #cta, .hero-cta-primary, .moya-mobile-sticky-btn, .modal-cta-btn, .moya-btn-primary, a[href='#offer']:not(.nav-item)").forEach((btn) => {
+    btn.addEventListener("click", handleCtaClick);
+  });
 
   // 2. Initialize Core Components
   init3DCourseFolders();
@@ -3483,9 +3832,10 @@ onReady(() => {
   animateChartOnLoad();
   animateDashboardCounters();
 
-  // 3. Initialize Section 5 Lead Capture & Razorpay Checkout Flows
+  // 3. Initialize Section 5 Lead Capture, Razorpay Checkout & Festive Spin Game
   initSection5LeadCapture();
   initRazorpayCheckoutFlow();
+  initFestiveSpinGame();
 
   // 4. Initialize Video Controller
   window.videoController.init();

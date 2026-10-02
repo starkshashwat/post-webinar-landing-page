@@ -107,18 +107,24 @@ async function syncGHLContact({ name, email, phone, tags = [], note = '', custom
 // -----------------------------------------------------------------------------
 app.post('/api/leads', async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email, phone, income } = req.body;
 
     if (!name || (!email && !phone)) {
       return res.status(400).json({ error: 'Name and either email or phone are required.' });
+    }
+
+    const tags = ['VSL leads'];
+    if (income) {
+      const cleanIncomeTag = 'income-' + income.split('/')[0].replace(/[^a-zA-Z0-9-]/g, '').trim();
+      tags.push(cleanIncomeTag);
     }
 
     await syncGHLContact({
       name,
       email,
       phone,
-      tags: ['VSL leads'],
-      note: `Captured via Section 5 Auto-Popup on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`
+      tags,
+      note: `Captured via Section 5 Auto-Popup on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}${income ? `\n• Current Monthly Income: ${income}` : ''}`
     });
 
     res.json({ success: true, message: 'Lead captured and synced to GHL' });
@@ -129,14 +135,22 @@ app.post('/api/leads', async (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
-// GHL Custom Values & Live Coupon Management Engine
+// GHL Custom Values & Live Festive Coupon Management Engine
+// Reusable for Navratri, Diwali and future promotional campaigns
 // -----------------------------------------------------------------------------
 let couponCache = {
   data: null,
   expiresAt: 0
 };
 
-async function getActiveCouponFromGHL() {
+const DEFAULT_FESTIVAL_COUPONS = {
+  'MOYA55': { code: 'MOYA55', discount: 4000, status: 'ENABLED' },
+  'MOYA44': { code: 'MOYA44', discount: 3000, status: 'ENABLED' },
+  'MOYA22': { code: 'MOYA22', discount: 2000, status: 'ENABLED' },
+  'MOYA11': { code: 'MOYA11', discount: 1000, status: 'ENABLED' }
+};
+
+async function getActiveCouponsFromGHL() {
   const now = Date.now();
   if (couponCache.data && couponCache.expiresAt > now) {
     return couponCache.data;
@@ -145,11 +159,7 @@ async function getActiveCouponFromGHL() {
   const locationId = process.env.GHL_LOCATION_ID || 'jsuZqhDRfnfSBFMgdfs2';
   const apiKey = process.env.GHL_API_KEY;
 
-  let coupon = {
-    code: process.env.DEFAULT_COUPON_CODE || 'MOYA55',
-    discount: Number(process.env.DEFAULT_COUPON_DISCOUNT) || 4000,
-    status: process.env.DEFAULT_COUPON_STATUS || 'ENABLED'
-  };
+  let coupons = { ...DEFAULT_FESTIVAL_COUPONS };
 
   if (apiKey) {
     try {
@@ -164,27 +174,44 @@ async function getActiveCouponFromGHL() {
       if (res.ok) {
         const data = await res.json();
         const customValues = data?.customValues || [];
-        const codeVal = customValues.find(cv => cv.name === 'VSL Coupon Code')?.value;
-        const discountVal = customValues.find(cv => cv.name === 'VSL Coupon Discount')?.value;
-        const statusVal = customValues.find(cv => cv.name === 'VSL Coupon Status')?.value;
 
-        if (codeVal) coupon.code = codeVal.trim();
-        if (discountVal) coupon.discount = Number(discountVal) || 0;
-        if (statusVal) coupon.status = statusVal.trim().toUpperCase();
+        // Check for single override or multi-coupon custom values
+        const legacyCode = customValues.find(cv => cv.name === 'VSL Coupon Code')?.value;
+        const legacyDiscount = customValues.find(cv => cv.name === 'VSL Coupon Discount')?.value;
+        const legacyStatus = customValues.find(cv => cv.name === 'VSL Coupon Status')?.value;
+
+        if (legacyCode) {
+          coupons[legacyCode.trim().toUpperCase()] = {
+            code: legacyCode.trim().toUpperCase(),
+            discount: Number(legacyDiscount) || 4000,
+            status: legacyStatus ? legacyStatus.trim().toUpperCase() : 'ENABLED'
+          };
+        }
+
+        // Custom mappings for 4000, 3000, 2000, 1000 if set in GHL
+        const cv4000 = customValues.find(cv => cv.name === 'Festival Coupon 4000')?.value;
+        const cv3000 = customValues.find(cv => cv.name === 'Festival Coupon 3000')?.value;
+        const cv2000 = customValues.find(cv => cv.name === 'Festival Coupon 2000')?.value;
+        const cv1000 = customValues.find(cv => cv.name === 'Festival Coupon 1000')?.value;
+
+        if (cv4000) coupons[cv4000.trim().toUpperCase()] = { code: cv4000.trim().toUpperCase(), discount: 4000, status: 'ENABLED' };
+        if (cv3000) coupons[cv3000.trim().toUpperCase()] = { code: cv3000.trim().toUpperCase(), discount: 3000, status: 'ENABLED' };
+        if (cv2000) coupons[cv2000.trim().toUpperCase()] = { code: cv2000.trim().toUpperCase(), discount: 2000, status: 'ENABLED' };
+        if (cv1000) coupons[cv1000.trim().toUpperCase()] = { code: cv1000.trim().toUpperCase(), discount: 1000, status: 'ENABLED' };
 
         couponCache = {
-          data: coupon,
+          data: coupons,
           expiresAt: now + 60000 // Cache for 60 seconds
         };
-        console.log(`[GHL Live Coupon] Active: Code=${coupon.code} | Discount=₹${coupon.discount} | Status=${coupon.status}`);
-        return coupon;
+        console.log('[GHL Live Coupons Cached]', Object.keys(coupons));
+        return coupons;
       }
     } catch (err) {
-      console.warn('[GHL Live Coupon Error]', err.message);
+      console.warn('[GHL Live Coupons Notice]', err.message);
     }
   }
 
-  return coupon;
+  return coupons;
 }
 
 // -----------------------------------------------------------------------------
@@ -197,23 +224,23 @@ app.post('/api/coupon/validate', async (req, res) => {
       return res.status(400).json({ valid: false, message: 'Please enter a valid coupon code.' });
     }
 
-    const activeCoupon = await getActiveCouponFromGHL();
+    const coupons = await getActiveCouponsFromGHL();
+    const cleanInput = couponCode.trim().toUpperCase();
     const basePrice = Number(process.env.COURSE_PRICE) || 4997;
 
-    const isMatch = activeCoupon.code && activeCoupon.code.toUpperCase() === couponCode.trim().toUpperCase();
-    const isEnabled = activeCoupon.status === 'ENABLED' || activeCoupon.status === 'ACTIVE';
+    const matchedCoupon = coupons[cleanInput];
 
-    if (isMatch && isEnabled) {
-      const discount = Math.min(basePrice, activeCoupon.discount);
+    if (matchedCoupon && (matchedCoupon.status === 'ENABLED' || matchedCoupon.status === 'ACTIVE')) {
+      const discount = Math.min(basePrice, matchedCoupon.discount);
       const finalAmount = Math.max(1, basePrice - discount);
 
       return res.json({
         valid: true,
-        code: activeCoupon.code,
+        code: matchedCoupon.code,
         discount: discount,
         originalPrice: basePrice,
         finalAmount: finalAmount,
-        message: `✓ Coupon "${activeCoupon.code}" applied! Flat ₹${discount.toLocaleString('en-IN')} OFF.`
+        message: `✓ Coupon "${matchedCoupon.code}" applied! Flat ₹${discount.toLocaleString('en-IN')} OFF.`
       });
     } else {
       return res.json({
@@ -242,14 +269,12 @@ app.post('/api/razorpay/create-order', async (req, res) => {
     let discount = 0;
 
     if (couponCode && couponCode.trim()) {
-      const activeCoupon = await getActiveCouponFromGHL();
-      const isMatch = activeCoupon.code && activeCoupon.code.toUpperCase() === couponCode.trim().toUpperCase();
-      const isEnabled = activeCoupon.status === 'ENABLED' || activeCoupon.status === 'ACTIVE';
-
-      if (isMatch && isEnabled) {
-        discount = Math.min(basePrice, activeCoupon.discount);
+      const coupons = await getActiveCouponsFromGHL();
+      const matched = coupons[couponCode.trim().toUpperCase()];
+      if (matched && (matched.status === 'ENABLED' || matched.status === 'ACTIVE')) {
+        discount = Math.min(basePrice, matched.discount);
         finalAmount = Math.max(1, basePrice - discount);
-        appliedCoupon = activeCoupon.code;
+        appliedCoupon = matched.code;
       }
     }
 

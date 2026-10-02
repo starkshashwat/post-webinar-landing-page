@@ -12477,6 +12477,81 @@ body::before {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+
+/* Section 5 Lead Capture - Monthly Income Circle Radio Selectors */
+.moya-income-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.moya-income-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+.moya-income-opt input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.moya-income-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.moya-income-circle::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3346;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+}
+.moya-income-opt:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.moya-income-opt:has(input[type="radio"]:checked) {
+  background: rgba(255, 51, 70, 0.1);
+  border-color: #ff3346;
+  box-shadow: 0 0 12px rgba(255, 51, 70, 0.2);
+}
+.moya-income-opt input[type="radio"]:checked + .moya-income-circle {
+  border-color: #ff3346;
+}
+.moya-income-opt input[type="radio"]:checked + .moya-income-circle::after {
+  opacity: 1;
+  transform: scale(1);
+}
+.moya-income-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #d1d6ef;
+  letter-spacing: -0.01em;
+}
+@media (max-width: 440px) {
+  .moya-income-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 480px) {
   .moya-form-row {
     grid-template-columns: 1fr;
@@ -12530,16 +12605,17 @@ body::before {
 .moya-form-msg.success { color: #10b981; }
 .moya-form-msg.error { color: #ef4444; }
 
-/* Checkout Modal Specifics */
-.checkout-brand-row {
+/* Checkout Modal Specifics - Clean & Minimal */
+.checkout-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-bottom: 6px;
 }
-.checkout-logo {
-  height: 28px;
-  object-fit: contain;
+.checkout-header-top .moya-modal-title {
+  margin: 0;
+  font-size: 1.35rem;
 }
 .checkout-secure-badge {
   font-size: 0.72rem;
@@ -12549,19 +12625,7 @@ body::before {
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid rgba(16, 185, 129, 0.2);
-}
-.moya-edition-tag {
-  background: rgba(255, 51, 70, 0.18);
-  border: 1px solid rgba(255, 51, 70, 0.4);
-  color: #ff5263;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  padding: 3px 10px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  display: inline-flex;
-  align-items: center;
+  white-space: nowrap;
 }
 .checkout-trust-strip {
   display: flex;
@@ -12596,13 +12660,6 @@ body::before {
   border-radius: 12px;
   padding: 12px 18px;
   margin-bottom: 16px;
-}
-.checkout-price-card .price-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #ff7583;
 }
 .checkout-price-card .price-val {
   font-size: 1.55rem;
@@ -12739,4 +12796,363 @@ body::before {
   color: #061e14;
   font-weight: 900;
   box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+}
+
+/* ==========================================================================
+   FESTIVE GAMIFIED SPIN WHEEL (REUSABLE FOR ALL FESTIVALS)
+   ========================================================================== */
+.festive-spin-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99990;
+  pointer-events: auto;
+}
+.spin-launcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #121528 0%, #1c1429 100%);
+  border: 1.5px solid rgba(255, 215, 0, 0.5);
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 24px rgba(255, 180, 0, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+.spin-launcher-btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 0 32px rgba(255, 180, 0, 0.6);
+  border-color: #ffd700;
+}
+.spin-launcher-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  animation: spinIconWiggle 3s infinite ease-in-out;
+}
+@keyframes spinIconWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg); }
+  75% { transform: rotate(15deg); }
+}
+.spin-launcher-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+  white-space: nowrap;
+}
+.spin-launcher-btn.is-pinned {
+  border-color: #10b981;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 24px rgba(16, 185, 129, 0.4);
+}
+.spin-launcher-btn.is-pinned .spin-launcher-label {
+  color: #6ee7b7;
+}
+.spin-launcher-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.6);
+  animation: festiveGlowPulse 2.2s infinite;
+}
+@keyframes festiveGlowPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.6); }
+  70% { box-shadow: 0 0 0 14px rgba(255, 215, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+/* Spin Modal Backdrop & Box */
+.festive-spin-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 16px;
+}
+.festive-spin-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.festive-spin-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 5, 14, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.festive-spin-box {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 440px;
+  background: radial-gradient(circle at 50% 0%, #1f1430 0%, #0d0e1e 70%, #090a16 100%);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 24px;
+  padding: 30px 24px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 50px rgba(255, 180, 0, 0.2);
+  text-align: center;
+  color: #fff;
+  transform: scale(0.94);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.festive-spin-modal.is-open .festive-spin-box {
+  transform: scale(1);
+}
+.festive-spin-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cdd2ea;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+.festive-spin-close:hover {
+  background: rgba(255, 51, 70, 0.2);
+  color: #ff3346;
+  border-color: #ff3346;
+  transform: rotate(90deg);
+}
+.spin-header {
+  margin-bottom: 20px;
+}
+.spin-festive-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.spin-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 6px;
+  letter-spacing: -0.02em;
+}
+.spin-subtitle {
+  font-size: 0.82rem;
+  color: #a6afcf;
+  margin: 0;
+}
+
+/* Spin Wheel Visual Elements */
+.spin-wheel-container {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spin-wheel-pointer {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 24px solid #ffd700;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  z-index: 8;
+  pointer-events: none;
+}
+.spin-canvas {
+  width: 310px;
+  height: 310px;
+  border-radius: 50%;
+  box-shadow: 0 0 35px rgba(255, 215, 0, 0.25), inset 0 0 15px rgba(0, 0, 0, 0.6);
+  border: 4px solid #ffd700;
+}
+.spin-center-trigger-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  border: 3px solid #fff;
+  color: #1a0f00;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 215, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 9;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+.spin-center-trigger-btn:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 26px rgba(255, 215, 0, 1);
+}
+.spin-center-trigger-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: translate(-50%, -50%);
+}
+
+/* Celebration Prize Reveal Overlay */
+.spin-prize-card {
+  position: absolute;
+  inset: 16px;
+  background: rgba(12, 14, 30, 0.97);
+  border: 1.5px solid rgba(255, 215, 0, 0.6);
+  border-radius: 20px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 12;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 215, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.9);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.spin-prize-card.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+.prize-sparkle {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+  animation: prizeBounce 1.5s infinite alternate ease-in-out;
+}
+@keyframes prizeBounce {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-8px) scale(1.1); }
+}
+.prize-headline {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffd700;
+  margin: 0 0 6px;
+  letter-spacing: -0.01em;
+}
+.prize-amount {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+.prize-note {
+  font-size: 0.8rem;
+  color: #b3bcdb;
+  margin: 0 0 14px;
+}
+.prize-code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px dashed #ffd700;
+  border-radius: 10px;
+  padding: 8px 16px;
+  margin-bottom: 18px;
+}
+.prize-code {
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #ffd700;
+}
+.prize-copy-btn {
+  background: rgba(255, 215, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.prize-copy-btn:hover {
+  background: #ffd700;
+  color: #1a0f00;
+}
+.prize-claim-btn {
+  width: 100%;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, #ff3346 0%, #cc182a 100%);
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(255, 51, 70, 0.45);
+  transition: all 0.2s ease;
+}
+.prize-claim-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255, 51, 70, 0.6);
+}
+
+/* Confetti Overlay */
+.festive-confetti-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  width: 100%;
+  height: 100%;
+}
+@media (max-width: 480px) {
+  .festive-spin-widget {
+    bottom: 80px;
+    right: 16px;
+  }
+  .spin-wheel-container {
+    width: 280px;
+    height: 280px;
+  }
+  .spin-canvas {
+    width: 270px;
+    height: 270px;
+  }
+  .spin-center-trigger-btn {
+    width: 68px;
+    height: 68px;
+    font-size: 0.72rem;
+  }
 }
