@@ -46,6 +46,11 @@
   <link rel="icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png" />
   <link rel="shortcut icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png" />
 
+  <!-- Preconnect & Fonts (Identical to Main Landing Page) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
   <style>
     /* ==========================================================================
        MOYA BRAND GUIDELINES DESIGN SYSTEM (DARK OBSIDIAN / NAVY PALETTE)
@@ -91,7 +96,7 @@
       --radius-card:    16px;
       --radius-btn:     10px;
       --radius-pill:    9999px;
-      --font-stack:     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      --font-stack:     'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     /* Reset & Base Setup */
@@ -174,23 +179,9 @@
     }
 
     .header-logo-img {
-      height: 36px;
+      height: 38px;
       width: auto;
       display: block;
-    }
-
-    .wordmark-text {
-      font-size: 1.125rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--ink-white);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .wordmark-tag {
-      color: var(--moya-red);
     }
 
     .header-badge {
@@ -848,9 +839,8 @@
        ======================================================================== -->
   <header class="site-header" role="banner">
     <div class="page-container header-inner">
-      <a href="/" class="wordmark" aria-label="MOYA 1.0 Home">
+      <a href="/" class="wordmark" aria-label="MOYA Home">
         <img src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c89c9b37b5fd4d3d92.webp" alt="MOYA Logo" class="header-logo-img" />
-        <span class="wordmark-text">MOYA <span class="wordmark-tag">1.0</span></span>
       </a>
       <div class="header-badge" role="status">
         <svg class="header-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
