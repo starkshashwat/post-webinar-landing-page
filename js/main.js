@@ -3372,14 +3372,49 @@ function initRazorpayCheckoutFlow() {
                 })
               });
 
+              // Save payment details in sessionStorage for instant, resilient retrieval
+              try {
+                sessionStorage.setItem("moya_last_payment", JSON.stringify({
+                  amount: finalPayable,
+                  paymentId: response.razorpay_payment_id || "",
+                  email: email,
+                  coupon: appliedCouponCode || "",
+                  timestamp: Date.now()
+                }));
+              } catch (storageErr) {}
+
               if (typeof fbq === "function") {
                 fbq("track", "Purchase", { value: finalPayable, currency: "INR" });
               }
 
-              window.location.href = "/thankyou";
+              const thankYouParams = new URLSearchParams({
+                amount: finalPayable,
+                payment_id: response.razorpay_payment_id || "",
+                customer_email: email,
+                coupon: appliedCouponCode || ""
+              });
+
+              window.location.href = `/thankyou.html?${thankYouParams.toString()}`;
             } catch (err) {
               console.error("Verification error:", err);
-              window.location.href = "/thankyou";
+              try {
+                sessionStorage.setItem("moya_last_payment", JSON.stringify({
+                  amount: finalPayable,
+                  paymentId: response.razorpay_payment_id || "",
+                  email: email,
+                  coupon: appliedCouponCode || "",
+                  timestamp: Date.now()
+                }));
+              } catch (storageErr) {}
+
+              const fallbackParams = new URLSearchParams({
+                amount: finalPayable,
+                payment_id: response.razorpay_payment_id || "",
+                customer_email: email,
+                coupon: appliedCouponCode || ""
+              });
+
+              window.location.href = `/thankyou.html?${fallbackParams.toString()}`;
             }
           },
           modal: {
