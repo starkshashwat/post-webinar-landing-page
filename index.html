@@ -3043,10 +3043,10 @@
 <!-- ========================================================================
      FESTIVE GAMIFIED SPIN WHEEL WIDGET & MODAL (REUSABLE FOR ALL FESTIVALS)
      ======================================================================== -->
-<aside class="festive-spin-widget" id="festiveSpinWidget" aria-label="Festive Discount Spinner">
-  <button type="button" class="spin-launcher-btn" id="openSpinModalBtn" aria-label="Spin Wheel to Win Guaranteed Discount">
-    <span class="spin-launcher-icon">🎡</span>
-    <span class="spin-launcher-label" id="spinLauncherLabel">Spin &amp; Win Discount</span>
+<aside class="festive-spin-widget" id="festiveSpinWidget" aria-label="Maha Navratri Special Offer Spinner">
+  <button type="button" class="spin-launcher-btn" id="openSpinModalBtn" aria-label="Spin Wheel to Win Guaranteed Navratri Blessing">
+    <span class="spin-launcher-icon">🪔</span>
+    <span class="spin-launcher-label" id="spinLauncherLabel">Shubh Navratri: Spin &amp; Win</span>
     <span class="spin-launcher-glow"></span>
   </button>
 </aside>
@@ -3057,23 +3057,56 @@
     <button type="button" class="festive-spin-close" id="closeSpinModalBtn" aria-label="Close spin wheel">&times;</button>
     
     <div class="spin-header">
-      <div class="spin-festive-tag">✨ FESTIVE SHUBH LABH SPECIAL</div>
-      <h3 id="spinModalTitle" class="spin-title">Spin The Wheel — Win Up to ₹4,000 OFF</h3>
-      <p class="spin-subtitle">100% Guaranteed Instant Discount on MOYA Complete Access</p>
+      <div class="spin-festive-tag">🪔 MAHA NAVRATRI SHUBH LABH SPECIAL</div>
+      <h3 id="spinModalTitle" class="spin-title">Navratri Shubh Labh Wheel — Win Up to ₹4,000 OFF</h3>
+      <p class="spin-subtitle">Celebrate 9 Auspicious Days of Blessing! Spin once to unlock your guaranteed festive grant &amp; scholarship on MOYA 1.0.</p>
     </div>
 
     <div class="spin-wheel-container">
-      <div class="spin-wheel-pointer" aria-hidden="true"></div>
-      <canvas id="festiveSpinCanvas" width="340" height="340" class="spin-canvas"></canvas>
-      <button type="button" class="spin-center-trigger-btn" id="spinTriggerBtn">SPIN NOW</button>
+      <!-- 3D Outer Bezel Ring with Glowing LED Bulbs -->
+      <div class="spin-bezel-ring" id="spinBezelRing" aria-hidden="true">
+        <span class="bezel-bulb" style="--b-deg: 0deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 22.5deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 45deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 67.5deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 90deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 112.5deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 135deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 157.5deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 180deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 202.5deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 225deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 247.5deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 270deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 292.5deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 315deg"></span>
+        <span class="bezel-bulb" style="--b-deg: 337.5deg"></span>
+      </div>
+
+      <!-- Realistic Bouncing Ticker Needle with Pivot Pin -->
+      <div class="spin-wheel-pointer" id="spinWheelPointer" aria-hidden="true">
+        <div class="pointer-needle"></div>
+        <div class="pointer-pivot"></div>
+      </div>
+
+      <canvas id="festiveSpinCanvas" width="400" height="400" class="spin-canvas"></canvas>
+
+      <!-- 3D Embossed Center Hub -->
+      <button type="button" class="spin-center-trigger-btn" id="spinTriggerBtn" aria-label="Spin Wheel to Reveal Navratri Blessing">
+        <span class="spin-btn-inner">
+          <span class="spin-btn-label">SPIN</span>
+          <span class="spin-btn-sub">शुभ लाभ</span>
+        </span>
+      </button>
     </div>
 
     <!-- Celebration Prize Reveal Overlay (Revealed upon win) -->
     <div class="spin-prize-card" id="spinPrizeCard" aria-hidden="true">
-      <div class="prize-sparkle">🎉</div>
-      <h4 class="prize-headline">Festival Discount Unlocked!</h4>
+      <div class="prize-sparkle">🌸 🪔 🌸</div>
+      <div class="prize-festive-badge">JAI MATA DI • NAVRATRI BLESSING</div>
+      <h4 class="prize-headline">Navratri Shubh Labh Unlocked!</h4>
       <div class="prize-amount" id="prizeDisplayAmount">₹4,000 OFF</div>
-      <p class="prize-note">Your special festive coupon code has been unlocked:</p>
+      <p class="prize-note">Maa Durga's blessing is with you. Your exclusive festive scholarship code has been unlocked:</p>
       
       <div class="prize-code-wrap">
         <span class="prize-code" id="prizeCouponCode">MOYA55</span>
@@ -3081,8 +3114,10 @@
       </div>
 
       <button type="button" class="prize-claim-btn" id="prizeClaimBtn">
-        <span>Claim &amp; Enroll Now &rarr;</span>
+        <span>Claim Navratri Offer &amp; Enroll Now &rarr;</span>
       </button>
+
+      <div class="prize-urgency-note">⏰ Valid exclusively during Navratri festive days • 1 claim per participant</div>
     </div>
 
     <!-- Confetti Overlay Canvas -->

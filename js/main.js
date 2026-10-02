@@ -3487,6 +3487,11 @@ function initRazorpayCheckoutFlow() {
 // FESTIVE GAMIFIED SPIN WHEEL ENGINE (REUSABLE FOR ALL FESTIVALS)
 // 100% Guaranteed Win, Sales-Boosting Probability (Max ₹4,000, 0% for ₹1,000)
 // ==========================================================================
+// ==========================================================================
+// MAHA NAVRATRI GAMIFIED SPIN WHEEL ENGINE (FIGMA UI KIT 7-410 OVERHAUL)
+// Authentic Game Physics: Natural Angular Jitter, Web Audio Ticker Clicks,
+// Spring-Deflection Pointer, Glowing LED Chaser Bulbs & 100% Win Guarantee
+// ==========================================================================
 function initFestiveSpinGame() {
   const launcherWidget = document.getElementById("festiveSpinWidget");
   const launcherBtn = document.getElementById("openSpinModalBtn");
@@ -3494,6 +3499,8 @@ function initFestiveSpinGame() {
   const spinModal = document.getElementById("festiveSpinModal");
   const closeBtn = document.getElementById("closeSpinModalBtn");
   const backdrop = document.getElementById("closeSpinModalBackdrop");
+  const wheelContainer = document.querySelector(".spin-wheel-container");
+  const pointerEl = document.getElementById("spinWheelPointer");
   const canvas = document.getElementById("festiveSpinCanvas");
   const spinTriggerBtn = document.getElementById("spinTriggerBtn");
   const prizeCard = document.getElementById("spinPrizeCard");
@@ -3512,78 +3519,132 @@ function initFestiveSpinGame() {
   let isSpinning = false;
   let wonCoupon = null;
 
-  // Wheel Segments (Display amounts ONLY - Decoy slices included)
+  // High-DPI Retina Display Setup
+  const dpr = window.devicePixelRatio || 2;
+  const canvasSize = 316;
+  canvas.width = Math.round(canvasSize * dpr);
+  canvas.height = Math.round(canvasSize * dpr);
+  ctx.scale(dpr, dpr);
+
+  const centerX = canvasSize / 2;
+  const centerY = canvasSize / 2;
+  const radius = canvasSize / 2 - 4;
+
+  // Wheel Segments (Auspicious Festive Palette: Ruby, Indigo, Amber, Emerald)
   // Slices: 0: 4000, 1: 2000, 2: 3000, 3: 1000, 4: 4000, 5: 2000, 6: 3000, 7: 1000
   const slices = [
-    { text: "₹4,000 OFF", bg: "#7a0c1e", accent: "#ffd700", textCol: "#ffffff" },
-    { text: "₹2,000 OFF", bg: "#1f1435", accent: "#e0e7ff", textCol: "#ffffff" },
-    { text: "₹3,000 OFF", bg: "#991b1b", accent: "#fed7aa", textCol: "#ffffff" },
-    { text: "₹1,000 OFF", bg: "#13231b", accent: "#86efac", textCol: "#ffffff" },
-    { text: "₹4,000 OFF", bg: "#7a0c1e", accent: "#ffd700", textCol: "#ffffff" },
-    { text: "₹2,000 OFF", bg: "#1f1435", accent: "#e0e7ff", textCol: "#ffffff" },
-    { text: "₹3,000 OFF", bg: "#991b1b", accent: "#fed7aa", textCol: "#ffffff" },
-    { text: "₹1,000 OFF", bg: "#13231b", accent: "#86efac", textCol: "#ffffff" }
+    { text: "₹4,000 OFF", gradStart: "#991b1b", gradEnd: "#580b18", stroke: "#fbbf24", textCol: "#ffffff", sub: "SHUBH" },
+    { text: "₹2,000 OFF", gradStart: "#1e1b4b", gradEnd: "#0f0e26", stroke: "#c7d2fe", textCol: "#ffffff", sub: "BLESSING" },
+    { text: "₹3,000 OFF", gradStart: "#b45309", gradEnd: "#78350f", stroke: "#fde68a", textCol: "#ffffff", sub: "LUCKY" },
+    { text: "₹1,000 OFF", gradStart: "#064e3b", gradEnd: "#022c22", stroke: "#86efac", textCol: "#ffffff", sub: "OFFER" },
+    { text: "₹4,000 OFF", gradStart: "#991b1b", gradEnd: "#580b18", stroke: "#fbbf24", textCol: "#ffffff", sub: "SHUBH" },
+    { text: "₹2,000 OFF", gradStart: "#1e1b4b", gradEnd: "#0f0e26", stroke: "#c7d2fe", textCol: "#ffffff", sub: "BLESSING" },
+    { text: "₹3,000 OFF", gradStart: "#b45309", gradEnd: "#78350f", stroke: "#fde68a", textCol: "#ffffff", sub: "LUCKY" },
+    { text: "₹1,000 OFF", gradStart: "#064e3b", gradEnd: "#022c22", stroke: "#86efac", textCol: "#ffffff", sub: "OFFER" }
   ];
 
-  // Draw Wheel on Canvas
+  // Synthesized Web Audio Ticker Clicks (Zero-latency, no external MP3 dependencies)
+  let audioCtx = null;
+  function playTickSound(pitch = 1, volume = 0.14) {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(520 * pitch, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.016);
+
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.016);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.018);
+    } catch (e) {}
+  }
+
+  // Draw Wheel with 3D Depth, Radial Gradients & Chrome Perimeter Pins
   function drawWheel(angleOffset = 0) {
-    const width = canvas.width;
-    const height = canvas.height;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = width / 2 - 8;
+    ctx.clearRect(0, 0, canvasSize, canvasSize);
 
-    ctx.clearRect(0, 0, width, height);
-
+    // Draw Slices
     for (let i = 0; i < numSlices; i++) {
       const angle = angleOffset + i * sliceAngle;
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
       ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
       ctx.closePath();
-      ctx.fillStyle = slices[i].bg;
+
+      // Radial slice gradient from center to rim
+      const grad = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, radius);
+      grad.addColorStop(0, slices[i].gradStart);
+      grad.addColorStop(1, slices[i].gradEnd);
+      ctx.fillStyle = grad;
       ctx.fill();
 
-      // Outer ring border
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "rgba(255, 215, 0, 0.4)";
+      // Spoke border line between slices
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(251, 191, 36, 0.45)";
       ctx.stroke();
 
-      // Draw Slice Text
+      // Render Slice Typography
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(angle + sliceAngle / 2);
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
+
+      // Rupee / Amount Text
       ctx.fillStyle = slices[i].textCol;
-      ctx.font = "bold 15px 'Plus Jakarta Sans', sans-serif";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+      ctx.font = "900 14px 'Plus Jakarta Sans', sans-serif";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
       ctx.shadowBlur = 4;
-      ctx.fillText(slices[i].text, radius - 22, 0);
+      ctx.fillText(slices[i].text, radius - 20, 0);
+
+      // Subtle Auspicious Subtag
+      ctx.font = "800 8px 'Plus Jakarta Sans', sans-serif";
+      ctx.fillStyle = slices[i].stroke;
+      ctx.fillText(slices[i].sub, radius - 20, 14);
       ctx.restore();
     }
 
-    // Outer decorative gold rim dots
-    for (let j = 0; j < 24; j++) {
-      const dotAngle = (j * 2 * Math.PI) / 24;
-      const dotX = centerX + (radius - 2) * Math.cos(dotAngle);
-      const dotY = centerY + (radius - 2) * Math.sin(dotAngle);
+    // Outer Perimeter Peg Pins (Metallic chrome rivets colliding with ticker)
+    for (let p = 0; p < numSlices; p++) {
+      const pegAngle = angleOffset + p * sliceAngle;
+      const pegX = centerX + (radius - 5) * Math.cos(pegAngle);
+      const pegY = centerY + (radius - 5) * Math.sin(pegAngle);
+
       ctx.beginPath();
-      ctx.arc(dotX, dotY, 2.5, 0, 2 * Math.PI);
-      ctx.fillStyle = j % 2 === 0 ? "#ffd700" : "#ffffff";
+      ctx.arc(pegX, pegY, 3.5, 0, 2 * Math.PI);
+      const pegGrad = ctx.createRadialGradient(pegX - 1, pegY - 1, 0.5, pegX, pegY, 3.5);
+      pegGrad.addColorStop(0, "#ffffff");
+      pegGrad.addColorStop(0.5, "#fbbf24");
+      pegGrad.addColorStop(1, "#78350f");
+      ctx.fillStyle = pegGrad;
       ctx.fill();
+      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
+      ctx.stroke();
     }
   }
 
   drawWheel(0);
 
-  // Check if user already won a coupon in this browser
+  // Check if user already won a coupon in this browser session/storage
   try {
     const savedWon = JSON.parse(localStorage.getItem("moya_festive_won_coupon") || "null");
     if (savedWon && savedWon.code && savedWon.discount) {
       wonCoupon = savedWon;
       if (launcherLabel) {
-        launcherLabel.textContent = `${savedWon.code}: ₹${savedWon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
+        launcherLabel.textContent = `🎉 ${savedWon.code}: ₹${savedWon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
       }
       if (launcherBtn) {
         launcherBtn.classList.add("is-pinned");
@@ -3591,10 +3652,10 @@ function initFestiveSpinGame() {
     }
   } catch (e) {}
 
-  // Open & Close Modal
+  // Open & Close Modal Handlers
   function openSpinModal() {
     if (wonCoupon && prizeCard && prizeDisplayAmount && prizeCouponCode) {
-      // If already spun, show celebration card directly
+      // If already spun, directly show the unlocked Navratri card
       prizeDisplayAmount.textContent = `₹${wonCoupon.discount.toLocaleString('en-IN')} OFF`;
       prizeCouponCode.textContent = wonCoupon.code;
       prizeCard.classList.add("is-visible");
@@ -3615,15 +3676,15 @@ function initFestiveSpinGame() {
   if (closeBtn) closeBtn.addEventListener("click", closeSpinModal);
   if (backdrop) backdrop.addEventListener("click", closeSpinModal);
 
-  // Sales-Boosting Winning Algorithm
-  // 70% chance -> ₹4,000 OFF (MOYA55, Slices 0 or 4)
-  // 20% chance -> ₹3,000 OFF (MOYA44, Slices 2 or 6)
-  // 10% chance -> ₹2,000 OFF (MOYA22, Slices 1 or 5)
-  //  0% chance -> ₹1,000 OFF (MOYA11, Decoy only - never landed!)
+  // Sales-Boosting Winning Algorithm (Strictly Enforced):
+  // 🎯 70% chance -> ₹4,000 OFF (MOYA55, Slices 0 or 4)
+  // 🎯 20% chance -> ₹3,000 OFF (MOYA44, Slices 2 or 6)
+  // 🎯 10% chance -> ₹2,000 OFF (MOYA22, Slices 1 or 5)
+  // ❌  0% chance -> ₹1,000 OFF (MOYA11, Decoy only - never landed!)
   function selectWinningPrize() {
     const rand = Math.random() * 100;
     if (rand < 70) {
-      // 70% of participants win ₹4,000 OFF!
+      // 70% of visitors win ₹4,000 OFF scholarship!
       const pickSlice = Math.random() < 0.5 ? 0 : 4;
       return { discount: 4000, code: "MOYA55", sliceIndex: pickSlice };
     } else if (rand < 90) {
@@ -3637,11 +3698,10 @@ function initFestiveSpinGame() {
     }
   }
 
-  // Spin Wheel Action
+  // Spin Wheel Execution with Natural Angular Jitter & Suspenseful Physics
   spinTriggerBtn.addEventListener("click", () => {
     if (isSpinning) return;
     if (wonCoupon) {
-      // If already spun, directly show the unlocked card
       if (prizeCard) {
         prizeCard.classList.add("is-visible");
         prizeCard.setAttribute("aria-hidden", "false");
@@ -3649,74 +3709,113 @@ function initFestiveSpinGame() {
       return;
     }
 
+    // Warm up Web Audio context on user gesture
+    playTickSound(1.2, 0.05);
+
     isSpinning = true;
     spinTriggerBtn.disabled = true;
+    if (wheelContainer) wheelContainer.classList.add("is-spinning");
 
     const winningPrize = selectWinningPrize();
     const winningIndex = winningPrize.sliceIndex;
 
     // Pointer is at TOP: 270 degrees (3 * PI / 2)
-    // To land winningIndex at top:
-    const targetSliceMid = winningIndex * sliceAngle + sliceAngle / 2;
-    const pointerAngle = (3 * Math.PI) / 2;
-    const finalOffset = pointerAngle - targetSliceMid;
+    // To give an organic, genuine game feel, land with natural angular jitter inside slice (+/- 25% of slice)
+    const sliceMidAngle = winningIndex * sliceAngle + sliceAngle / 2;
+    const naturalJitter = (Math.random() - 0.5) * (sliceAngle * 0.52);
+    const targetSliceAngle = sliceMidAngle + naturalJitter;
 
-    // Spin 6 full circles + final offset
-    const totalSpins = 6;
+    const pointerAngle = (3 * Math.PI) / 2;
+    const finalOffset = pointerAngle - targetSliceAngle;
+
+    // 7 full suspenseful revolutions + offset
+    const totalSpins = 7;
     const startAngle = currentRotation % (2 * Math.PI);
     const targetAngle = totalSpins * (2 * Math.PI) + finalOffset;
-    const spinDuration = 4200; // ms
+    const spinDuration = 4600; // ms
     const startTime = performance.now();
 
-    function easeOutCubic(t) {
-      return 1 - Math.pow(1 - t, 3);
+    // Track peg collisions to trigger realistic ticker tick bounce & audio click
+    let lastPegIndex = -1;
+
+    // Smooth Quintic Ease-Out Curve for authentic physical deceleration
+    function easeOutQuint(t) {
+      return 1 - Math.pow(1 - t, 5);
     }
 
     function animateSpin(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / spinDuration, 1);
-      const eased = easeOutCubic(progress);
+      const eased = easeOutQuint(progress);
 
       currentRotation = startAngle + (targetAngle - startAngle) * eased;
       drawWheel(currentRotation);
 
+      // Detect which peg passed the top pointer
+      // Pointer is at 270 deg (1.5 * PI). Normalized rotation relative to pointer:
+      const normalizedAngle = (pointerAngle - currentRotation) % (2 * Math.PI);
+      const positiveAngle = normalizedAngle < 0 ? normalizedAngle + 2 * Math.PI : normalizedAngle;
+      const currentPeg = Math.floor(positiveAngle / sliceAngle);
+
+      if (currentPeg !== lastPegIndex) {
+        lastPegIndex = currentPeg;
+
+        // Trigger dynamic spring bounce on ticker pointer
+        if (pointerEl) {
+          pointerEl.classList.remove("is-ticking");
+          void pointerEl.offsetWidth; // Force CSS reflow
+          pointerEl.classList.add("is-ticking");
+        }
+
+        // Taper sound pitch & volume as wheel slows down
+        const speedFactor = 1 - progress;
+        const tickPitch = 0.8 + speedFactor * 0.5;
+        const tickVol = Math.max(0.04, 0.16 * speedFactor);
+        playTickSound(tickPitch, tickVol);
+      }
+
       if (progress < 1) {
         requestAnimationFrame(animateSpin);
       } else {
-        // Spin Finished!
+        // Spin Completed!
         isSpinning = false;
+        if (wheelContainer) wheelContainer.classList.remove("is-spinning");
         wonCoupon = { code: winningPrize.code, discount: winningPrize.discount };
 
-        // Save in localStorage
+        // Save in persistent browser storage
         try {
           localStorage.setItem("moya_festive_won_coupon", JSON.stringify(wonCoupon));
         } catch (e) {}
 
-        // Fire Confetti Celebration
+        // Launch celebratory confetti with festive gold & vermilion sparkles
         launchFestiveConfetti();
 
-        // Reveal Prize Card
+        // Reveal Navratri Victory Card
         setTimeout(() => {
-          if (prizeDisplayAmount) prizeDisplayAmount.textContent = `₹${wonCoupon.discount.toLocaleString('en-IN')} OFF`;
-          if (prizeCouponCode) prizeCouponCode.textContent = wonCoupon.code;
+          if (prizeDisplayAmount) {
+            prizeDisplayAmount.textContent = `₹${wonCoupon.discount.toLocaleString('en-IN')} OFF`;
+          }
+          if (prizeCouponCode) {
+            prizeCouponCode.textContent = wonCoupon.code;
+          }
           if (prizeCard) {
             prizeCard.classList.add("is-visible");
             prizeCard.setAttribute("aria-hidden", "false");
           }
           if (launcherLabel) {
-            launcherLabel.textContent = `${wonCoupon.code}: ₹${wonCoupon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
+            launcherLabel.textContent = `🎉 ${wonCoupon.code}: ₹${wonCoupon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
           }
           if (launcherBtn) {
             launcherBtn.classList.add("is-pinned");
           }
-        }, 500);
+        }, 550);
       }
     }
 
     requestAnimationFrame(animateSpin);
   });
 
-  // Copy Code Button
+  // Copy Coupon Code Button
   if (prizeCopyBtn) {
     prizeCopyBtn.addEventListener("click", () => {
       if (!wonCoupon) return;
@@ -3732,7 +3831,7 @@ function initFestiveSpinGame() {
     });
   }
 
-  // Claim & Enroll Now Button -> Auto-applies to Checkout Modal
+  // Claim Navratri Offer & Enroll Now Button -> Auto-applies to Checkout Modal at ₹997
   if (prizeClaimBtn) {
     prizeClaimBtn.addEventListener("click", () => {
       if (!wonCoupon) return;
@@ -3741,7 +3840,7 @@ function initFestiveSpinGame() {
       // Open Razorpay Checkout Modal
       openRazorpayCheckoutModal();
 
-      // Pre-fill and auto-trigger coupon
+      // Pre-fill and auto-trigger coupon application
       const checkoutCouponInput = document.getElementById("checkoutCouponInput");
       const applyCouponBtn = document.getElementById("applyCouponBtn");
       if (checkoutCouponInput) {
@@ -3755,7 +3854,7 @@ function initFestiveSpinGame() {
     });
   }
 
-  // Confetti Particle Engine
+  // Confetti Particle Engine with Auspicious Colors
   function launchFestiveConfetti() {
     if (!confettiCanvas) return;
     const cctx = confettiCanvas.getContext("2d");
@@ -3763,18 +3862,18 @@ function initFestiveSpinGame() {
     confettiCanvas.height = confettiCanvas.offsetHeight;
 
     const particles = [];
-    const colors = ["#ffd700", "#ff3346", "#38bdf8", "#4ade80", "#c084fc", "#fb923c"];
+    const colors = ["#fbbf24", "#f59e0b", "#e11d48", "#f43f5e", "#fde68a", "#10b981", "#ffffff"];
 
-    for (let p = 0; p < 75; p++) {
+    for (let p = 0; p < 85; p++) {
       particles.push({
         x: confettiCanvas.width / 2,
         y: confettiCanvas.height / 2,
-        vx: (Math.random() - 0.5) * 12,
-        vy: (Math.random() - 0.7) * 14,
-        size: Math.random() * 6 + 4,
+        vx: (Math.random() - 0.5) * 14,
+        vy: (Math.random() - 0.7) * 16,
+        size: Math.random() * 7 + 4,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * 360,
-        rSpeed: (Math.random() - 0.5) * 8,
+        rSpeed: (Math.random() - 0.5) * 10,
         alpha: 1
       });
     }
@@ -3789,7 +3888,7 @@ function initFestiveSpinGame() {
         p.y += p.vy;
         p.vy += 0.28; // gravity
         p.rotation += p.rSpeed;
-        p.alpha = Math.max(0, 1 - elapsed / 3200);
+        p.alpha = Math.max(0, 1 - elapsed / 3400);
 
         cctx.save();
         cctx.translate(p.x, p.y);
@@ -3800,7 +3899,7 @@ function initFestiveSpinGame() {
         cctx.restore();
       });
 
-      if (elapsed < 3200) {
+      if (elapsed < 3400) {
         requestAnimationFrame(renderConfetti);
       } else {
         cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
