@@ -23,7 +23,6 @@
   'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '1116283324686477');
   fbq('track', 'PageView');
-  fbq('track', 'Purchase', { value: 4997, currency: 'INR' });
   </script>
   <!-- End Meta Pixel Code -->
 
@@ -38,776 +37,1014 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enrollment Confirmed — Mechanism of YouTube Automation (MOYA 1.0)</title>
-  <meta name="description" content="Welcome to MOYA 1.0. Follow the quick steps to join official communities and access your course portal at community.mechanismofya.com." />
+  <title>Payment Received · MOYA 1.0 Enrollment Confirmed</title>
+  <meta name="description" content="Payment confirmed for MOYA 1.0. Access your course portal and official creator communities." />
   
   <meta name="robots" content="noindex, nofollow" />
   <link rel="canonical" href="https://vsl.mechanismofya.com/thankyou" />
 
-  <link rel="icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png">
-  <link rel="shortcut icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png">
-
-  <!-- Fonts matching Landing Page -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png" />
+  <link rel="shortcut icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png" />
 
   <style>
+    /* ==========================================================================
+       DESIGN SYSTEM & CSS VARIABLES
+       ========================================================================== */
     :root {
-      --bg-deep: #03040b;
-      --bg-card: rgba(13, 15, 29, 0.88);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --brand-red: #E52E3F;
-      --brand-red-glow: rgba(229, 46, 63, 0.45);
-      --brand-gold: #F5C518;
-      --wa-green: #25D366;
-      --wa-dark: #1EBE5D;
-      --wa-glow: rgba(37, 211, 102, 0.4);
-      --fb-blue: #1877F2;
-      --fb-dark: #1462D4;
-      --fb-glow: rgba(24, 119, 242, 0.4);
+      --primary-blue: #3157E8;
+      --primary-blue-hover: #2546C7;
+      --coral: #F15B4F;
+      --success-green: #187A4B;
+      --success-green-bg: #EAF6EE;
+      --lime: #C9F36B;
+      --violet: #8B6DE9;
+      --violet-bg: #F4F1FD;
+      --violet-border: #DCD4F8;
+      --main-ink: #171713;
+      --ink-muted: #53524B;
+      --ink-subtle: #79776E;
+      --warm-canvas: #F6F3EC;
+      --surface-white: #FFFFFF;
+      --border-subtle: #E5E0D8;
+      --border-card: #DFDAD1;
+      --receipt-bg: #171713;
+      --receipt-card-border: rgba(255, 255, 255, 0.14);
+      --receipt-muted: #9E9C92;
+      --receipt-line: rgba(255, 255, 255, 0.1);
+      
+      --radius-card: 16px;
+      --radius-btn: 10px;
+      --radius-pill: 9999px;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     }
 
-    * {
+    /* Reset & Base Setup */
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: smooth;
+    }
+
     body {
-      background-color: var(--bg-deep);
-      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-      color: #ffffff;
+      background-color: var(--warm-canvas);
+      color: var(--main-ink);
+      font-family: var(--font-stack);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       min-height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-      padding: 32px 16px;
+      flex-direction: column;
     }
 
-    /* Ambient Background Effects */
-    .bg-gradient {
-      position: fixed;
-      inset: 0;
-      background: 
-        radial-gradient(ellipse at 50% 0%, rgba(229, 46, 63, 0.16) 0%, transparent 60%),
-        radial-gradient(ellipse at 85% 90%, rgba(37, 211, 102, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 15% 90%, rgba(24, 119, 242, 0.08) 0%, transparent 50%);
-      z-index: 0;
-      pointer-events: none;
+    /* Accessible focus state */
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--primary-blue);
+      outline-offset: 3px;
     }
 
-    .bg-mesh {
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 50px 50px;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    /* Unified Single-Section Container */
-    .ty-container {
-      position: relative;
-      z-index: 10;
+    /* Container */
+    .page-container {
       width: 100%;
-      max-width: 680px;
-      margin: 0 auto;
-      animation: cardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    @keyframes cardEntrance {
-      from { opacity: 0; transform: translateY(30px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    /* Obsidian Glass Card */
-    .ty-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      border: 1px solid var(--border-subtle);
-      border-radius: 28px;
-      padding: 40px 32px;
-      text-align: center;
-      box-shadow: 
-        0 30px 80px rgba(0, 0, 0, 0.85), 
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 0 50px rgba(229, 46, 63, 0.12);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Top Accent Line */
-    .ty-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--brand-red) 0%, var(--wa-green) 50%, var(--fb-blue) 100%);
-    }
-
-    /* Status Badge Icon */
-    .status-badge-wrap {
-      width: 72px;
-      height: 72px;
-      background: radial-gradient(circle, rgba(37, 211, 102, 0.22) 0%, rgba(37, 211, 102, 0.05) 70%);
-      border: 2px solid rgba(37, 211, 102, 0.5);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 16px;
-      box-shadow: 0 0 28px rgba(37, 211, 102, 0.35);
-      animation: pulseAura 2.6s infinite alternate ease-in-out;
-    }
-
-    @keyframes pulseAura {
-      from { transform: scale(1); box-shadow: 0 0 20px rgba(37, 211, 102, 0.25); }
-      to { transform: scale(1.06); box-shadow: 0 0 36px rgba(37, 211, 102, 0.5); }
-    }
-
-    .status-badge-wrap svg {
-      width: 34px;
-      height: 34px;
-      color: #4ade80;
-    }
-
-    /* Headings */
-    .confirm-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #4ade80;
-      background: rgba(37, 211, 102, 0.12);
-      border: 1px solid rgba(37, 211, 102, 0.3);
-      padding: 5px 14px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-    }
-
-    .title {
-      font-size: 2.1rem;
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      margin-bottom: 8px;
-      color: #fff;
-    }
-
-    .title span {
-      background: linear-gradient(135deg, #fff 30%, #e2e8f0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .title .red-accent {
-      background: linear-gradient(135deg, #ff4d5e 0%, #E52E3F 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      font-size: 0.94rem;
-      color: #94a3b8;
-      line-height: 1.5;
-      margin-bottom: 28px;
-      max-width: 520px;
+      max-width: 1240px;
       margin-inline: auto;
+      padding-inline: 24px;
     }
 
-    /* Section Separator */
-    .section-divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-      margin: 24px 0;
+    @media (max-width: 640px) {
+      .page-container {
+        padding-inline: 16px;
+      }
     }
 
     /* ==========================================================================
-       STEP 1: VIP COMMUNITIES (WHATSAPP & FACEBOOK)
+       1. HEADER
        ========================================================================== */
-    .step-section {
-      text-align: left;
-      margin-bottom: 24px;
+    .site-header {
+      background-color: var(--warm-canvas);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-block: 20px;
     }
 
-    .step-header {
+    .header-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      gap: 16px;
     }
 
-    .step-pill {
-      font-size: 0.72rem;
+    .wordmark {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--main-ink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .wordmark-tag {
+      color: var(--coral);
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
+
+    .header-lock-icon {
+      width: 14px;
+      height: 14px;
+      color: var(--success-green);
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       2. HERO SECTION
+       ========================================================================== */
+    .hero-section {
+      padding-block: 56px 64px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 56px;
+      align-items: start;
+    }
+
+    /* Left Hero Column */
+    .hero-left {
+      padding-top: 8px;
+    }
+
+    .check-icon-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-pill);
+      border: 2px solid var(--success-green);
+      background-color: var(--success-green-bg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .check-icon-svg {
+      width: 22px;
+      height: 22px;
+      color: var(--success-green);
+    }
+
+    .hero-headline {
+      font-size: 3.25rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      color: var(--main-ink);
+      margin-bottom: 20px;
+    }
+
+    .text-blue {
+      color: var(--primary-blue);
+      display: inline-block;
+    }
+
+    .hero-copy {
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: var(--ink-muted);
+      max-width: 520px;
+    }
+
+    /* Right Hero Column: Premium Dark Payment Receipt Card */
+    .receipt-card {
+      background-color: var(--receipt-bg);
+      color: #FFFFFF;
+      border-radius: var(--radius-card);
+      border: 1px solid var(--receipt-card-border);
+      padding: 32px 28px;
+      box-shadow: 0 16px 40px rgba(23, 23, 19, 0.08);
+      position: relative;
+    }
+
+    .receipt-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .receipt-amount-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .receipt-amount-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      color: var(--receipt-muted);
+    }
+
+    .receipt-amount {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: #FFFFFF;
+    }
+
+    .status-badge-paid {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.75rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 999px;
+      color: var(--lime);
+      background-color: rgba(201, 243, 107, 0.14);
+      border: 1px solid rgba(201, 243, 107, 0.4);
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
     }
 
-    .step-pill.green {
-      background: rgba(37, 211, 102, 0.12);
-      border: 1px solid rgba(37, 211, 102, 0.3);
-      color: #4ade80;
+    .receipt-divider {
+      height: 1px;
+      background-color: var(--receipt-line);
+      margin-block: 22px;
+      border: none;
     }
 
-    .step-pill.red {
-      background: rgba(229, 46, 63, 0.14);
-      border: 1px solid rgba(229, 46, 63, 0.35);
-      color: #ff6674;
-    }
-
-    .step-title {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: #f8fafc;
-      letter-spacing: -0.01em;
-    }
-
-    /* Action Cards Grid */
-    .action-grid {
+    .receipt-meta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      row-gap: 18px;
+      column-gap: 20px;
     }
 
-    .action-card {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 18px;
-      padding: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      position: relative;
+    .receipt-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .receipt-meta-dt {
+      font-size: 0.75rem;
+      color: var(--receipt-muted);
+      font-weight: 500;
+    }
+
+    .receipt-meta-dd {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: #FFFFFF;
       overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .receipt-meta-item.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .receipt-footer-note {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--receipt-line);
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      color: var(--receipt-muted);
+    }
+
+    /* ==========================================================================
+       3. SETUP SECTION
+       ========================================================================== */
+    .setup-section {
+      background-color: var(--surface-white);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      padding-block: 72px 80px;
+    }
+
+    .section-intro {
+      margin-bottom: 40px;
+      max-width: 680px;
+    }
+
+    .section-headline {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--main-ink);
+      margin-bottom: 10px;
+    }
+
+    .section-copy {
+      font-size: 1.0625rem;
+      color: var(--ink-muted);
+      line-height: 1.55;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    /* Base Action Card */
+    .action-card {
+      border-radius: var(--radius-card);
+      padding: 32px 28px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.25s ease, border-color 0.25s ease;
+      border: 1px solid var(--border-card);
+      background-color: var(--surface-white);
+      min-height: 280px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
     .action-card:hover {
       transform: translateY(-2px);
     }
 
-    .action-card.wa-card {
-      border-color: rgba(37, 211, 102, 0.25);
-      background: linear-gradient(145deg, rgba(37, 211, 102, 0.06) 0%, rgba(13, 15, 29, 0.7) 100%);
+    .action-card-top {
+      margin-bottom: 28px;
     }
 
-    .action-card.wa-card:hover {
-      border-color: rgba(37, 211, 102, 0.5);
-      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.15);
+    .action-card-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--main-ink);
+      margin-bottom: 10px;
     }
 
-    .action-card.fb-card {
-      border-color: rgba(24, 119, 242, 0.25);
-      background: linear-gradient(145deg, rgba(24, 119, 242, 0.06) 0%, rgba(13, 15, 29, 0.7) 100%);
+    .action-card-desc {
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      color: var(--ink-muted);
     }
 
-    .action-card.fb-card:hover {
-      border-color: rgba(24, 119, 242, 0.5);
-      box-shadow: 0 10px 25px rgba(24, 119, 242, 0.15);
-    }
-
-    .action-card-text {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 12px;
-      line-height: 1.35;
-    }
-
-    /* Community Buttons */
-    .btn-action {
+    /* Button System (Min touch target: 44px) */
+    .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: 999px;
+      min-height: 48px;
+      padding: 12px 24px;
+      font-family: var(--font-stack);
+      font-size: 0.9375rem;
+      font-weight: 700;
+      border-radius: var(--radius-btn);
       text-decoration: none;
-      font-size: 0.88rem;
-      font-weight: 800;
-      color: #fff;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.25s ease;
       cursor: pointer;
+      border: 1px solid transparent;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+      text-align: center;
+      width: 100%;
     }
 
-    .btn-action.btn-wa {
-      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-      box-shadow: 0 8px 22px var(--wa-glow);
+    /* Card A: Primary Blue */
+    .card-primary-portal {
+      border-color: rgba(49, 87, 232, 0.3);
+      background-color: #FAFCFF;
+      box-shadow: 0 4px 18px rgba(49, 87, 232, 0.06);
     }
 
-    .btn-action.btn-wa:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(37, 211, 102, 0.6);
-      background: linear-gradient(135deg, #2fe06f 0%, #16a34a 100%);
+    .card-primary-portal:hover {
+      border-color: var(--primary-blue);
     }
 
-    .btn-action.btn-fb {
-      background: linear-gradient(135deg, #1877F2 0%, #0d5bbd 100%);
-      box-shadow: 0 8px 22px var(--fb-glow);
+    .btn-portal-primary {
+      background-color: var(--primary-blue);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(49, 87, 232, 0.25);
     }
 
-    .btn-action.btn-fb:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 28px rgba(24, 119, 242, 0.6);
-      background: linear-gradient(135deg, #2b87ff 0%, #1062c9 100%);
+    .btn-portal-primary:hover {
+      background-color: var(--primary-blue-hover);
+      color: #FFFFFF;
     }
 
-    .btn-action::before {
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-      transform: rotate(45deg);
-      animation: btnShine 3.2s infinite;
+    /* Card B: Soft Green WhatsApp Card */
+    .card-whatsapp {
+      background-color: var(--success-green-bg);
+      border-color: #CBE5D3;
     }
 
-    @keyframes btnShine {
-      0% { transform: translateX(-100%) rotate(45deg); }
-      40%, 100% { transform: translateX(100%) rotate(45deg); }
+    .card-whatsapp:hover {
+      border-color: var(--success-green);
     }
 
-    .btn-action svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-      flex-shrink: 0;
+    .btn-black {
+      background-color: var(--main-ink);
+      color: #FFFFFF;
+      border: 1px solid var(--main-ink);
+    }
+
+    .btn-black:hover {
+      background-color: #2D2D27;
+      color: #FFFFFF;
+    }
+
+    /* Card C: Subtle Violet Facebook Card */
+    .card-facebook {
+      background-color: var(--violet-bg);
+      border-color: var(--violet-border);
+    }
+
+    .card-facebook:hover {
+      border-color: var(--violet);
+    }
+
+    .btn-violet-secondary {
+      background-color: #FFFFFF;
+      color: var(--main-ink);
+      border: 1px solid #D8D0F5;
+    }
+
+    .btn-violet-secondary:hover {
+      background-color: #F8F6FE;
+      border-color: var(--violet);
+      color: var(--violet);
     }
 
     /* ==========================================================================
-       STEP 2: COURSE PORTAL ACCESS & LOGIN GUIDE
+       4. FIRST-LOGIN SECTION
        ========================================================================== */
-    .portal-box {
-      background: linear-gradient(145deg, rgba(229, 46, 63, 0.08) 0%, rgba(13, 15, 29, 0.8) 100%);
-      border: 1px solid rgba(229, 46, 63, 0.3);
-      border-radius: 22px;
-      padding: 24px 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    .login-section {
+      padding-block: 72px 80px;
+      background-color: var(--warm-canvas);
     }
 
-    /* Master Portal CTA Button */
-    .btn-portal-master {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 16px 24px;
-      background: linear-gradient(135deg, #E52E3F 0%, #B91C1C 100%);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 14px;
-      color: #fff;
-      text-decoration: none;
-      font-size: 1.05rem;
-      font-weight: 800;
-      letter-spacing: 0.01em;
-      box-shadow: 0 10px 30px var(--brand-red-glow), 0 0 25px rgba(229, 46, 63, 0.3);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.25s ease;
-      cursor: pointer;
-    }
-
-    .btn-portal-master:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 36px rgba(229, 46, 63, 0.65), 0 0 35px rgba(229, 46, 63, 0.45);
-      background: linear-gradient(135deg, #ff384c 0%, #c91828 100%);
-    }
-
-    .btn-portal-master::before {
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-      transform: rotate(45deg);
-      animation: btnShine 2.8s infinite;
-    }
-
-    .portal-link-hint {
-      font-size: 0.78rem;
-      color: #94a3b8;
-      margin-top: 8px;
-      margin-bottom: 18px;
-    }
-
-    .portal-link-hint code {
-      color: #fca5a5;
-      font-family: inherit;
-      font-weight: 700;
-    }
-
-    /* Dual Method Login Cards */
-    .methods-grid {
+    .login-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      text-align: left;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 64px;
+      align-items: start;
     }
 
-    .method-card {
-      background: rgba(6, 8, 18, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 14px;
-      padding: 14px 12px;
+    /* Left Column */
+    .login-intro {
+      max-width: 440px;
     }
 
-    .method-card.recommended {
-      border-color: rgba(245, 197, 24, 0.35);
-      background: linear-gradient(145deg, rgba(245, 197, 24, 0.05) 0%, rgba(6, 8, 18, 0.7) 100%);
-    }
-
-    .method-tag {
-      display: inline-block;
-      font-size: 0.65rem;
+    .login-headline {
+      font-size: 2rem;
       font-weight: 800;
-      letter-spacing: 0.06em;
-      padding: 2px 8px;
-      border-radius: 999px;
-      margin-bottom: 6px;
+      letter-spacing: -0.03em;
+      color: var(--main-ink);
+      margin-bottom: 14px;
+      line-height: 1.2;
     }
 
-    .method-tag.gold {
-      background: rgba(245, 197, 24, 0.15);
-      border: 1px solid rgba(245, 197, 24, 0.4);
-      color: #fde047;
+    .login-copy {
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      color: var(--ink-muted);
+      margin-bottom: 28px;
     }
 
-    .method-tag.silver {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #cbd5e1;
+    .btn-login-outline {
+      background-color: #FFFFFF;
+      color: var(--main-ink);
+      border: 1px solid var(--border-card);
+      font-weight: 700;
+      width: auto;
+      display: inline-flex;
+      padding-inline: 22px;
     }
 
-    .method-title {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 8px;
+    .btn-login-outline:hover {
+      border-color: var(--main-ink);
+      background-color: #FFFFFF;
     }
 
-    .method-steps {
+    /* Right Column: Numbered Editorial Steps */
+    .login-steps-card {
+      background-color: var(--surface-white);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-card);
+      padding: 36px 32px;
+    }
+
+    .instruction-list {
       list-style: none;
-      padding: 0;
-      margin: 0;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 24px;
     }
 
-    .method-step {
-      font-size: 0.76rem;
-      color: #cbd5e1;
+    .instruction-item {
       display: flex;
       align-items: flex-start;
-      gap: 6px;
-      line-height: 1.35;
+      gap: 16px;
     }
 
-    .method-step strong {
-      color: #fff;
-      font-weight: 700;
-    }
-
-    .step-num {
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
+    .step-index-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-pill);
+      background-color: var(--warm-canvas);
+      border: 1px solid var(--border-card);
+      color: var(--main-ink);
+      font-size: 0.875rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #94a3b8;
       flex-shrink: 0;
-      margin-top: 1px;
+      margin-top: 2px;
     }
 
-    /* Support Strip Footer */
-    .support-strip {
-      font-size: 0.78rem;
-      color: #64748b;
-      margin-top: 18px;
-      line-height: 1.45;
+    .instruction-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    .support-strip a {
-      color: #e2e8f0;
+    .instruction-title {
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--main-ink);
+    }
+
+    .instruction-desc {
+      font-size: 0.9375rem;
+      color: var(--ink-muted);
+      line-height: 1.5;
+    }
+
+    .login-support-box {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.9375rem;
+      color: var(--ink-muted);
+      line-height: 1.5;
+    }
+
+    .login-support-link {
+      color: var(--primary-blue);
       text-decoration: underline;
       text-underline-offset: 3px;
+      font-weight: 600;
     }
 
-    .support-strip a:hover {
-      color: #fff;
+    .login-support-link:hover {
+      color: var(--primary-blue-hover);
     }
 
-    /* Responsive Queries */
-    @media (max-width: 580px) {
-      .ty-card {
-        padding: 30px 18px;
-        border-radius: 22px;
-      }
-      .title {
-        font-size: 1.7rem;
-      }
-      .subtitle {
-        font-size: 0.85rem;
-        margin-bottom: 20px;
-      }
-      .action-grid {
+    /* ==========================================================================
+       5. FOOTER
+       ========================================================================== */
+    .site-footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border-subtle);
+      padding-block: 28px;
+      background-color: var(--warm-canvas);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 0.875rem;
+      color: var(--ink-subtle);
+    }
+
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS (TARGET: 1440px desktop, 390px mobile)
+       ========================================================================== */
+    @media (max-width: 960px) {
+      .hero-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 40px;
       }
-      .methods-grid {
+
+      .hero-headline {
+        font-size: 2.75rem;
+      }
+
+      .actions-grid {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 18px;
       }
-      .btn-portal-master {
-        padding: 14px 18px;
-        font-size: 0.95rem;
+
+      .action-card {
+        min-height: auto;
       }
-      .btn-action {
-        padding: 11px 14px;
-        font-size: 0.82rem;
+
+      .login-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .login-intro {
+        max-width: 100%;
+      }
+
+      .btn-login-outline {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-section {
+        padding-block: 36px 44px;
+      }
+
+      .hero-headline {
+        font-size: 2.25rem;
+        line-height: 1.12;
+      }
+
+      .hero-copy {
+        font-size: 1rem;
+      }
+
+      .receipt-card {
+        padding: 24px 20px;
+      }
+
+      .receipt-amount {
+        font-size: 2.25rem;
+      }
+
+      .setup-section {
+        padding-block: 52px 56px;
+      }
+
+      .section-headline {
+        font-size: 1.625rem;
+      }
+
+      .login-section {
+        padding-block: 52px 56px;
+      }
+
+      .login-headline {
+        font-size: 1.625rem;
+      }
+
+      .login-steps-card {
+        padding: 24px 18px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+
+    /* Target: 390px (Mobile screen testing) */
+    @media (max-width: 420px) {
+      .header-badge {
+        font-size: 0.75rem;
+      }
+
+      .receipt-meta-grid {
+        grid-template-columns: 1fr;
+        row-gap: 12px;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    /* Accessibility: Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Ambient Backdrop -->
-  <div class="bg-gradient"></div>
-  <div class="bg-mesh"></div>
-  <canvas id="tyParticles" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;"></canvas>
-
-  <main class="ty-container">
-    <div class="ty-card">
-      
-      <!-- Checkmark Badge -->
-      <div class="status-badge-wrap" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"></polyline>
+  <!-- ========================================================================
+       1. HEADER
+       ======================================================================== -->
+  <header class="site-header" role="banner">
+    <div class="page-container header-inner">
+      <a href="/" class="wordmark" aria-label="MOYA 1.0 Home">
+        MOYA <span class="wordmark-tag">1.0</span>
+      </a>
+      <div class="header-badge" role="status">
+        <svg class="header-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
         </svg>
+        <span>Secure enrollment confirmation</span>
       </div>
-
-      <div class="confirm-pill">✓ Enrollment Confirmed • Batch Active</div>
-      <h1 class="title">Welcome to <span class="red-accent">MOYA 1.0!</span></h1>
-      <p class="subtitle">Your seat has been reserved. Complete the 2 simple steps below to join your batch communities and enter your learning portal.</p>
-
-      <!-- ====================================================================
-           STEP 1: JOIN BATCH COMMUNITIES (WHATSAPP & FACEBOOK)
-           ==================================================================== -->
-      <div class="step-section">
-        <div class="step-header">
-          <span class="step-title">1. Join Official Batch Communities</span>
-          <span class="step-pill green">Instant Join</span>
-        </div>
-
-        <div class="action-grid">
-          <!-- WhatsApp Card -->
-          <div class="action-card wa-card">
-            <p class="action-card-text">Join WhatsApp Community for Webinar &amp; Batch updates</p>
-            <a href="https://whatsapp.com/channel/0029VajcJRV2UPB940uoYv10" target="_blank" rel="noopener noreferrer" class="btn-action btn-wa" aria-label="Join WhatsApp Group">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-              </svg>
-              Join WhatsApp Group
-            </a>
-          </div>
-
-          <!-- Facebook Card -->
-          <div class="action-card fb-card">
-            <p class="action-card-text">Join Facebook community for all the updates</p>
-            <a href="https://www.facebook.com/groups/mechanismofya" target="_blank" rel="noopener noreferrer" class="btn-action btn-fb" aria-label="Join Facebook Group">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.8c4.56-.93 8-4.96 8-9.8Z"/>
-              </svg>
-              Join Facebook Group
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section Divider -->
-      <div class="section-divider"></div>
-
-      <!-- ====================================================================
-           STEP 2: COURSE PORTAL ACCESS & LOGIN GUIDE
-           ==================================================================== -->
-      <div class="step-section">
-        <div class="step-header">
-          <span class="step-title">2. Access Your Course Portal</span>
-          <span class="step-pill red">Portal Ready</span>
-        </div>
-
-        <div class="portal-box">
-          <!-- Master Glowing Launch Button -->
-          <a href="https://community.mechanismofya.com/" target="_blank" rel="noopener noreferrer" class="btn-portal-master" aria-label="Open MOYA Course Portal">
-            <span>🚀 Open MOYA Course Portal &rarr;</span>
-          </a>
-          <p class="portal-link-hint">Direct Portal Link: <code>https://community.mechanismofya.com/</code></p>
-
-          <!-- Dual Method Minimal Login Cards -->
-          <div class="methods-grid">
-            <!-- Process 1: Google Login -->
-            <div class="method-card recommended">
-              <span class="method-tag gold">PROCESS 1 (RECOMMENDED)</span>
-              <h3 class="method-title">1-Click Google Sign-In</h3>
-              <ul class="method-steps">
-                <li class="method-step">
-                  <span class="step-num">1</span>
-                  <span>Click <strong>"Continue with Google"</strong>.</span>
-                </li>
-                <li class="method-step">
-                  <span class="step-num">2</span>
-                  <span>Select your <strong>registered Gmail</strong>.</span>
-                </li>
-                <li class="method-step">
-                  <span class="step-num">3</span>
-                  <span>Get <strong>instant course access!</strong></span>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Process 2: Security Code -->
-            <div class="method-card">
-              <span class="method-tag silver">PROCESS 2 (ALTERNATIVE)</span>
-              <h3 class="method-title">Log in with Security Code</h3>
-              <ul class="method-steps">
-                <li class="method-step">
-                  <span class="step-num">1</span>
-                  <span>Click <strong>"Log in with Security Code"</strong>.</span>
-                </li>
-                <li class="method-step">
-                  <span class="step-num">2</span>
-                  <span>Enter registered email &amp; 6-digit OTP.</span>
-                </li>
-                <li class="method-step">
-                  <span class="step-num">3</span>
-                  <span>Get <strong>instant course access!</strong></span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Support Footer -->
-      <p class="support-strip">If you face any issues logging in, reach out to our priority team at <a href="mailto:support@mechanismofya.com">support@mechanismofya.com</a></p>
     </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN LANDMARK
+       ======================================================================== -->
+  <main id="main-content">
+
+    <!-- ======================================================================
+         2. HERO SECTION
+         ====================================================================== -->
+    <section class="hero-section" aria-labelledby="hero-title">
+      <div class="page-container">
+        <div class="hero-grid">
+          
+          <!-- Left Hero Column -->
+          <div class="hero-left">
+            <div class="check-icon-badge" aria-hidden="true">
+              <svg class="check-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+
+            <h1 id="hero-title" class="hero-headline">
+              Payment received.<br />
+              <span class="text-blue">You’re in.</span>
+            </h1>
+
+            <p class="hero-copy">
+              Welcome to MOYA 1.0. Your seat is confirmed, your course access is ready, and the creator community is waiting.
+            </p>
+          </div>
+
+          <!-- Right Hero Column: Premium Dark Receipt Card -->
+          <aside class="receipt-card" aria-label="Payment Summary">
+            <div class="receipt-header">
+              <div class="receipt-amount-wrap">
+                <span class="receipt-amount-label">Amount received</span>
+                <span id="displayAmount" class="receipt-amount">₹999</span>
+              </div>
+              <span class="status-badge-paid">PAID</span>
+            </div>
+
+            <hr class="receipt-divider" />
+
+            <dl class="receipt-meta-grid">
+              <div class="receipt-meta-item">
+                <dt class="receipt-meta-dt">Program</dt>
+                <dd class="receipt-meta-dd">MOYA 1.0</dd>
+              </div>
+
+              <div class="receipt-meta-item">
+                <dt class="receipt-meta-dt">Access</dt>
+                <dd class="receipt-meta-dd">Lifetime</dd>
+              </div>
+
+              <div class="receipt-meta-item">
+                <dt class="receipt-meta-dt">Payment reference</dt>
+                <dd id="displayPaymentId" class="receipt-meta-dd">Confirmed</dd>
+              </div>
+
+              <div class="receipt-meta-item">
+                <dt class="receipt-meta-dt">Receipt</dt>
+                <dd id="displayReceiptEmail" class="receipt-meta-dd">Sent to your email</dd>
+              </div>
+            </dl>
+
+            <p class="receipt-footer-note">
+              Keep this page open until you finish the two steps below.
+            </p>
+          </aside>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. SETUP SECTION
+         ====================================================================== -->
+    <section class="setup-section" aria-labelledby="setup-heading">
+      <div class="page-container">
+        
+        <div class="section-intro">
+          <h2 id="setup-heading" class="section-headline">Complete your setup.</h2>
+          <p class="section-copy">
+            Two quick actions unlock everything. Start with the course portal, then join the community where updates and live support are shared.
+          </p>
+        </div>
+
+        <div class="actions-grid">
+          
+          <!-- Card A: Course Portal (Primary CTA) -->
+          <article class="action-card card-primary-portal" aria-labelledby="portal-card-title">
+            <div class="action-card-top">
+              <h3 id="portal-card-title" class="action-card-title">Open your course portal</h3>
+              <p class="action-card-desc">Sign in with the same email you used during payment.</p>
+            </div>
+            <a href="https://community.mechanismofya.com/" target="_blank" rel="noopener noreferrer" class="btn btn-portal-primary">
+              Enter MOYA course &rarr;
+            </a>
+          </article>
+
+          <!-- Card B: WhatsApp Community -->
+          <!-- NOTE: Replace the href URL below with your final WhatsApp Community URL -->
+          <article class="action-card card-whatsapp" aria-labelledby="wa-card-title">
+            <div class="action-card-top">
+              <h3 id="wa-card-title" class="action-card-title">Join WhatsApp</h3>
+              <p class="action-card-desc">Bootcamp alerts, batch updates, and quick announcements.</p>
+            </div>
+            <a href="https://whatsapp.com/channel/0029VajcJRV2UPB940uoYv10" target="_blank" rel="noopener noreferrer" class="btn btn-black" id="whatsappCommunityLink">
+              Join WhatsApp
+            </a>
+          </article>
+
+          <!-- Card C: Facebook Community -->
+          <!-- NOTE: Replace the href URL below with your final Facebook Community URL -->
+          <article class="action-card card-facebook" aria-labelledby="fb-card-title">
+            <div class="action-card-top">
+              <h3 id="fb-card-title" class="action-card-title">Also on Facebook</h3>
+              <p class="action-card-desc">Long-form discussions, wins, questions, and community support.</p>
+            </div>
+            <a href="https://www.facebook.com/groups/mechanismofya" target="_blank" rel="noopener noreferrer" class="btn btn-violet-secondary" id="facebookCommunityLink">
+              Join Facebook community
+            </a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4. FIRST-LOGIN SECTION
+         ====================================================================== -->
+    <section class="login-section" aria-labelledby="login-heading">
+      <div class="page-container">
+        <div class="login-grid">
+          
+          <!-- Left Column -->
+          <div class="login-intro">
+            <h2 id="login-heading" class="login-headline">Your first login, made simple.</h2>
+            <p class="login-copy">
+              Use the same email as your purchase. Most learners are inside in under a minute.
+            </p>
+            <a href="https://community.mechanismofya.com/" target="_blank" rel="noopener noreferrer" class="btn btn-login-outline">
+              Open community.mechanismofya.com
+            </a>
+          </div>
+
+          <!-- Right Column: Numbered Instructions -->
+          <div class="login-steps-card">
+            <ol class="instruction-list">
+              
+              <li class="instruction-item">
+                <span class="step-index-badge" aria-hidden="true">1</span>
+                <div class="instruction-body">
+                  <h3 class="instruction-title">Choose ‘Continue with Google’</h3>
+                  <p class="instruction-desc">Use your registered Gmail for instant access.</p>
+                </div>
+              </li>
+
+              <li class="instruction-item">
+                <span class="step-index-badge" aria-hidden="true">2</span>
+                <div class="instruction-body">
+                  <h3 class="instruction-title">Or use a security code</h3>
+                  <p class="instruction-desc">Enter your registered email and the 6-digit code sent to you.</p>
+                </div>
+              </li>
+
+              <li class="instruction-item">
+                <span class="step-index-badge" aria-hidden="true">3</span>
+                <div class="instruction-body">
+                  <h3 class="instruction-title">Start with the welcome module</h3>
+                  <p class="instruction-desc">Your course, bonuses, and onboarding instructions are already inside.</p>
+                </div>
+              </li>
+
+            </ol>
+
+            <div class="login-support-box">
+              Need help? Email <a href="mailto:support@mechanismofya.com" class="login-support-link">support@mechanismofya.com</a> and include the email used for payment.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
   </main>
 
-  <!-- Interactive Particle Background Script -->
+  <!-- ========================================================================
+       5. FOOTER
+       ======================================================================== -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="page-container footer-inner">
+      <span>&copy; 2026 Mechanism of YA</span>
+      <span>Payment confirmed &middot; Access protected</span>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       DYNAMIC DATA INJECTION & SANITIZATION (VANILLA JAVASCRIPT)
+       ======================================================================== -->
   <script>
     (function () {
-      const canvas = document.getElementById('tyParticles');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
+      'use strict';
 
-      let W, H, particles = [], mouse = { x: -9999, y: -9999 };
-      const PARTICLE_COUNT = 60;
-      const CONNECT_DIST = 110;
-      const MOUSE_RADIUS = 150;
+      // Safe parameter extraction & sanitization
+      var params = new URLSearchParams(window.location.search);
 
-      function resize() {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-      }
-      resize();
-      window.addEventListener('resize', resize);
+      var rawAmount = params.get('amount');
+      var rawPaymentId = params.get('payment_id');
+      var rawCustomerEmail = params.get('customer_email');
 
-      window.addEventListener('mousemove', function (e) {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-      });
-      window.addEventListener('mouseleave', function () {
-        mouse.x = -9999;
-        mouse.y = -9999;
-      });
-
-      function Particle() {
-        this.x = Math.random() * W;
-        this.y = Math.random() * H;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
-        this.radius = Math.random() * 1.8 + 0.6;
-        var rnd = Math.random();
-        if (rnd < 0.5) {
-          this.color = [229, 46, 63]; // brand red
-        } else if (rnd < 0.8) {
-          this.color = [255, 255, 255];
-        } else {
-          this.color = [37, 211, 102]; // green
-        }
-        this.baseAlpha = 0.12 + Math.random() * 0.25;
-        this.alpha = this.baseAlpha;
-      }
-
-      for (var i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
-
-      function animate() {
-        ctx.clearRect(0, 0, W, H);
-        for (var i = 0; i < particles.length; i++) {
-          var p = particles[i];
-          var dx = p.x - mouse.x;
-          var dy = p.y - mouse.y;
-          var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < MOUSE_RADIUS && dist > 0) {
-            var force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
-            var angle = Math.atan2(dy, dx);
-            p.vx += Math.cos(angle) * force * 1.2;
-            p.vy += Math.sin(angle) * force * 1.2;
-            p.alpha = Math.min(0.9, p.baseAlpha + force * 0.7);
-          } else {
-            p.alpha += (p.baseAlpha - p.alpha) * 0.05;
-          }
-          p.vx *= 0.96;
-          p.vy *= 0.96;
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.x < 0) p.x = W;
-          if (p.x > W) p.x = 0;
-          if (p.y < 0) p.y = H;
-          if (p.y > H) p.y = 0;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(' + p.color[0] + ',' + p.color[1] + ',' + p.color[2] + ',' + p.alpha + ')';
-          ctx.fill();
-          for (var j = i + 1; j < particles.length; j++) {
-            var p2 = particles[j];
-            var ddx = p.x - p2.x;
-            var ddy = p.y - p2.y;
-            var d = Math.sqrt(ddx * ddx + ddy * ddy);
-            if (d < CONNECT_DIST) {
-              var lineAlpha = (1 - d / CONNECT_DIST) * 0.12;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.strokeStyle = 'rgba(229, 46, 63, ' + lineAlpha + ')';
-              ctx.lineWidth = 0.5;
-              ctx.stroke();
+      // 1. Amount Processing
+      // Default: ₹999. Prepend ₹ if missing.
+      var displayAmountEl = document.getElementById('displayAmount');
+      if (displayAmountEl) {
+        if (rawAmount) {
+          var trimmedAmt = rawAmount.trim();
+          // Validate currency format (e.g. 999, 4997, 4,997, ₹999, etc.)
+          if (/^₹?\s*[\d,]+(\.\d{1,2})?$/.test(trimmedAmt)) {
+            var cleanedAmount = trimmedAmt.replace(/[^\d.,₹]/g, '');
+            if (!cleanedAmount.startsWith('₹')) {
+              cleanedAmount = '₹' + cleanedAmount;
             }
+            displayAmountEl.textContent = cleanedAmount;
+
+            // Sync Meta Pixel purchase event with actual amount if numeric
+            var numericValue = parseFloat(cleanedAmount.replace(/[^\d.]/g, ''));
+            if (!isNaN(numericValue) && window.fbq) {
+              window.fbq('track', 'Purchase', { value: numericValue, currency: 'INR' });
+            }
+          } else {
+            displayAmountEl.textContent = '₹999';
           }
+        } else {
+          displayAmountEl.textContent = '₹999';
         }
-        requestAnimationFrame(animate);
       }
-      animate();
+
+      // 2. Payment Reference Processing
+      // If available, show sanitized payment_id. Otherwise "Confirmed".
+      var displayPaymentIdEl = document.getElementById('displayPaymentId');
+      if (displayPaymentIdEl) {
+        if (rawPaymentId) {
+          // Allow alphanumeric, underscores, hyphens (max 36 chars)
+          var cleanedPaymentId = rawPaymentId.trim().replace(/[^a-zA-Z0-9_\-]/g, '').slice(0, 36);
+          if (cleanedPaymentId.length > 0) {
+            displayPaymentIdEl.textContent = cleanedPaymentId;
+          } else {
+            displayPaymentIdEl.textContent = 'Confirmed';
+          }
+        } else {
+          displayPaymentIdEl.textContent = 'Confirmed';
+        }
+      }
+
+      // 3. Customer Email Masking
+      // Example: name@example.com -> Sent to n***@example.com
+      var displayReceiptEmailEl = document.getElementById('displayReceiptEmail');
+      if (displayReceiptEmailEl) {
+        if (rawCustomerEmail) {
+          var trimmedEmail = rawCustomerEmail.trim();
+          var atIndex = trimmedEmail.indexOf('@');
+          if (atIndex > 0 && atIndex < trimmedEmail.length - 1) {
+            var localPart = trimmedEmail.slice(0, atIndex);
+            var domainPart = trimmedEmail.slice(atIndex + 1);
+
+            // Clean domain & local
+            var cleanLocal = localPart.replace(/[^\w.+_\-]/g, '');
+            var cleanDomain = domainPart.replace(/[^\w.\-]/g, '');
+
+            if (cleanLocal.length > 0 && cleanDomain.length > 0) {
+              var maskedLocal = cleanLocal.charAt(0) + '***';
+              displayReceiptEmailEl.textContent = 'Sent to ' + maskedLocal + '@' + cleanDomain;
+            } else {
+              displayReceiptEmailEl.textContent = 'Sent to your email';
+            }
+          } else {
+            displayReceiptEmailEl.textContent = 'Sent to your email';
+          }
+        } else {
+          displayReceiptEmailEl.textContent = 'Sent to your email';
+        }
+      }
     })();
   </script>
 
