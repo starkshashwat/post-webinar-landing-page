@@ -38,32 +38,34 @@
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enrollment Confirmed — Mechanism of YouTube Automation (MOYA)</title>
-  <meta name="description" content="Thank you for enrolling in Mechanism of YouTube Automation (MOYA). Next steps and portal access information." />
+  <title>Enrollment Confirmed — Mechanism of YouTube Automation (MOYA 1.0)</title>
+  <meta name="description" content="Welcome to MOYA 1.0. Follow the quick steps to join official communities and access your course portal at community.mechanismofya.com." />
   
   <meta name="robots" content="noindex, nofollow" />
   <link rel="canonical" href="https://vsl.mechanismofya.com/thankyou" />
 
   <link rel="icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png">
   <link rel="shortcut icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png">
-</head>
-<body>
-<!-- Fonts -->
+
+  <!-- Fonts matching Landing Page -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --brand-deep: #080808;
-      --brand-dark: #0a0000;
-      --brand-purple: #990000;
-      --brand-light: #ff0000;
-      --accent: #F5C518;
+      --bg-deep: #03040b;
+      --bg-card: rgba(13, 15, 29, 0.88);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --brand-red: #E52E3F;
+      --brand-red-glow: rgba(229, 46, 63, 0.45);
+      --brand-gold: #F5C518;
       --wa-green: #25D366;
       --wa-dark: #1EBE5D;
+      --wa-glow: rgba(37, 211, 102, 0.4);
       --fb-blue: #1877F2;
       --fb-dark: #1462D4;
+      --fb-glow: rgba(24, 119, 242, 0.4);
     }
 
     * {
@@ -71,9 +73,10 @@
       margin: 0;
       padding: 0;
     }
-    .moya-custom-wrapper {
-      font-family: 'Inter', sans-serif;
-      background: var(--brand-deep) !important; width: 100%; position: relative;
+
+    body {
+      background-color: var(--bg-deep);
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
       color: #ffffff;
       min-height: 100vh;
       display: flex;
@@ -81,500 +84,732 @@
       justify-content: center;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      padding: 32px 16px;
     }
 
-    /* --- Animated Background Elements --- */
+    /* Ambient Background Effects */
     .bg-gradient {
       position: fixed;
       inset: 0;
       background: 
-        radial-gradient(ellipse at 20% 0%, rgba(255, 0, 0, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 100%, rgba(255, 0, 0, 0.1) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(255, 0, 0, 0.12) 0%, transparent 60%);
+        radial-gradient(ellipse at 50% 0%, rgba(229, 46, 63, 0.16) 0%, transparent 60%),
+        radial-gradient(ellipse at 85% 90%, rgba(37, 211, 102, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 15% 90%, rgba(24, 119, 242, 0.08) 0%, transparent 50%);
       z-index: 0;
+      pointer-events: none;
     }
 
     .bg-mesh {
       position: fixed;
       inset: 0;
       background-image:
-        linear-gradient(rgba(255, 0, 0, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 0, 0, 0.04) 1px, transparent 1px);
-      background-size: 60px 60px;
-      animation: meshShift 30s linear infinite;
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
       z-index: 1;
       pointer-events: none;
     }
 
-    @keyframes meshShift {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(60px, 60px); }
-    }
-
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(80px);
-      z-index: 0;
-      animation: float 15s ease-in-out infinite alternate;
-    }
-
-    .orb-1 {
-      width: 400px;
-      height: 400px;
-      background: rgba(255, 0, 0, 0.15);
-      top: -100px;
-      left: -100px;
-    }
-
-    .orb-2 {
-      width: 500px;
-      height: 500px;
-      background: rgba(255, 0, 0, 0.12);
-      bottom: -150px;
-      right: -100px;
-      animation-delay: -5s;
-    }
-
-    @keyframes float {
-      0% { transform: translate(0, 0); }
-      50% { transform: translate(30px, -40px) scale(1.1); }
-      100% { transform: translate(-30px, 20px) scale(0.9); }
-    }
-
-    /* --- Thank You Card Container --- */
+    /* Unified Single-Section Container */
     .ty-container {
       position: relative;
       z-index: 10;
       width: 100%;
-      max-width: 600px;
-      padding: 1.5rem;
-      animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      opacity: 0;
-      transform: translateY(40px);
+      max-width: 680px;
+      margin: 0 auto;
+      animation: cardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes slideUpFade {
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
+    /* Obsidian Glass Card */
     .ty-card {
-      background: rgba(15, 0, 0, 0.7);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      border: 1px solid rgba(255, 0, 0, 0.15);
+      background: var(--bg-card);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--border-subtle);
       border-radius: 28px;
-      padding: 3.5rem 3rem;
+      padding: 40px 32px;
       text-align: center;
       box-shadow: 
-        0 40px 80px rgba(0, 0, 0, 0.6), 
+        0 30px 80px rgba(0, 0, 0, 0.85), 
         inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 0 0 1px rgba(255, 0, 0, 0.2);
+        0 0 50px rgba(229, 46, 63, 0.12);
       position: relative;
       overflow: hidden;
     }
 
+    /* Top Accent Line */
     .ty-card::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 4px;
-      background: linear-gradient(90deg, var(--brand-light), var(--wa-green));
+      background: linear-gradient(90deg, var(--brand-red) 0%, var(--wa-green) 50%, var(--fb-blue) 100%);
     }
 
-    /* --- Status Icon --- */
-    .status-icon {
-      width: 90px;
-      height: 90px;
-      background: rgba(245, 197, 24, 0.1);
-      border: 2px solid rgba(245, 197, 24, 0.3);
+    /* Status Badge Icon */
+    .status-badge-wrap {
+      width: 72px;
+      height: 72px;
+      background: radial-gradient(circle, rgba(37, 211, 102, 0.22) 0%, rgba(37, 211, 102, 0.05) 70%);
+      border: 2px solid rgba(37, 211, 102, 0.5);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 2rem;
-      box-shadow: 0 0 30px rgba(245, 197, 24, 0.2);
-      animation: pulseBadge 2.5s infinite alternate;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 28px rgba(37, 211, 102, 0.35);
+      animation: pulseAura 2.6s infinite alternate ease-in-out;
     }
 
-    @keyframes pulseBadge {
-      from { box-shadow: 0 0 20px rgba(245, 197, 24, 0.15); transform: scale(1); }
-      to { box-shadow: 0 0 50px rgba(245, 197, 24, 0.4); transform: scale(1.05); }
+    @keyframes pulseAura {
+      from { transform: scale(1); box-shadow: 0 0 20px rgba(37, 211, 102, 0.25); }
+      to { transform: scale(1.06); box-shadow: 0 0 36px rgba(37, 211, 102, 0.5); }
     }
 
-    .status-icon svg {
-      width: 44px;
-      height: 44px;
-      color: var(--accent);
+    .status-badge-wrap svg {
+      width: 34px;
+      height: 34px;
+      color: #4ade80;
     }
 
-    /* --- Typography --- */
-    .title {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      margin-bottom: 0.8rem;
-      color: #fff;
-    }
-
-    .subtitle {
-      font-size: 1.1rem;
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1.6;
-      margin-bottom: 2.5rem;
-    }
-
-    /* --- Action Box --- */
-    .action-box {
-      border-radius: 20px;
-      padding: 2rem 1.5rem;
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-      text-align: left;
-    }
-
-    .action-box.wa-box {
-      background: linear-gradient(145deg, rgba(37, 211, 102, 0.08), rgba(0, 0, 0, 0.3));
-      border: 1px solid rgba(37, 211, 102, 0.25);
-    }
-
-    .action-box.fb-box {
-      background: linear-gradient(145deg, rgba(24, 119, 242, 0.08), rgba(0, 0, 0, 0.3));
-      border: 1px solid rgba(24, 119, 242, 0.25);
-    }
-
-    .action-box::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      animation: scanline 3s linear infinite;
-    }
-
-    .action-box.wa-box::after {
-      background: linear-gradient(90deg, transparent, var(--wa-green), transparent);
-    }
-
-    .action-box.fb-box::after {
-      background: linear-gradient(90deg, transparent, var(--fb-blue), transparent);
-    }
-
-    @keyframes scanline {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
-    .action-label {
-      display: inline-block;
+    /* Headings */
+    .confirm-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       font-size: 0.75rem;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 0.4rem 1rem;
-      border-radius: 100px;
-      margin-bottom: 1rem;
+      letter-spacing: 0.08em;
+      color: #4ade80;
+      background: rgba(37, 211, 102, 0.12);
+      border: 1px solid rgba(37, 211, 102, 0.3);
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 12px;
     }
 
-    .action-label.label-wa {
-      background: rgba(37, 211, 102, 0.15);
-      color: var(--wa-green);
-    }
-
-    .action-label.label-fb {
-      background: rgba(24, 119, 242, 0.15);
-      color: var(--fb-blue);
-    }
-
-    .action-text {
-      font-size: 1.1rem;
-      font-weight: 600;
+    .title {
+      font-size: 2.1rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
       color: #fff;
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
     }
 
-    /* --- WhatsApp Button --- */
-    .btn-wa {
+    .title span {
+      background: linear-gradient(135deg, #fff 30%, #e2e8f0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title .red-accent {
+      background: linear-gradient(135deg, #ff4d5e 0%, #E52E3F 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 0.94rem;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 28px;
+      max-width: 520px;
+      margin-inline: auto;
+    }
+
+    /* Section Separator */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+      margin: 24px 0;
+    }
+
+    /* ==========================================================================
+       STEP 1: VIP COMMUNITIES (WHATSAPP & FACEBOOK)
+       ========================================================================== */
+    .step-section {
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .step-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: var(--wa-green);
-      color: #fff;
-      text-decoration: none;
-      font-size: 1.15rem;
-      font-weight: 700;
-      padding: 1.2rem 2.5rem;
-      border-radius: 100px;
-      border: 2px solid transparent;
-      box-shadow: 0 10px 30px rgba(37, 211, 102, 0.3);
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .step-pill {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .step-pill.green {
+      background: rgba(37, 211, 102, 0.12);
+      border: 1px solid rgba(37, 211, 102, 0.3);
+      color: #4ade80;
+    }
+
+    .step-pill.red {
+      background: rgba(229, 46, 63, 0.14);
+      border: 1px solid rgba(229, 46, 63, 0.35);
+      color: #ff6674;
+    }
+
+    .step-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+    }
+
+    /* Action Cards Grid */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .action-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       position: relative;
       overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+    }
+
+    .action-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .action-card.wa-card {
+      border-color: rgba(37, 211, 102, 0.25);
+      background: linear-gradient(145deg, rgba(37, 211, 102, 0.06) 0%, rgba(13, 15, 29, 0.7) 100%);
+    }
+
+    .action-card.wa-card:hover {
+      border-color: rgba(37, 211, 102, 0.5);
+      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.15);
+    }
+
+    .action-card.fb-card {
+      border-color: rgba(24, 119, 242, 0.25);
+      background: linear-gradient(145deg, rgba(24, 119, 242, 0.06) 0%, rgba(13, 15, 29, 0.7) 100%);
+    }
+
+    .action-card.fb-card:hover {
+      border-color: rgba(24, 119, 242, 0.5);
+      box-shadow: 0 10px 25px rgba(24, 119, 242, 0.15);
+    }
+
+    .action-card-text {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    /* Community Buttons */
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
       width: 100%;
+      padding: 12px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      cursor: pointer;
     }
 
-    .btn-wa:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 15px 40px rgba(37, 211, 102, 0.5);
-      background: var(--wa-dark);
-      border-color: rgba(255, 255, 255, 0.4);
+    .btn-action.btn-wa {
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      box-shadow: 0 8px 22px var(--wa-glow);
     }
 
-    .btn-wa::before {
+    .btn-action.btn-wa:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(37, 211, 102, 0.6);
+      background: linear-gradient(135deg, #2fe06f 0%, #16a34a 100%);
+    }
+
+    .btn-action.btn-fb {
+      background: linear-gradient(135deg, #1877F2 0%, #0d5bbd 100%);
+      box-shadow: 0 8px 22px var(--fb-glow);
+    }
+
+    .btn-action.btn-fb:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(24, 119, 242, 0.6);
+      background: linear-gradient(135deg, #2b87ff 0%, #1062c9 100%);
+    }
+
+    .btn-action::before {
       content: '';
       position: absolute;
       top: -50%; left: -50%;
       width: 200%; height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.25), transparent);
       transform: rotate(45deg);
-      animation: btnShine 3s infinite;
+      animation: btnShine 3.2s infinite;
     }
 
     @keyframes btnShine {
       0% { transform: translateX(-100%) rotate(45deg); }
-      50%, 100% { transform: translateX(100%) rotate(45deg); }
+      40%, 100% { transform: translateX(100%) rotate(45deg); }
     }
 
-    .btn-wa svg {
-      width: 28px;
-      height: 28px;
+    .btn-action svg {
+      width: 20px;
+      height: 20px;
       fill: currentColor;
+      flex-shrink: 0;
     }
 
-    /* --- Facebook Button --- */
-    .btn-fb {
-      display: flex;
+    /* ==========================================================================
+       STEP 2: COURSE PORTAL ACCESS & LOGIN GUIDE
+       ========================================================================== */
+    .portal-box {
+      background: linear-gradient(145deg, rgba(229, 46, 63, 0.08) 0%, rgba(13, 15, 29, 0.8) 100%);
+      border: 1px solid rgba(229, 46, 63, 0.3);
+      border-radius: 22px;
+      padding: 24px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* Master Portal CTA Button */
+    .btn-portal-master {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      background: var(--fb-blue);
+      gap: 10px;
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #E52E3F 0%, #B91C1C 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
       color: #fff;
       text-decoration: none;
-      font-size: 1.15rem;
-      font-weight: 700;
-      padding: 1.2rem 2.5rem;
-      border-radius: 100px;
-      border: 2px solid transparent;
-      box-shadow: 0 10px 30px rgba(24, 119, 242, 0.3);
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      box-shadow: 0 10px 30px var(--brand-red-glow), 0 0 25px rgba(229, 46, 63, 0.3);
       position: relative;
       overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      width: 100%;
+      transition: all 0.25s ease;
+      cursor: pointer;
     }
 
-    .btn-fb:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 15px 40px rgba(24, 119, 242, 0.5);
-      background: var(--fb-dark);
-      border-color: rgba(255, 255, 255, 0.4);
+    .btn-portal-master:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 36px rgba(229, 46, 63, 0.65), 0 0 35px rgba(229, 46, 63, 0.45);
+      background: linear-gradient(135deg, #ff384c 0%, #c91828 100%);
     }
 
-    .btn-fb::before {
+    .btn-portal-master::before {
       content: '';
       position: absolute;
       top: -50%; left: -50%;
       width: 200%; height: 200%;
       background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
       transform: rotate(45deg);
-      animation: btnShine 3s infinite;
+      animation: btnShine 2.8s infinite;
     }
 
-    .btn-fb svg {
-      width: 28px;
-      height: 28px;
-      fill: currentColor;
+    .portal-link-hint {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 8px;
+      margin-bottom: 18px;
     }
 
-    .footer-note {
-      margin-top: 1.5rem;
-      font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.4);
+    .portal-link-hint code {
+      color: #fca5a5;
+      font-family: inherit;
+      font-weight: 700;
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 600px) {
+    /* Dual Method Login Cards */
+    .methods-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .method-card {
+      background: rgba(6, 8, 18, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 14px 12px;
+    }
+
+    .method-card.recommended {
+      border-color: rgba(245, 197, 24, 0.35);
+      background: linear-gradient(145deg, rgba(245, 197, 24, 0.05) 0%, rgba(6, 8, 18, 0.7) 100%);
+    }
+
+    .method-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+
+    .method-tag.gold {
+      background: rgba(245, 197, 24, 0.15);
+      border: 1px solid rgba(245, 197, 24, 0.4);
+      color: #fde047;
+    }
+
+    .method-tag.silver {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+    }
+
+    .method-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .method-steps {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .method-step {
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.35;
+    }
+
+    .method-step strong {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .step-num {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #94a3b8;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Support Strip Footer */
+    .support-strip {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 18px;
+      line-height: 1.45;
+    }
+
+    .support-strip a {
+      color: #e2e8f0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .support-strip a:hover {
+      color: #fff;
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 580px) {
       .ty-card {
-        padding: 2.5rem 1.5rem;
-        border-radius: 20px;
+        padding: 30px 18px;
+        border-radius: 22px;
       }
       .title {
-        font-size: 2rem;
+        font-size: 1.7rem;
       }
       .subtitle {
-        font-size: 1rem;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
       }
-      .status-icon {
-        width: 70px;
-        height: 70px;
-        margin-bottom: 1.5rem;
+      .action-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
       }
-      .status-icon svg {
-        width: 32px;
-        height: 32px;
+      .methods-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
       }
-      .action-box {
-        padding: 1.5rem 1rem;
+      .btn-portal-master {
+        padding: 14px 18px;
+        font-size: 0.95rem;
       }
-      .btn-wa {
-        padding: 1rem 1.5rem;
-        font-size: 1rem;
+      .btn-action {
+        padding: 11px 14px;
+        font-size: 0.82rem;
       }
     }
   </style>
+</head>
+<body>
 
-<div class="moya-custom-wrapper">
-
+  <!-- Ambient Backdrop -->
   <div class="bg-gradient"></div>
   <div class="bg-mesh"></div>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
   <canvas id="tyParticles" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;"></canvas>
 
   <main class="ty-container">
     <div class="ty-card">
       
-      <div class="status-icon">
+      <!-- Checkmark Badge -->
+      <div class="status-badge-wrap" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
       </div>
 
-      <h1 class="title">Booking <span style="color: #FF0000;">Confirmed!</span></h1>
-      <p class="subtitle">Your <strong style="color: #FF0000;">₹199 registration</strong> is confirmed. Check your email for the calendar invite.</p>
-      <p style="font-size: 0.85rem; color: #FF0000; margin-top: -10px; margin-bottom: 25px; font-weight: 600;">NOTE: The ₹497 Bonus (if selected) will be processed automatically after webinar.</p>
+      <div class="confirm-pill">✓ Enrollment Confirmed • Batch Active</div>
+      <h1 class="title">Welcome to <span class="red-accent">MOYA 1.0!</span></h1>
+      <p class="subtitle">Your seat has been reserved. Complete the 2 simple steps below to join your batch communities and enter your learning portal.</p>
 
-      <!-- Step 1: WhatsApp -->
-      <div class="action-box wa-box">
-        <span class="action-label label-wa">Step 1</span>
-        <p class="action-text">Join WhatsApp Community for Webinar updates</p>
-        
-        <a href="https://whatsapp.com/channel/0029VajcJRV2UPB940uoYv10" target="_blank" class="btn-wa">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-          </svg>
-          Join WhatsApp Group
-        </a>
+      <!-- ====================================================================
+           STEP 1: JOIN BATCH COMMUNITIES (WHATSAPP & FACEBOOK)
+           ==================================================================== -->
+      <div class="step-section">
+        <div class="step-header">
+          <span class="step-title">1. Join Official Batch Communities</span>
+          <span class="step-pill green">Instant Join</span>
+        </div>
+
+        <div class="action-grid">
+          <!-- WhatsApp Card -->
+          <div class="action-card wa-card">
+            <p class="action-card-text">Join WhatsApp Community for Webinar &amp; Batch updates</p>
+            <a href="https://whatsapp.com/channel/0029VajcJRV2UPB940uoYv10" target="_blank" rel="noopener noreferrer" class="btn-action btn-wa" aria-label="Join WhatsApp Group">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+              </svg>
+              Join WhatsApp Group
+            </a>
+          </div>
+
+          <!-- Facebook Card -->
+          <div class="action-card fb-card">
+            <p class="action-card-text">Join Facebook community for all the updates</p>
+            <a href="https://www.facebook.com/groups/mechanismofya" target="_blank" rel="noopener noreferrer" class="btn-action btn-fb" aria-label="Join Facebook Group">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.8c4.56-.93 8-4.96 8-9.8Z"/>
+              </svg>
+              Join Facebook Group
+            </a>
+          </div>
+        </div>
       </div>
 
-      <!-- Step 2: Facebook -->
-      <div class="action-box fb-box">
-        <span class="action-label label-fb">Step 2</span>
-        <p class="action-text">Join Facebook community for all the updates</p>
-        
-        <a href="https://www.facebook.com/groups/mechanismofya" target="_blank" class="btn-fb">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.8c4.56-.93 8-4.96 8-9.8Z"/>
-          </svg>
-          Join Facebook Group
-        </a>
+      <!-- Section Divider -->
+      <div class="section-divider"></div>
+
+      <!-- ====================================================================
+           STEP 2: COURSE PORTAL ACCESS & LOGIN GUIDE
+           ==================================================================== -->
+      <div class="step-section">
+        <div class="step-header">
+          <span class="step-title">2. Access Your Course Portal</span>
+          <span class="step-pill red">Portal Ready</span>
+        </div>
+
+        <div class="portal-box">
+          <!-- Master Glowing Launch Button -->
+          <a href="https://community.mechanismofya.com/" target="_blank" rel="noopener noreferrer" class="btn-portal-master" aria-label="Open MOYA Course Portal">
+            <span>🚀 Open MOYA Course Portal &rarr;</span>
+          </a>
+          <p class="portal-link-hint">Direct Portal Link: <code>https://community.mechanismofya.com/</code></p>
+
+          <!-- Dual Method Minimal Login Cards -->
+          <div class="methods-grid">
+            <!-- Process 1: Google Login -->
+            <div class="method-card recommended">
+              <span class="method-tag gold">PROCESS 1 (RECOMMENDED)</span>
+              <h3 class="method-title">1-Click Google Sign-In</h3>
+              <ul class="method-steps">
+                <li class="method-step">
+                  <span class="step-num">1</span>
+                  <span>Click <strong>"Continue with Google"</strong>.</span>
+                </li>
+                <li class="method-step">
+                  <span class="step-num">2</span>
+                  <span>Select your <strong>registered Gmail</strong>.</span>
+                </li>
+                <li class="method-step">
+                  <span class="step-num">3</span>
+                  <span>Get <strong>instant course access!</strong></span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Process 2: Security Code -->
+            <div class="method-card">
+              <span class="method-tag silver">PROCESS 2 (ALTERNATIVE)</span>
+              <h3 class="method-title">Log in with Security Code</h3>
+              <ul class="method-steps">
+                <li class="method-step">
+                  <span class="step-num">1</span>
+                  <span>Click <strong>"Log in with Security Code"</strong>.</span>
+                </li>
+                <li class="method-step">
+                  <span class="step-num">2</span>
+                  <span>Enter registered email &amp; 6-digit OTP.</span>
+                </li>
+                <li class="method-step">
+                  <span class="step-num">3</span>
+                  <span>Get <strong>instant course access!</strong></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <p class="footer-note">Stay connected to ensure you don't miss out on important event notifications.</p>
+      <!-- Support Footer -->
+      <p class="support-strip">If you face any issues logging in, reach out to our priority team at <a href="mailto:support@mechanismofya.com">support@mechanismofya.com</a></p>
     </div>
   </main>
 
-</div>
+  <!-- Interactive Particle Background Script -->
+  <script>
+    (function () {
+      const canvas = document.getElementById('tyParticles');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
 
-<script>
-  // -- Interactive Particles --
-  (function () {
-    const canvas = document.getElementById('tyParticles');
-    const container = document.querySelector('.moya-custom-wrapper');
-    if (!canvas || !container) return;
-    const ctx = canvas.getContext('2d');
+      let W, H, particles = [], mouse = { x: -9999, y: -9999 };
+      const PARTICLE_COUNT = 60;
+      const CONNECT_DIST = 110;
+      const MOUSE_RADIUS = 150;
 
-    let W, H, particles = [], mouse = { x: -9999, y: -9999 };
-    const PARTICLE_COUNT = 80;
-    const CONNECT_DIST = 120;
-    const MOUSE_RADIUS = 160;
-
-    function resize() {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    container.addEventListener('mousemove', function (e) {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-    container.addEventListener('mouseleave', function () {
-      mouse.x = -9999;
-      mouse.y = -9999;
-    });
-
-    function Particle() {
-      this.x = Math.random() * W;
-      this.y = Math.random() * H;
-      this.vx = (Math.random() - 0.5) * 0.5;
-      this.vy = (Math.random() - 0.5) * 0.5;
-      this.radius = Math.random() * 2 + 0.5;
-      var rnd = Math.random();
-      if (rnd < 0.5) {
-        this.color = [255, Math.floor(Math.random() * 50), Math.floor(Math.random() * 20)];
-      } else if (rnd < 0.7) {
-        this.color = [255, 255, 255];
-      } else {
-        this.color = [255, Math.floor(50 + Math.random() * 50), 20];
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
       }
-      this.baseAlpha = 0.15 + Math.random() * 0.35;
-      this.alpha = this.baseAlpha;
-    }
+      resize();
+      window.addEventListener('resize', resize);
 
-    for (var i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+      window.addEventListener('mousemove', function (e) {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+      window.addEventListener('mouseleave', function () {
+        mouse.x = -9999;
+        mouse.y = -9999;
+      });
 
-    function animate() {
-      ctx.clearRect(0, 0, W, H);
-      for (var i = 0; i < particles.length; i++) {
-        var p = particles[i];
-        var dx = p.x - mouse.x;
-        var dy = p.y - mouse.y;
-        var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < MOUSE_RADIUS && dist > 0) {
-          var force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
-          var angle = Math.atan2(dy, dx);
-          p.vx += Math.cos(angle) * force * 1.5;
-          p.vy += Math.sin(angle) * force * 1.5;
-          p.alpha = Math.min(1, p.baseAlpha + force * 0.8);
+      function Particle() {
+        this.x = Math.random() * W;
+        this.y = Math.random() * H;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+        this.radius = Math.random() * 1.8 + 0.6;
+        var rnd = Math.random();
+        if (rnd < 0.5) {
+          this.color = [229, 46, 63]; // brand red
+        } else if (rnd < 0.8) {
+          this.color = [255, 255, 255];
         } else {
-          p.alpha += (p.baseAlpha - p.alpha) * 0.05;
+          this.color = [37, 211, 102]; // green
         }
-        p.vx *= 0.97;
-        p.vy *= 0.97;
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = W;
-        if (p.x > W) p.x = 0;
-        if (p.y < 0) p.y = H;
-        if (p.y > H) p.y = 0;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(' + p.color[0] + ',' + p.color[1] + ',' + p.color[2] + ',' + p.alpha + ')';
-        ctx.fill();
-        for (var j = i + 1; j < particles.length; j++) {
-          var p2 = particles[j];
-          var ddx = p.x - p2.x;
-          var ddy = p.y - p2.y;
-          var d = Math.sqrt(ddx * ddx + ddy * ddy);
-          if (d < CONNECT_DIST) {
-            var lineAlpha = (1 - d / CONNECT_DIST) * 0.15;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = 'rgba(255, 40, 40, ' + lineAlpha + ')';
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
+        this.baseAlpha = 0.12 + Math.random() * 0.25;
+        this.alpha = this.baseAlpha;
+      }
+
+      for (var i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+      function animate() {
+        ctx.clearRect(0, 0, W, H);
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          var dx = p.x - mouse.x;
+          var dy = p.y - mouse.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < MOUSE_RADIUS && dist > 0) {
+            var force = (MOUSE_RADIUS - dist) / MOUSE_RADIUS;
+            var angle = Math.atan2(dy, dx);
+            p.vx += Math.cos(angle) * force * 1.2;
+            p.vy += Math.sin(angle) * force * 1.2;
+            p.alpha = Math.min(0.9, p.baseAlpha + force * 0.7);
+          } else {
+            p.alpha += (p.baseAlpha - p.alpha) * 0.05;
+          }
+          p.vx *= 0.96;
+          p.vy *= 0.96;
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = W;
+          if (p.x > W) p.x = 0;
+          if (p.y < 0) p.y = H;
+          if (p.y > H) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + p.color[0] + ',' + p.color[1] + ',' + p.color[2] + ',' + p.alpha + ')';
+          ctx.fill();
+          for (var j = i + 1; j < particles.length; j++) {
+            var p2 = particles[j];
+            var ddx = p.x - p2.x;
+            var ddy = p.y - p2.y;
+            var d = Math.sqrt(ddx * ddx + ddy * ddy);
+            if (d < CONNECT_DIST) {
+              var lineAlpha = (1 - d / CONNECT_DIST) * 0.12;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = 'rgba(229, 46, 63, ' + lineAlpha + ')';
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
           }
         }
+        requestAnimationFrame(animate);
       }
-      requestAnimationFrame(animate);
-    }
-    animate();
-  })();
-</script>
+      animate();
+    })();
+  </script>
 
 </body>
 </html>
