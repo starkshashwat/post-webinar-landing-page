@@ -1,3 +1,5 @@
+import { initFestiveSpinGame } from './festive-wheel.js';
+import '../css/festive-wheel.css';
 import './data.js';
 
 /* ==========================================================================
@@ -3089,139 +3091,73 @@ function initRazorpayCheckoutFlow() {
 
   let appliedCouponCode = null;
   let currentPayableAmount = 4997;
-  const originalBasePrice = 4997;
+  let originalBasePrice = 4997;
 
   if (!modal) return;
 
-  // Coupon Apply Handler
+  let couponBusy = false;
+  let couponNeedsReview = false;
+  // The server is authoritative; a network failure must never fabricate a discount.
   async function handleApplyCoupon() {
-    const code = couponInput ? couponInput.value.trim() : "";
-    if (!code) {
-      if (couponMsgEl) {
-        couponMsgEl.className = "moya-coupon-msg error";
-        couponMsgEl.textContent = "Please enter a coupon code.";
-      }
-      return;
-    }
-
-    if (applyBtn) {
-      applyBtn.disabled = true;
-      applyBtn.textContent = "Checking...";
-    }
-
+    if (couponBusy) return;
+    const code = couponInput?.value.trim() || '';
+    if (!code) { couponMsgEl.textContent = 'Please enter a coupon code.'; return; }
+    couponBusy = true;
+    couponNeedsReview = true;
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Checking…';
+    document.getElementById('checkoutPayBtn').disabled = true;
     try {
-      const res = await fetch("/api/coupon/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ couponCode: code })
+      const res = await fetch('/api/coupon/validate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ couponCode: code }), signal: AbortSignal.timeout(10000)
       });
       const data = await res.json();
-
-      if (data.valid) {
-        appliedCouponCode = data.code;
-        currentPayableAmount = data.finalAmount;
-
-        if (displayPriceEl) {
-          displayPriceEl.innerHTML = `₹${data.finalAmount.toLocaleString('en-IN')} <span class="price-strikethrough">₹${originalBasePrice.toLocaleString('en-IN')}</span>`;
-        }
-        if (discountBadgeEl) {
-          discountBadgeEl.textContent = `COUPON APPLIED (-₹${data.discount.toLocaleString('en-IN')})`;
-          discountBadgeEl.classList.add("coupon-applied");
-        }
-        const submitBtn = document.getElementById("checkoutPayBtn");
-        if (submitBtn) {
-          const btnText = submitBtn.querySelector(".btn-text");
-          if (btnText) btnText.textContent = `Enroll Now & Pay ₹${data.finalAmount.toLocaleString('en-IN')}`;
-        }
-
-        if (applyBtn) {
-          applyBtn.textContent = "Applied ✓";
-          applyBtn.classList.add("is-applied");
-          applyBtn.disabled = true;
-        }
-        if (couponInput) {
-          couponInput.disabled = true;
-        }
-
-        if (couponMsgEl) {
-          couponMsgEl.className = "moya-coupon-msg success";
-          couponMsgEl.innerHTML = `<span>${data.message}</span> <span class="coupon-remove-link" id="removeCouponLink">Remove</span>`;
-
-          const removeLink = document.getElementById("removeCouponLink");
-          if (removeLink) {
-            removeLink.addEventListener("click", handleRemoveCoupon);
-          }
-        }
-      } else {
-        appliedCouponCode = null;
-        if (couponMsgEl) {
-          couponMsgEl.className = "moya-coupon-msg error";
-          couponMsgEl.textContent = getSafeUserErrorMessage(data.message, "Invalid or expired coupon code.");
-        }
-        if (applyBtn) {
-          applyBtn.disabled = false;
-          applyBtn.textContent = "Apply Code";
-        }
-      }
-    } catch (err) {
-      console.warn("Coupon remote check notice, checking fallback:", err.message);
-      const FESTIVAL_DEFAULTS = {
-        'MOYA55': 4000,
-        'MOYA44': 3000,
-        'MOYA22': 2000,
-        'MOYA11': 1000
-      };
-      const cleanUpper = code.trim().toUpperCase();
-      if (FESTIVAL_DEFAULTS[cleanUpper]) {
-        const discount = FESTIVAL_DEFAULTS[cleanUpper];
-        const finalAmt = Math.max(1, originalBasePrice - discount);
-        appliedCouponCode = cleanUpper;
-        currentPayableAmount = finalAmt;
-
-        if (displayPriceEl) {
-          displayPriceEl.innerHTML = `₹${finalAmt.toLocaleString('en-IN')} <span class="price-strikethrough">₹${originalBasePrice.toLocaleString('en-IN')}</span>`;
-        }
-        if (discountBadgeEl) {
-          discountBadgeEl.textContent = `₹${discount.toLocaleString('en-IN')} OFF APPLIED`;
-          discountBadgeEl.classList.add("coupon-applied");
-        }
-        const submitBtn = document.getElementById("checkoutPayBtn");
-        if (submitBtn) {
-          const btnText = submitBtn.querySelector(".btn-text");
-          if (btnText) btnText.textContent = `Enroll Now & Pay ₹${finalAmt.toLocaleString('en-IN')}`;
-        }
-        if (applyBtn) {
-          applyBtn.disabled = true;
-          applyBtn.textContent = "Applied ✓";
-          applyBtn.classList.add("is-applied");
-        }
-        if (couponInput) {
-          couponInput.disabled = true;
-        }
-
-        if (couponMsgEl) {
-          couponMsgEl.className = "moya-coupon-msg success";
-          couponMsgEl.innerHTML = `<span>✓ Coupon "${cleanUpper}" applied! Flat ₹${discount.toLocaleString('en-IN')} OFF.</span> <span class="coupon-remove-link" id="removeCouponLink">Remove</span>`;
-
-          const removeLink = document.getElementById("removeCouponLink");
-          if (removeLink) {
-            removeLink.addEventListener("click", handleRemoveCoupon);
-          }
-        }
-      } else {
-        if (couponMsgEl) {
-          couponMsgEl.className = "moya-coupon-msg error";
-          couponMsgEl.textContent = "Invalid or expired coupon code.";
-        }
-        if (applyBtn) {
-          applyBtn.disabled = false;
-          applyBtn.textContent = "Apply Code";
-        }
-      }
+      if (!res.ok || !data.valid) throw new Error(data.message || 'This offer could not be verified. Please try again.');
+      appliedCouponCode = data.code;
+      currentPayableAmount = data.finalAmount;
+      originalBasePrice = data.originalPrice;
+      displayPriceEl.replaceChildren(document.createTextNode(`₹${data.finalAmount.toLocaleString('en-IN')} `));
+      const oldPrice = document.createElement('span');
+      oldPrice.className = 'price-strikethrough';
+      oldPrice.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
+      displayPriceEl.append(oldPrice);
+      discountBadgeEl.textContent = `COUPON APPLIED (-₹${data.discount.toLocaleString('en-IN')})`;
+      discountBadgeEl.classList.add('coupon-applied');
+      document.querySelector('#checkoutPayBtn .btn-text').textContent = `Enroll Now & Pay ₹${data.finalAmount.toLocaleString('en-IN')}`;
+      applyBtn.textContent = 'Applied ✓';
+      applyBtn.classList.add('is-applied');
+      couponInput.disabled = true;
+      couponMsgEl.className = 'moya-coupon-msg success';
+      couponMsgEl.textContent = `Your ₹${data.discount.toLocaleString('en-IN')} offer is applied. `;
+      couponNeedsReview = false;
+    } catch (error) {
+      appliedCouponCode = null;
+      currentPayableAmount = originalBasePrice;
+      displayPriceEl.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
+      discountBadgeEl.textContent = 'OFFER NOT APPLIED';
+      discountBadgeEl.classList.remove('coupon-applied');
+      document.querySelector('#checkoutPayBtn .btn-text').textContent = 'Review your offer to continue';
+      couponInput.disabled = false;
+      applyBtn.disabled = false;
+      applyBtn.classList.remove('is-applied');
+      applyBtn.textContent = 'Retry code';
+      couponMsgEl.className = 'moya-coupon-msg error';
+      couponMsgEl.textContent = getSafeUserErrorMessage(error.message, 'We couldn’t verify your offer. Please retry or remove it to continue.');
+    } finally {
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'coupon-remove-link';
+      remove.textContent = 'Remove code';
+      remove.addEventListener('click', handleRemoveCoupon);
+      couponMsgEl.append(remove);
+      couponBusy = false;
+      document.getElementById('checkoutPayBtn').disabled = couponNeedsReview;
     }
   }
-
   function handleRemoveCoupon() {
+    couponNeedsReview = false;
+    document.getElementById('checkoutPayBtn').disabled = false;
     appliedCouponCode = null;
     currentPayableAmount = originalBasePrice;
 
@@ -3285,6 +3221,7 @@ function initRazorpayCheckoutFlow() {
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (couponBusy || couponNeedsReview) return;
       const submitBtn = document.getElementById("checkoutPayBtn");
       const name = document.getElementById("checkoutNameInput")?.value?.trim() || "";
       const email = document.getElementById("checkoutEmailInput")?.value?.trim() || "";
@@ -3316,7 +3253,8 @@ function initRazorpayCheckoutFlow() {
             name,
             email,
             phone,
-            couponCode: appliedCouponCode
+            couponCode: appliedCouponCode,
+            expectedAmount: currentPayableAmount
           })
         });
 
@@ -3516,432 +3454,13 @@ function initRazorpayCheckoutFlow() {
       }
     });
   }
-}
-
-// ==========================================================================
-// FESTIVE GAMIFIED SPIN WHEEL ENGINE (REUSABLE FOR ALL FESTIVALS)
-// 100% Guaranteed Win, Sales-Boosting Probability (Max ₹4,000, 0% for ₹1,000)
-// ==========================================================================
-// ==========================================================================
-// MAHA NAVRATRI GAMIFIED SPIN WHEEL ENGINE (FIGMA UI KIT 7-410 OVERHAUL)
-// Authentic Game Physics: Natural Angular Jitter, Web Audio Ticker Clicks,
-// Spring-Deflection Pointer, Glowing LED Chaser Bulbs & 100% Win Guarantee
-// ==========================================================================
-function initFestiveSpinGame() {
-  const launcherWidget = document.getElementById("festiveSpinWidget");
-  const launcherBtn = document.getElementById("openSpinModalBtn");
-  const launcherLabel = document.getElementById("spinLauncherLabel");
-  const spinModal = document.getElementById("festiveSpinModal");
-  const closeBtn = document.getElementById("closeSpinModalBtn");
-  const backdrop = document.getElementById("closeSpinModalBackdrop");
-  const wheelContainer = document.querySelector(".spin-wheel-container");
-  const pointerEl = document.getElementById("spinWheelPointer");
-  const canvas = document.getElementById("festiveSpinCanvas");
-  const spinTriggerBtn = document.getElementById("spinTriggerBtn");
-  const prizeCard = document.getElementById("spinPrizeCard");
-  const prizeDisplayAmount = document.getElementById("prizeDisplayAmount");
-  const prizeCouponCode = document.getElementById("prizeCouponCode");
-  const prizeCopyBtn = document.getElementById("prizeCopyBtn");
-  const prizeClaimBtn = document.getElementById("prizeClaimBtn");
-  const confettiCanvas = document.getElementById("festiveConfettiCanvas");
-
-  if (!canvas || !spinModal || !spinTriggerBtn) return;
-
-  const ctx = canvas.getContext("2d");
-  const numSlices = 8;
-  const sliceAngle = (2 * Math.PI) / numSlices;
-  let currentRotation = 0;
-  let isSpinning = false;
-  let wonCoupon = null;
-
-  // High-DPI Retina Display Setup
-  const dpr = window.devicePixelRatio || 2;
-  const canvasSize = 316;
-  canvas.width = Math.round(canvasSize * dpr);
-  canvas.height = Math.round(canvasSize * dpr);
-  ctx.scale(dpr, dpr);
-
-  const centerX = canvasSize / 2;
-  const centerY = canvasSize / 2;
-  const radius = canvasSize / 2 - 4;
-
-  // Wheel Segments (Auspicious Festive Palette: Ruby, Indigo, Amber, Emerald)
-  // Slices: 0: 4000, 1: 2000, 2: 3000, 3: 1000, 4: 4000, 5: 2000, 6: 3000, 7: 1000
-  const slices = [
-    { text: "₹4,000 OFF", gradStart: "#991b1b", gradEnd: "#580b18", stroke: "#fbbf24", textCol: "#ffffff", sub: "SHUBH" },
-    { text: "₹2,000 OFF", gradStart: "#1e1b4b", gradEnd: "#0f0e26", stroke: "#c7d2fe", textCol: "#ffffff", sub: "BLESSING" },
-    { text: "₹3,000 OFF", gradStart: "#b45309", gradEnd: "#78350f", stroke: "#fde68a", textCol: "#ffffff", sub: "LUCKY" },
-    { text: "₹1,000 OFF", gradStart: "#064e3b", gradEnd: "#022c22", stroke: "#86efac", textCol: "#ffffff", sub: "OFFER" },
-    { text: "₹4,000 OFF", gradStart: "#991b1b", gradEnd: "#580b18", stroke: "#fbbf24", textCol: "#ffffff", sub: "SHUBH" },
-    { text: "₹2,000 OFF", gradStart: "#1e1b4b", gradEnd: "#0f0e26", stroke: "#c7d2fe", textCol: "#ffffff", sub: "BLESSING" },
-    { text: "₹3,000 OFF", gradStart: "#b45309", gradEnd: "#78350f", stroke: "#fde68a", textCol: "#ffffff", sub: "LUCKY" },
-    { text: "₹1,000 OFF", gradStart: "#064e3b", gradEnd: "#022c22", stroke: "#86efac", textCol: "#ffffff", sub: "OFFER" }
-  ];
-
-  // Synthesized Web Audio Ticker Clicks (Zero-latency, no external MP3 dependencies)
-  let audioCtx = null;
-  function playTickSound(pitch = 1, volume = 0.14) {
-    try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(520 * pitch, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.016);
-
-      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.016);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.018);
-    } catch (e) {}
-  }
-
-  // Draw Wheel with 3D Depth, Radial Gradients & Chrome Perimeter Pins
-  function drawWheel(angleOffset = 0) {
-    ctx.clearRect(0, 0, canvasSize, canvasSize);
-
-    // Draw Slices
-    for (let i = 0; i < numSlices; i++) {
-      const angle = angleOffset + i * sliceAngle;
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
-      ctx.closePath();
-
-      // Radial slice gradient from center to rim
-      const grad = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, radius);
-      grad.addColorStop(0, slices[i].gradStart);
-      grad.addColorStop(1, slices[i].gradEnd);
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // Spoke border line between slices
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = "rgba(251, 191, 36, 0.45)";
-      ctx.stroke();
-
-      // Render Slice Typography
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(angle + sliceAngle / 2);
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-
-      // Rupee / Amount Text
-      ctx.fillStyle = slices[i].textCol;
-      ctx.font = "900 14px 'Plus Jakarta Sans', sans-serif";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
-      ctx.shadowBlur = 4;
-      ctx.fillText(slices[i].text, radius - 20, 0);
-
-      // Subtle Auspicious Subtag
-      ctx.font = "800 8px 'Plus Jakarta Sans', sans-serif";
-      ctx.fillStyle = slices[i].stroke;
-      ctx.fillText(slices[i].sub, radius - 20, 14);
-      ctx.restore();
-    }
-
-    // Outer Perimeter Peg Pins (Metallic chrome rivets colliding with ticker)
-    for (let p = 0; p < numSlices; p++) {
-      const pegAngle = angleOffset + p * sliceAngle;
-      const pegX = centerX + (radius - 5) * Math.cos(pegAngle);
-      const pegY = centerY + (radius - 5) * Math.sin(pegAngle);
-
-      ctx.beginPath();
-      ctx.arc(pegX, pegY, 3.5, 0, 2 * Math.PI);
-      const pegGrad = ctx.createRadialGradient(pegX - 1, pegY - 1, 0.5, pegX, pegY, 3.5);
-      pegGrad.addColorStop(0, "#ffffff");
-      pegGrad.addColorStop(0.5, "#fbbf24");
-      pegGrad.addColorStop(1, "#78350f");
-      ctx.fillStyle = pegGrad;
-      ctx.fill();
-      ctx.lineWidth = 0.8;
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.stroke();
-    }
-  }
-
-  drawWheel(0);
-
-  // Check if user already won a coupon in this browser session/storage
-  try {
-    const savedWon = JSON.parse(localStorage.getItem("moya_festive_won_coupon") || "null");
-    if (savedWon && savedWon.code && savedWon.discount) {
-      wonCoupon = savedWon;
-      if (launcherLabel) {
-        launcherLabel.textContent = `🎉 ${savedWon.code}: ₹${savedWon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
-      }
-      if (launcherBtn) {
-        launcherBtn.classList.add("is-pinned");
-      }
-    }
-  } catch (e) {}
-
-  // Open & Close Modal Handlers
-  function openSpinModal() {
-    if (wonCoupon && prizeCard && prizeDisplayAmount && prizeCouponCode) {
-      // If already spun, directly show the unlocked Navratri card
-      prizeDisplayAmount.textContent = `₹${wonCoupon.discount.toLocaleString('en-IN')} OFF`;
-      prizeCouponCode.textContent = wonCoupon.code;
-      prizeCard.classList.add("is-visible");
-      prizeCard.setAttribute("aria-hidden", "false");
-    }
-    spinModal.classList.add("is-open");
-    spinModal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
-  }
-
-  function closeSpinModal() {
-    spinModal.classList.remove("is-open");
-    spinModal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
-  }
-
-  if (launcherBtn) launcherBtn.addEventListener("click", openSpinModal);
-  if (closeBtn) closeBtn.addEventListener("click", closeSpinModal);
-  if (backdrop) backdrop.addEventListener("click", closeSpinModal);
-
-  // Sales-Boosting Winning Algorithm (Strictly Enforced):
-  // 🎯 70% chance -> ₹4,000 OFF (MOYA55, Slices 0 or 4)
-  // 🎯 20% chance -> ₹3,000 OFF (MOYA44, Slices 2 or 6)
-  // 🎯 10% chance -> ₹2,000 OFF (MOYA22, Slices 1 or 5)
-  // ❌  0% chance -> ₹1,000 OFF (MOYA11, Decoy only - never landed!)
-  function selectWinningPrize() {
-    const rand = Math.random() * 100;
-    if (rand < 70) {
-      // 70% of visitors win ₹4,000 OFF scholarship!
-      const pickSlice = Math.random() < 0.5 ? 0 : 4;
-      return { discount: 4000, code: "MOYA55", sliceIndex: pickSlice };
-    } else if (rand < 90) {
-      // 20% win ₹3,000 OFF
-      const pickSlice = Math.random() < 0.5 ? 2 : 6;
-      return { discount: 3000, code: "MOYA44", sliceIndex: pickSlice };
-    } else {
-      // 10% win ₹2,000 OFF
-      const pickSlice = Math.random() < 0.5 ? 1 : 5;
-      return { discount: 2000, code: "MOYA22", sliceIndex: pickSlice };
-    }
-  }
-
-  // Spin Wheel Execution with Natural Angular Jitter & Suspenseful Physics
-  spinTriggerBtn.addEventListener("click", () => {
-    if (isSpinning) return;
-    if (wonCoupon) {
-      if (prizeCard) {
-        prizeCard.classList.add("is-visible");
-        prizeCard.setAttribute("aria-hidden", "false");
-      }
-      return;
-    }
-
-    // Warm up Web Audio context on user gesture
-    playTickSound(1.2, 0.05);
-
-    isSpinning = true;
-    spinTriggerBtn.disabled = true;
-    if (wheelContainer) wheelContainer.classList.add("is-spinning");
-
-    const winningPrize = selectWinningPrize();
-    const winningIndex = winningPrize.sliceIndex;
-
-    // Pointer is at TOP: 270 degrees (3 * PI / 2)
-    // To give an organic, genuine game feel, land with natural angular jitter inside slice (+/- 25% of slice)
-    const sliceMidAngle = winningIndex * sliceAngle + sliceAngle / 2;
-    const naturalJitter = (Math.random() - 0.5) * (sliceAngle * 0.52);
-    const targetSliceAngle = sliceMidAngle + naturalJitter;
-
-    const pointerAngle = (3 * Math.PI) / 2;
-    const finalOffset = pointerAngle - targetSliceAngle;
-
-    // 7 full suspenseful revolutions + offset
-    const totalSpins = 7;
-    const startAngle = currentRotation % (2 * Math.PI);
-    const targetAngle = totalSpins * (2 * Math.PI) + finalOffset;
-    const spinDuration = 4600; // ms
-    const startTime = performance.now();
-
-    // Track peg collisions to trigger realistic ticker tick bounce & audio click
-    let lastPegIndex = -1;
-
-    // Smooth Quintic Ease-Out Curve for authentic physical deceleration
-    function easeOutQuint(t) {
-      return 1 - Math.pow(1 - t, 5);
-    }
-
-    function animateSpin(now) {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / spinDuration, 1);
-      const eased = easeOutQuint(progress);
-
-      currentRotation = startAngle + (targetAngle - startAngle) * eased;
-      drawWheel(currentRotation);
-
-      // Detect which peg passed the top pointer
-      // Pointer is at 270 deg (1.5 * PI). Normalized rotation relative to pointer:
-      const normalizedAngle = (pointerAngle - currentRotation) % (2 * Math.PI);
-      const positiveAngle = normalizedAngle < 0 ? normalizedAngle + 2 * Math.PI : normalizedAngle;
-      const currentPeg = Math.floor(positiveAngle / sliceAngle);
-
-      if (currentPeg !== lastPegIndex) {
-        lastPegIndex = currentPeg;
-
-        // Trigger dynamic spring bounce on ticker pointer
-        if (pointerEl) {
-          pointerEl.classList.remove("is-ticking");
-          void pointerEl.offsetWidth; // Force CSS reflow
-          pointerEl.classList.add("is-ticking");
-        }
-
-        // Taper sound pitch & volume as wheel slows down
-        const speedFactor = 1 - progress;
-        const tickPitch = 0.8 + speedFactor * 0.5;
-        const tickVol = Math.max(0.04, 0.16 * speedFactor);
-        playTickSound(tickPitch, tickVol);
-      }
-
-      if (progress < 1) {
-        requestAnimationFrame(animateSpin);
-      } else {
-        // Spin Completed!
-        isSpinning = false;
-        if (wheelContainer) wheelContainer.classList.remove("is-spinning");
-        wonCoupon = { code: winningPrize.code, discount: winningPrize.discount };
-
-        // Save in persistent browser storage
-        try {
-          localStorage.setItem("moya_festive_won_coupon", JSON.stringify(wonCoupon));
-        } catch (e) {}
-
-        // Launch celebratory confetti with festive gold & vermilion sparkles
-        launchFestiveConfetti();
-
-        // Reveal Navratri Victory Card
-        setTimeout(() => {
-          if (prizeDisplayAmount) {
-            prizeDisplayAmount.textContent = `₹${wonCoupon.discount.toLocaleString('en-IN')} OFF`;
-          }
-          if (prizeCouponCode) {
-            prizeCouponCode.textContent = wonCoupon.code;
-          }
-          if (prizeCard) {
-            prizeCard.classList.add("is-visible");
-            prizeCard.setAttribute("aria-hidden", "false");
-          }
-          if (launcherLabel) {
-            launcherLabel.textContent = `🎉 ${wonCoupon.code}: ₹${wonCoupon.discount.toLocaleString('en-IN')} OFF CLAIMED`;
-          }
-          if (launcherBtn) {
-            launcherBtn.classList.add("is-pinned");
-          }
-        }, 550);
-      }
-    }
-
-    requestAnimationFrame(animateSpin);
-  });
-
-  // Copy Coupon Code Button
-  if (prizeCopyBtn) {
-    prizeCopyBtn.addEventListener("click", () => {
-      if (!wonCoupon) return;
-      navigator.clipboard.writeText(wonCoupon.code).then(() => {
-        prizeCopyBtn.textContent = "Copied! ✓";
-        triggerToast(`Code "${wonCoupon.code}" copied to clipboard!`);
-        setTimeout(() => {
-          prizeCopyBtn.textContent = "Copy Code";
-        }, 2500);
-      }).catch(() => {
-        triggerToast(`Your Code: ${wonCoupon.code}`);
-      });
-    });
-  }
-
-  // Claim Navratri Offer & Enroll Now Button -> Auto-applies to Checkout Modal at ₹997
-  if (prizeClaimBtn) {
-    prizeClaimBtn.addEventListener("click", () => {
-      if (!wonCoupon) return;
-      closeSpinModal();
-
-      // Open Razorpay Checkout Modal
-      openRazorpayCheckoutModal();
-
-      // Pre-fill and auto-trigger coupon application
-      const checkoutCouponInput = document.getElementById("checkoutCouponInput");
-      const applyCouponBtn = document.getElementById("applyCouponBtn");
-      if (checkoutCouponInput) {
-        checkoutCouponInput.value = wonCoupon.code;
-      }
-      if (applyCouponBtn) {
-        setTimeout(() => {
-          applyCouponBtn.click();
-        }, 300);
-      }
-    });
-  }
-
-  // Confetti Particle Engine with Auspicious Colors
-  function launchFestiveConfetti() {
-    if (!confettiCanvas) return;
-    const cctx = confettiCanvas.getContext("2d");
-    confettiCanvas.width = confettiCanvas.offsetWidth;
-    confettiCanvas.height = confettiCanvas.offsetHeight;
-
-    const particles = [];
-    const colors = ["#fbbf24", "#f59e0b", "#e11d48", "#f43f5e", "#fde68a", "#10b981", "#ffffff"];
-
-    for (let p = 0; p < 85; p++) {
-      particles.push({
-        x: confettiCanvas.width / 2,
-        y: confettiCanvas.height / 2,
-        vx: (Math.random() - 0.5) * 14,
-        vy: (Math.random() - 0.7) * 16,
-        size: Math.random() * 7 + 4,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        rotation: Math.random() * 360,
-        rSpeed: (Math.random() - 0.5) * 10,
-        alpha: 1
-      });
-    }
-
-    let confettiStart = performance.now();
-    function renderConfetti(now) {
-      cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-      const elapsed = now - confettiStart;
-
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.28; // gravity
-        p.rotation += p.rSpeed;
-        p.alpha = Math.max(0, 1 - elapsed / 3400);
-
-        cctx.save();
-        cctx.translate(p.x, p.y);
-        cctx.rotate((p.rotation * Math.PI) / 180);
-        cctx.fillStyle = p.color;
-        cctx.globalAlpha = p.alpha;
-        cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
-        cctx.restore();
-      });
-
-      if (elapsed < 3400) {
-        requestAnimationFrame(renderConfetti);
-      } else {
-        cctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-      }
-    }
-    requestAnimationFrame(renderConfetti);
-  }
+  return async function applyFestiveOffer(code) {
+    if (couponBusy) return;
+    handleRemoveCoupon();
+    couponInput.value = code;
+    openRazorpayCheckoutModal();
+    await handleApplyCoupon();
+  };
 }
 
 // ==========================================================================
@@ -3968,8 +3487,8 @@ onReady(() => {
 
   // 3. Initialize Section 5 Lead Capture, Razorpay Checkout & Festive Spin Game
   initSection5LeadCapture();
-  initRazorpayCheckoutFlow();
-  initFestiveSpinGame();
+  const applyFestiveOffer = initRazorpayCheckoutFlow();
+  initFestiveSpinGame({ applyOffer: applyFestiveOffer });
 
   // 4. Initialize Video Controller
   window.videoController.init();

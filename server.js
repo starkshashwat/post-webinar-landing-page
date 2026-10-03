@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
+import { mountFestiveRoutes, campaignFromCoupons } from './server/festive.js';
 
 dotenv.config();
 
@@ -164,6 +165,7 @@ async function getActiveCouponsFromGHL() {
   if (apiKey) {
     try {
       const res = await fetch(`https://services.leadconnectorhq.com/locations/${locationId}/customValues`, {
+        signal: AbortSignal.timeout(8000),
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Version': '2021-07-28',
@@ -205,13 +207,28 @@ async function getActiveCouponsFromGHL() {
         };
         console.log('[GHL Live Coupons Cached]', Object.keys(coupons));
         return coupons;
+      } else {
+        throw new Error('Unable to retrieve active coupon configuration');
       }
     } catch (err) {
       console.warn('[GHL Live Coupons Notice]', err.message);
+      throw err;
     }
   }
 
   return coupons;
+}
+
+mountFestiveRoutes(app, getActiveCouponsFromGHL);
+
+function isCouponAvailable(coupon, coupons) {
+  if (!coupon || !['ENABLED', 'ACTIVE'].includes(coupon.status)) return false;
+  if ([4000, 3000, 2000, 1000].includes(coupon.discount)) {
+    const campaign = campaignFromCoupons(coupons);
+    if (!campaign.active) return false;
+    if (coupon.discount !== 1000 && !campaign.rewards.some(r => r.code === coupon.code)) return false;
+  }
+  return Number.isFinite(coupon.discount) && coupon.discount > 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -230,7 +247,7 @@ app.post('/api/coupon/validate', async (req, res) => {
 
     const matchedCoupon = coupons[cleanInput];
 
-    if (matchedCoupon && (matchedCoupon.status === 'ENABLED' || matchedCoupon.status === 'ACTIVE')) {
+    if (isCouponAvailable(matchedCoupon, coupons)) {
       const discount = Math.min(basePrice, matchedCoupon.discount);
       const finalAmount = Math.max(1, basePrice - discount);
 
@@ -259,7 +276,7 @@ app.post('/api/coupon/validate', async (req, res) => {
 // -----------------------------------------------------------------------------
 app.post('/api/razorpay/create-order', async (req, res) => {
   try {
-    const { name, email, phone, couponCode } = req.body;
+    const { name, email, phone, couponCode, expectedAmount } = req.body;
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     const basePrice = Number(process.env.COURSE_PRICE) || 4997;
@@ -271,11 +288,17 @@ app.post('/api/razorpay/create-order', async (req, res) => {
     if (couponCode && couponCode.trim()) {
       const coupons = await getActiveCouponsFromGHL();
       const matched = coupons[couponCode.trim().toUpperCase()];
-      if (matched && (matched.status === 'ENABLED' || matched.status === 'ACTIVE')) {
+      if (isCouponAvailable(matched, coupons)) {
         discount = Math.min(basePrice, matched.discount);
         finalAmount = Math.max(1, basePrice - discount);
         appliedCoupon = matched.code;
+      } else {
+        return res.status(409).json({ error: 'Your offer is no longer available. Please remove it or apply another code before paying.' });
       }
+    }
+
+    if (expectedAmount !== undefined && Number(expectedAmount) !== finalAmount) {
+      return res.status(409).json({ error: 'The price has changed. Please reapply your offer and review the total before paying.' });
     }
 
     const amountInPaise = finalAmount * 100;

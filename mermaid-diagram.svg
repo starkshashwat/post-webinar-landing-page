@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760.1384166666667 1399.7769999999998" width="760.1384166666667" height="1399.7769999999998" style="--bg:#FFFFFF;--fg:#3B3B3B;--line:#3B3B3B;--accent:#005FB8;--muted:#3B3B3BCC;--surface:#F8F8F8;--border:#3B3B3B;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="A" data-to="B" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="394.3761666666666,93.80000000000001 394.3761666666666,141.80000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="C" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Option 1: Watches Video &amp; Fills Form" points="360.66041666666666,242.94725 360.66041666666666,288.663 157.305,288.663 157.305,368.963" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="D" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Option 2: Clicks Spin Wheel" points="394.3761666666666,276.66299999999995 394.3761666666666,400.2630000000001 428.43649999999997,400.2630000000001 428.43649999999997,480.5630000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="E" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Option 3: Direct CTA Click" points="428.09191666666663,242.94725000000005 428.09191666666663,388.2630000000001 646.7629999999999,388.2630000000001 646.7629999999999,638.663 489.86774999999994,638.663 489.86774999999994,650.663" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="C" data-to="F" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Auto-Sync to GHL" points="157.305,422.76300000000003 157.305,539.063" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="F" data-to="E" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="157.305,626.663 157.305,638.663 367.00524999999993,638.663 367.00524999999993,650.663" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="D" data-to="E" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Auto-Apply Coupon" points="428.43649999999997,534.363 428.43649999999997,650.663" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E" data-to="G" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="428.43649999999997,704.463 428.43649999999997,752.463" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="G" data-to="H" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Payment Fails / Cancelled" points="392.2508333333333,933.3913333333334 392.2508333333333,981.5769999999999 199.06291666666664,981.5769999999999 199.06291666666664,1073.877" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="G" data-to="I" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Payment Successful" points="464.6221666666666,933.3913333333333 464.6221666666666,1005.577 536.8844166666665,1005.577 536.8844166666665,1073.877" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="I" data-to="J" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="536.8844166666665,1161.4769999999999 536.8844166666665,1221.4769999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="B" data-to="C" data-label="Option 1: Watches Video &amp; Fills Form">
+  <rect x="65.80499999999999" y="295.663" width="182.18800000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="156.899" y="310.813" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Option 1: Watches Video &amp; Fills Form</text>
+</g>
+<g class="edge-label" data-from="B" data-to="D" data-label="Option 2: Clicks Spin Wheel">
+  <rect x="356.9365" y="407.2630000000001" width="142.98399999999998" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="428.4285" y="422.41300000000007" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Option 2: Clicks Spin Wheel</text>
+</g>
+<g class="edge-label" data-from="B" data-to="E" data-label="Option 3: Direct CTA Click">
+  <rect x="578.2629999999999" y="601.363" width="136.45" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="646.4879999999999" y="616.513" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Option 3: Direct CTA Click</text>
+</g>
+<g class="edge-label" data-from="C" data-to="F" data-label="Auto-Sync to GHL">
+  <rect x="106.805" y="465.76300000000003" width="100.21600000000001" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="156.913" y="480.913" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Auto-Sync to GHL</text>
+</g>
+<g class="edge-label" data-from="D" data-to="E" data-label="Auto-Apply Coupon">
+  <rect x="374.43649999999997" y="577.363" width="107.938" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="428.40549999999996" y="592.513" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Auto-Apply Coupon</text>
+</g>
+<g class="edge-label" data-from="G" data-to="H" data-label="Payment Fails / Cancelled">
+  <rect x="130.06291666666664" y="988.5769999999999" width="137.638" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="198.88191666666665" y="1003.7269999999999" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Payment Fails / Cancelled</text>
+</g>
+<g class="edge-label" data-from="G" data-to="I" data-label="Payment Successful">
+  <rect x="479.8844166666666" y="1012.5770000000001" width="113.28400000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="536.5264166666666" y="1027.727" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Payment Successful</text>
+</g>
+<g class="node" data-id="A" data-label="👤 Visitor Arrives on Landing Page
+(vsl.mechanismofya.com)" data-shape="rectangle">
+  <rect x="270.7726666666666" y="40" width="247.207" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="394.3761666666666" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="394.3761666666666" dy="-3.9000000000000012">👤 Visitor Arrives on Landing Page</tspan><tspan x="394.3761666666666" dy="16.900000000000002">(vsl.mechanismofya.com)</tspan></text>
+</g>
+<g class="node" data-id="B" data-label="User Action" data-shape="diamond">
+  <polygon points="394.3761666666667,141.8 461.8076666666667,209.2315 394.3761666666667,276.663 326.94466666666665,209.2315" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="394.3761666666667" y="209.2315" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">User Action</text>
+</g>
+<g class="node" data-id="C" data-label="📋 Section 5 Lead Capture Modal
+(Name, Email, Phone, Income)" data-shape="rectangle">
+  <rect x="40" y="368.963" width="234.60999999999999" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="157.305" y="395.863" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="157.305" dy="-3.9000000000000012">📋 Section 5 Lead Capture Modal</tspan><tspan x="157.305" dy="16.900000000000002">(Name, Email, Phone, Income)</tspan></text>
+</g>
+<g class="node" data-id="D" data-label="🎡 Festive Navratri Spin Wheel
+(Unlocks MOYA55 / Flat ₹4000 OFF)" data-shape="rectangle">
+  <rect x="302.61" y="480.5630000000001" width="251.65299999999993" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="428.43649999999997" y="507.4630000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="428.43649999999997" dy="-3.9000000000000012">🎡 Festive Navratri Spin Wheel</tspan><tspan x="428.43649999999997" dy="16.900000000000002">(Unlocks MOYA55 / Flat ₹4000 OFF)</tspan></text>
+</g>
+<g class="node" data-id="E" data-label="💳 Razorpay Checkout Modal
+(Pre-filled details + Coupon applied)" data-shape="rectangle">
+  <rect x="305.57399999999996" y="650.663" width="245.725" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="428.43649999999997" y="677.563" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="428.43649999999997" dy="-3.9000000000000012">💳 Razorpay Checkout Modal</tspan><tspan x="428.43649999999997" dy="16.900000000000002">(Pre-filled details + Coupon applied)</tspan></text>
+</g>
+<g class="node" data-id="F" data-label="🏷️ GHL Lead Tagged:
+• 'VSL leads'
+• 'income-tier'
+• Note with Date/Time" data-shape="rectangle">
+  <rect x="68.52850000000001" y="539.063" width="177.55299999999997" height="87.60000000000001" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="157.305" y="582.8629999999999" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="157.305" dy="-20.8">🏷️ GHL Lead Tagged:</tspan><tspan x="157.305" dy="16.900000000000002">• &#39;VSL leads&#39;</tspan><tspan x="157.305" dy="16.900000000000002">• &#39;income-tier&#39;</tspan><tspan x="157.305" dy="16.900000000000002">• Note with Date/Time</tspan></text>
+</g>
+<g class="node" data-id="G" data-label="Razorpay Payment Result" data-shape="diamond">
+  <polygon points="428.4364999999999,752.463 536.9934999999999,861.02 428.4364999999999,969.577 319.8794999999999,861.02" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="428.4364999999999" y="861.02" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Razorpay Payment Result</text>
+</g>
+<g class="node" data-id="H" data-label="❌ GHL Failed Payment Flow
+• Tag: 'failed vsl payment'
+• Failure Reason Logged
+• Trigger Abandoned Cart Message" data-shape="rectangle">
+  <rect x="72.49541666666667" y="1073.877" width="253.13499999999996" height="87.60000000000001" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="199.06291666666664" y="1117.677" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="199.06291666666664" dy="-20.8">❌ GHL Failed Payment Flow</tspan><tspan x="199.06291666666664" dy="16.900000000000002">• Tag: &#39;failed vsl payment&#39;</tspan><tspan x="199.06291666666664" dy="16.900000000000002">• Failure Reason Logged</tspan><tspan x="199.06291666666664" dy="16.900000000000002">• Trigger Abandoned Cart Message</tspan></text>
+</g>
+<g class="node" data-id="I" data-label="✅ Verification &amp; GHL Enrollment
+• Tags: 'vsl students', 'VSL Enrolled', 'coupon-MOYA55'
+• Custom Fields: Paid Amount &amp; Coupon
+• Meta Pixel Purchase Event Fired" data-shape="rectangle">
+  <rect x="353.63041666666663" y="1073.877" width="366.5079999999999" height="87.60000000000001" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="536.8844166666665" y="1117.677" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="536.8844166666665" dy="-20.8">✅ Verification &amp; GHL Enrollment</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Tags: &#39;vsl students&#39;, &#39;VSL Enrolled&#39;, &#39;coupon-MOYA55&#39;</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Custom Fields: Paid Amount &amp; Coupon</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Meta Pixel Purchase Event Fired</tspan></text>
+</g>
+<g class="node" data-id="J" data-label="🎉 Thank You Page (thankyou.html)
+• Dynamic Receipt: Exact Paid Amount (₹997, ₹1997, etc.)
+• Masked Email &amp; Payment ID
+• Action Card 1: Enter Course Portal
+• Action Card 2: Join WhatsApp Community
+• Action Card 3: Join Facebook Group
+• 3-Step Google First-Login Guide" data-shape="rectangle">
+  <rect x="354.3714166666666" y="1221.4769999999999" width="365.0259999999999" height="138.3" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="536.8844166666665" y="1290.627" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="536.8844166666665" dy="-46.150000000000006">🎉 Thank You Page (thankyou.html)</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Dynamic Receipt: Exact Paid Amount (₹997, ₹1997, etc.)</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Masked Email &amp; Payment ID</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Action Card 1: Enter Course Portal</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Action Card 2: Join WhatsApp Community</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• Action Card 3: Join Facebook Group</tspan><tspan x="536.8844166666665" dy="16.900000000000002">• 3-Step Google First-Login Guide</tspan></text>
+</g>
+</svg>

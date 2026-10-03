@@ -6,6 +6,29 @@ Production-ready, highly optimized web app project for the **MOYA Post-Webinar P
 
 ## 🚀 Quick Start
 
+### Festive wheel
+
+The custom SVG launcher and game live in `js/festive-wheel.js` and
+`css/festive-wheel.css`. Run both `npm start` (API, port 3000) and `npm run dev`
+(preview, port 5173) for local use. Production requires the Node server or an
+equivalent `/api` deployment; static hosting alone cannot validate spin offers.
+
+Campaign settings are documented in `.env.example`: label, campaign ID,
+enabled flag, optional start/end timestamps, and a stable spin secret. Dates
+must include their timezone. With no dates set, no expiry is advertised.
+The default rewards are ₹4,000 / ₹3,000 / ₹2,000, weighted 70 / 20 / 10.
+GHL coupon overrides take precedence. When a configured GHL connection fails,
+the game and checkout ask the visitor to retry instead of inventing a discount.
+
+Browser spin IDs receive repeatable server-selected outcomes, and signed receipts
+preserve revealed offers when other rewards change. Clearing browser storage can
+reset participation; this is not an identity-based, one-person redemption system.
+Use a stable `FESTIVE_SPIN_SECRET` across instances/deploys (or the existing
+Razorpay secret fallback). Without either, a local restart invalidates receipts.
+Changing the campaign ID starts a new campaign. Coupons are rechecked at checkout.
+
+Run `node --test tests/*.test.js` for campaign and checkout regression checks.
+
 ### 1. Install Dependencies
 ```bash
 npm install
