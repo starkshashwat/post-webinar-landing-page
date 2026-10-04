@@ -110,21 +110,24 @@ function syncUrgencyTimers(onExpire) {
     if (rewardTimerEl) rewardTimerEl.textContent = formatted;
 
     const checkoutTimerEl = document.getElementById('checkoutCountdownTimer');
-    if (checkoutTimerEl) checkoutTimerEl.textContent = formatted;
+    if (checkoutTimerEl) checkoutTimerEl.textContent = remaining > 0 ? formatted : '00:00';
+
+    const checkoutTimerLabel = document.getElementById('checkoutTimerLabel');
+    if (checkoutTimerLabel) checkoutTimerLabel.textContent = remaining > 0 ? 'Expires in' : 'Code expired';
+
+    const checkoutUrgencyPill = document.getElementById('checkoutUrgencyPill');
+    if (checkoutUrgencyPill) {
+      checkoutUrgencyPill.style.display = remaining > 0 ? 'flex' : 'none';
+    }
 
     const checkoutBannerEl = document.getElementById('checkoutUrgencyBanner');
     if (checkoutBannerEl) {
-      const sessionStarted = Number(localStorage.getItem('moya_timer_expires_at')) > 0;
-      if (!sessionStarted) {
-        checkoutBannerEl.style.display = 'none';
-      } else if (remaining > 0) {
+      if (remaining > 0) {
         checkoutBannerEl.style.display = 'flex';
         checkoutBannerEl.classList.remove('expired');
-        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><div class="urgency-banner-info"><span class="checkout-timer-label" id="checkoutTimerLabel">Coupon code expires in</span><strong id="checkoutCountdownTimer">${formatted}</strong></div>`;
       } else {
         checkoutBannerEl.style.display = 'flex';
         checkoutBannerEl.classList.add('expired');
-        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><div class="urgency-banner-info"><span class="checkout-timer-label" id="checkoutTimerLabel">Coupon code expired</span><strong id="checkoutCountdownTimer">00:00</strong></div>`;
       }
     }
 
@@ -132,6 +135,9 @@ function syncUrgencyTimers(onExpire) {
       clearInterval(urgencyTimerInterval);
       urgencyTimerInterval = null;
       if (typeof onExpire === 'function') onExpire();
+      try {
+        window.dispatchEvent(new CustomEvent('moya:timer-expired'));
+      } catch (e) {}
     }
   }
 
@@ -155,15 +161,20 @@ async function syncDynamicOfferFromGHL() {
 
     liveGHLOffer = data;
 
+    const isExpired = getTimerRemainingSeconds() <= 0 && localStorage.getItem('moya_timer_expires_at');
     const discountStr = `₹${data.discount.toLocaleString('en-IN')}`;
     const payableStr = `₹${data.finalAmount.toLocaleString('en-IN')}`;
-    const codeStr = data.code;
+    const codeStr = data.code || 'MOYA55';
 
     document.querySelectorAll('[data-dyn-discount]').forEach(el => {
       el.textContent = discountStr;
     });
     document.querySelectorAll('[data-dyn-payable]').forEach(el => {
-      el.textContent = payableStr;
+      if (!isExpired) {
+        el.textContent = payableStr;
+      } else {
+        el.textContent = `₹${(data.basePrice || 4997).toLocaleString('en-IN')}`;
+      }
     });
     document.querySelectorAll('[data-dyn-code]').forEach(el => {
       el.textContent = codeStr;
@@ -188,16 +199,24 @@ function openLeadCaptureModal() {
     if (phoneInp && saved.phone && !phoneInp.value) phoneInp.value = saved.phone;
   } catch (err) {}
 
-  if (typeof modal.showModal === 'function') modal.showModal();
-  else modal.setAttribute('open', 'true');
+  try {
+    if (!modal.open) {
+      if (typeof modal.showModal === 'function') modal.showModal();
+      else modal.setAttribute('open', 'true');
+    }
+  } catch (e) {
+    modal.setAttribute('open', 'true');
+  }
 }
 window.openLeadCaptureModal = openLeadCaptureModal;
 
 function closeLeadCaptureModal() {
   const modal = document.getElementById('leadCaptureModal');
   if (!modal) return;
-  if (typeof modal.close === 'function') modal.close();
-  else modal.removeAttribute('open');
+  try {
+    if (typeof modal.close === 'function' && modal.open) modal.close();
+  } catch (e) {}
+  modal.removeAttribute('open');
 }
 window.closeLeadCaptureModal = closeLeadCaptureModal;
 
@@ -222,9 +241,10 @@ function openRewardRevealModal() {
   if (claimBtn) {
     claimBtn.onclick = () => {
       closeRewardRevealModal();
-      openRazorpayCheckoutModal();
       if (typeof window.applyUrgencyCoupon === 'function') {
         window.applyUrgencyCoupon(liveGHLOffer.code || 'MOYA55');
+      } else {
+        openRazorpayCheckoutModal();
       }
     };
   }
@@ -233,23 +253,32 @@ function openRewardRevealModal() {
   if (closeBtn) {
     closeBtn.onclick = () => {
       closeRewardRevealModal();
-      openRazorpayCheckoutModal();
       if (typeof window.applyUrgencyCoupon === 'function') {
         window.applyUrgencyCoupon(liveGHLOffer.code || 'MOYA55');
+      } else {
+        openRazorpayCheckoutModal();
       }
     };
   }
 
-  if (typeof modal.showModal === 'function') modal.showModal();
-  else modal.setAttribute('open', 'true');
+  try {
+    if (!modal.open) {
+      if (typeof modal.showModal === 'function') modal.showModal();
+      else modal.setAttribute('open', 'true');
+    }
+  } catch (e) {
+    modal.setAttribute('open', 'true');
+  }
 }
 window.openRewardRevealModal = openRewardRevealModal;
 
 function closeRewardRevealModal() {
   const modal = document.getElementById('rewardRevealModal');
   if (!modal) return;
-  if (typeof modal.close === 'function') modal.close();
-  else modal.removeAttribute('open');
+  try {
+    if (typeof modal.close === 'function' && modal.open) modal.close();
+  } catch (e) {}
+  modal.removeAttribute('open');
 }
 window.closeRewardRevealModal = closeRewardRevealModal;
 
@@ -268,19 +297,27 @@ function openRazorpayCheckoutModal() {
   } catch (err) {}
 
   if (typeof fbq === 'function') {
-    fbq('track', 'InitiateCheckout', { value: 4997, currency: 'INR' });
+    try { fbq('track', 'InitiateCheckout', { value: 4997, currency: 'INR' }); } catch (e) {}
   }
 
-  if (typeof modal.showModal === 'function') modal.showModal();
-  else modal.setAttribute('open', 'true');
+  try {
+    if (!modal.open) {
+      if (typeof modal.showModal === 'function') modal.showModal();
+      else modal.setAttribute('open', 'true');
+    }
+  } catch (err) {
+    modal.setAttribute('open', 'true');
+  }
 }
 window.openRazorpayCheckoutModal = openRazorpayCheckoutModal;
 
 function closeRazorpayCheckoutModal() {
   const modal = document.getElementById('razorpayCheckoutModal');
   if (!modal) return;
-  if (typeof modal.close === 'function') modal.close();
-  else modal.removeAttribute('open');
+  try {
+    if (typeof modal.close === 'function' && modal.open) modal.close();
+  } catch (e) {}
+  modal.removeAttribute('open');
 }
 window.closeRazorpayCheckoutModal = closeRazorpayCheckoutModal;
 
@@ -294,9 +331,6 @@ function handleCtaClick(e) {
     openLeadCaptureModal();
   } else {
     openRazorpayCheckoutModal();
-    if (isTimerActive() && typeof window.applyUrgencyCoupon === 'function') {
-      window.applyUrgencyCoupon(liveGHLOffer.code || 'MOYA55');
-    }
   }
 }
 window.handleCtaClick = handleCtaClick;
@@ -3175,9 +3209,12 @@ function initSection5LeadCapture() {
   const emailInp = document.getElementById("leadEmailInput");
   const phoneInp = document.getElementById("leadPhoneInput");
   const phoneWrap = document.getElementById("leadPhoneWrap");
+  const incomeInp = document.getElementById("leadIncomeInput");
+  const incomeWrap = document.getElementById("leadIncomeWrap");
   const nameErr = document.getElementById("leadNameError");
   const emailErr = document.getElementById("leadEmailError");
   const phoneErr = document.getElementById("leadPhoneError");
+  const incomeErr = document.getElementById("leadIncomeError");
   const submitBtn = document.getElementById("leadSubmitBtn");
   const msgEl = document.getElementById("leadFormMsg");
 
@@ -3210,6 +3247,11 @@ function initSection5LeadCapture() {
     phoneInp.value = phoneInp.value.replace(/\D/g, "").slice(0, 10);
     phoneWrap?.classList.remove("input-error");
     if (phoneErr) { phoneErr.textContent = ""; phoneErr.classList.remove("visible"); }
+  });
+  incomeInp?.addEventListener("change", () => {
+    incomeInp.classList.remove("input-error");
+    incomeWrap?.classList.remove("input-error");
+    if (incomeErr) { incomeErr.textContent = ""; incomeErr.classList.remove("visible"); }
   });
 
   // Show the lead prompt once when the visitor reaches Section 5.
@@ -3250,7 +3292,7 @@ function initSection5LeadCapture() {
       const nameVal = validateName(nameInp?.value);
       const emailVal = validateEmail(emailInp?.value);
       const phoneVal = validateIndianPhone(phoneInp?.value);
-      const incomeVal = form.querySelector('input[name="income"]:checked')?.value || form.querySelector('input[name="income"]')?.value || "$0 - $250 / mo";
+      const incomeVal = incomeInp?.value?.trim() || "";
 
       let hasError = false;
       if (!nameVal.valid) {
@@ -3268,6 +3310,11 @@ function initSection5LeadCapture() {
       if (!phoneVal.valid) {
         phoneWrap?.classList.add("input-error");
         if (phoneErr) { phoneErr.textContent = phoneVal.message; phoneErr.classList.add("visible"); }
+        hasError = true;
+      }
+      if (!incomeVal) {
+        incomeWrap?.classList.add("input-error");
+        if (incomeErr) { incomeErr.textContent = "Please select your current monthly income."; incomeErr.classList.add("visible"); }
         hasError = true;
       }
 
@@ -3365,11 +3412,17 @@ function initRazorpayCheckoutFlow() {
   const applyBtn = document.getElementById("applyCouponBtn");
   const couponMsgEl = document.getElementById("couponStatusMsg");
   const displayPriceEl = document.getElementById("checkoutDisplayPrice");
+  const strikePriceEl = document.getElementById("checkoutOriginalStrike");
   const discountBadgeEl = document.getElementById("checkoutDiscountBadge");
+  const discountBadgeText = document.getElementById("checkoutDiscountBadgeText");
+  const couponAppliedView = document.getElementById("couponAppliedView");
+  const couponManualView = document.getElementById("couponManualView");
+  const appliedCodeText = document.getElementById("checkoutAppliedCodeText");
+  const removeCouponBtn = document.getElementById("removeCouponBtn");
 
   let appliedCouponCode = null;
-  let currentPayableAmount = 4997;
   let originalBasePrice = 4997;
+  let currentPayableAmount = 4997;
 
   if (!modal) return () => {};
 
@@ -3391,17 +3444,45 @@ function initRazorpayCheckoutFlow() {
     if (phoneErr) { phoneErr.textContent = ""; phoneErr.classList.remove("visible"); }
   });
 
-  // Sync live countdown timer and handle timer expiry
-  syncUrgencyTimers(() => {
-    if (appliedCouponCode && (appliedCouponCode === "MOYA55" || appliedCouponCode === liveGHLOffer.code)) {
-      handleRemoveCoupon();
-      triggerToast("Coupon timer expired. You can still apply your code below.");
-    }
-  });
+  function handleTimerExpiry() {
+    handleRemoveCoupon();
+    const urgencyPill = document.getElementById('checkoutUrgencyPill');
+    if (urgencyPill) urgencyPill.style.display = 'none';
 
-  async function handleApplyCoupon() {
+    if (displayPriceEl) {
+      displayPriceEl.classList.remove('coupon-applied-price');
+      displayPriceEl.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
+    }
+    if (strikePriceEl) {
+      strikePriceEl.style.display = "none";
+    }
+
+    const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
+    if (payBtnText) payBtnText.textContent = `Enroll Now & Pay ₹${originalBasePrice.toLocaleString('en-IN')}`;
+
+    if (couponMsgEl) {
+      couponMsgEl.className = 'moya-coupon-msg';
+      couponMsgEl.innerHTML = '';
+    }
+  }
+
+  // Sync live countdown timer and trigger expiry handler on 00:00
+  syncUrgencyTimers(handleTimerExpiry);
+  window.addEventListener('moya:timer-expired', handleTimerExpiry);
+
+  async function handleApplyCoupon(overrideCode) {
     if (couponBusy) return;
-    const code = couponInput?.value.trim() || '';
+
+    // Determine coupon code:
+    // If overrideCode is a non-empty string, use it.
+    // Otherwise, strictly read from couponInput.value. Never fallback to any default coupon!
+    let code = '';
+    if (typeof overrideCode === 'string' && overrideCode.trim()) {
+      code = overrideCode.trim().toUpperCase();
+    } else if (couponInput && typeof couponInput.value === 'string' && couponInput.value.trim()) {
+      code = couponInput.value.trim().toUpperCase();
+    }
+
     if (!code) {
       if (couponMsgEl) {
         couponMsgEl.className = 'moya-coupon-msg error';
@@ -3409,6 +3490,7 @@ function initRazorpayCheckoutFlow() {
       }
       return;
     }
+
     couponBusy = true;
     couponNeedsReview = true;
     if (applyBtn) {
@@ -3427,7 +3509,7 @@ function initRazorpayCheckoutFlow() {
       });
       const data = await res.json();
       if (!res.ok || !data.valid) {
-        throw new Error(data.message || 'This offer could not be verified. Please try again.');
+        throw new Error(data.message || 'Invalid, inactive, or expired coupon code.');
       }
       appliedCouponCode = data.code;
       currentPayableAmount = data.finalAmount;
@@ -3438,16 +3520,30 @@ function initRazorpayCheckoutFlow() {
 
       if (displayPriceEl) {
         displayPriceEl.classList.add('coupon-applied-price');
-        displayPriceEl.replaceChildren(document.createTextNode(`₹${data.finalAmount.toLocaleString('en-IN')} `));
-        const oldPrice = document.createElement('span');
-        oldPrice.className = 'price-strikethrough';
-        oldPrice.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
-        displayPriceEl.append(oldPrice);
+        displayPriceEl.textContent = `₹${data.finalAmount.toLocaleString('en-IN')}`;
       }
+      if (strikePriceEl) {
+        strikePriceEl.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
+        strikePriceEl.style.display = "inline";
+      }
+
       if (discountBadgeEl) {
-        discountBadgeEl.textContent = `COUPON APPLIED (-₹${data.discount.toLocaleString('en-IN')})`;
+        discountBadgeEl.style.display = "inline-flex";
+        if (discountBadgeText) {
+          discountBadgeText.textContent = `₹${data.discount.toLocaleString('en-IN')} OFF APPLIED`;
+        } else {
+          discountBadgeEl.textContent = `₹${data.discount.toLocaleString('en-IN')} OFF APPLIED`;
+        }
         discountBadgeEl.classList.add('coupon-applied');
       }
+
+      if (couponAppliedView) couponAppliedView.style.display = "block";
+      if (couponManualView) couponManualView.style.display = "none";
+      if (appliedCodeText) appliedCodeText.textContent = data.code;
+
+      const savingVal = document.querySelector('.green-saving-val');
+      if (savingVal) savingVal.textContent = `₹${data.discount.toLocaleString('en-IN')} off`;
+
       const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
       if (payBtnText) payBtnText.textContent = `Enroll Now & Pay ₹${data.finalAmount.toLocaleString('en-IN')}`;
 
@@ -3458,44 +3554,16 @@ function initRazorpayCheckoutFlow() {
       if (couponInput) couponInput.disabled = true;
       if (couponMsgEl) {
         couponMsgEl.className = 'moya-coupon-msg success';
-        couponMsgEl.textContent = `Your ₹${data.discount.toLocaleString('en-IN')} offer is applied. `;
+        couponMsgEl.textContent = `Your ₹${data.discount.toLocaleString('en-IN')} offer is applied.`;
       }
       couponNeedsReview = false;
     } catch (error) {
-      appliedCouponCode = null;
-      currentPayableAmount = originalBasePrice;
-      const priceCardEl = document.getElementById('checkoutPriceCard');
-      if (priceCardEl) priceCardEl.classList.remove('has-coupon');
-      if (displayPriceEl) {
-        displayPriceEl.classList.remove('coupon-applied-price');
-        displayPriceEl.innerHTML = `₹${originalBasePrice.toLocaleString('en-IN')} <span class="price-strikethrough">₹14,997</span>`;
-      }
-      if (discountBadgeEl) {
-        discountBadgeEl.textContent = 'OFFICIAL PASS';
-        discountBadgeEl.classList.remove('coupon-applied');
-      }
-      const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
-      if (payBtnText) payBtnText.textContent = `Enroll Now & Pay ₹${originalBasePrice.toLocaleString('en-IN')}`;
-
-      if (couponInput) couponInput.disabled = false;
-      if (applyBtn) {
-        applyBtn.disabled = false;
-        applyBtn.classList.remove('is-applied');
-        applyBtn.textContent = 'Apply Code';
-      }
+      handleRemoveCoupon();
       if (couponMsgEl) {
         couponMsgEl.className = 'moya-coupon-msg error';
-        couponMsgEl.textContent = getSafeUserErrorMessage(error.message, 'We couldn’t verify your offer. Please retry or remove it to continue.');
+        couponMsgEl.textContent = getSafeUserErrorMessage(error.message, 'Invalid, inactive, or expired coupon code.');
       }
     } finally {
-      if (couponMsgEl) {
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'coupon-remove-link';
-        remove.textContent = 'Remove code';
-        remove.addEventListener('click', handleRemoveCoupon);
-        couponMsgEl.append(remove);
-      }
       couponBusy = false;
       if (payBtn) payBtn.disabled = couponNeedsReview;
     }
@@ -3513,18 +3581,26 @@ function initRazorpayCheckoutFlow() {
 
     if (displayPriceEl) {
       displayPriceEl.classList.remove('coupon-applied-price');
-      displayPriceEl.innerHTML = `₹${originalBasePrice.toLocaleString('en-IN')} <span class="price-strikethrough">₹14,997</span>`;
+      displayPriceEl.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
     }
+    if (strikePriceEl) {
+      strikePriceEl.style.display = "none";
+    }
+
     if (discountBadgeEl) {
-      discountBadgeEl.textContent = 'OFFICIAL PASS';
+      discountBadgeEl.style.display = "none";
       discountBadgeEl.classList.remove('coupon-applied');
     }
+
+    if (couponAppliedView) couponAppliedView.style.display = "none";
+    if (couponManualView) couponManualView.style.display = "block";
+
     const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
     if (payBtnText) payBtnText.textContent = `Enroll Now & Pay ₹${originalBasePrice.toLocaleString('en-IN')}`;
 
     if (applyBtn) {
       applyBtn.disabled = false;
-      applyBtn.textContent = 'Apply Code';
+      applyBtn.textContent = 'Apply';
       applyBtn.classList.remove('is-applied');
     }
     if (couponInput) {
@@ -3537,8 +3613,24 @@ function initRazorpayCheckoutFlow() {
     }
   }
 
+  if (removeCouponBtn) {
+    removeCouponBtn.addEventListener('click', handleRemoveCoupon);
+  }
+
   if (applyBtn) {
-    applyBtn.addEventListener('click', handleApplyCoupon);
+    applyBtn.addEventListener('click', () => handleApplyCoupon());
+  }
+
+  window.applyUrgencyCoupon = handleApplyCoupon;
+
+  // Pre-apply default scholarship voucher on startup ONLY IF timer has not expired
+  const isExpiredOnStart = getTimerRemainingSeconds() <= 0 && localStorage.getItem('moya_timer_expires_at');
+  if (isExpiredOnStart) {
+    handleTimerExpiry();
+  } else {
+    setTimeout(() => {
+      handleApplyCoupon(liveGHLOffer.code || 'MOYA55');
+    }, 100);
   }
 
   if (couponInput) {
@@ -3561,9 +3653,9 @@ function initRazorpayCheckoutFlow() {
   // Auto-apply promo if URL param has coupon
   const urlParams = new URLSearchParams(window.location.search);
   const promoParam = urlParams.get('coupon') || urlParams.get('code');
-  if (promoParam && couponInput) {
+  if (promoParam && couponInput && !isExpiredOnStart) {
     couponInput.value = promoParam.trim();
-    setTimeout(handleApplyCoupon, 400);
+    setTimeout(() => handleApplyCoupon(promoParam.trim()), 400);
   }
 
   // Checkout Payment Form Submit
@@ -3791,10 +3883,20 @@ function initRazorpayCheckoutFlow() {
 
   return async function applyUrgencyCoupon(code) {
     if (couponBusy) return;
-    handleRemoveCoupon();
-    if (couponInput) couponInput.value = code;
     openRazorpayCheckoutModal();
-    await handleApplyCoupon();
+    const isExpired = getTimerRemainingSeconds() <= 0 && localStorage.getItem('moya_timer_expires_at');
+    if (isExpired && !appliedCouponCode) {
+      handleTimerExpiry();
+      return;
+    }
+    const targetCode = code || liveGHLOffer.code || 'MOYA55';
+    if (appliedCouponCode === targetCode && currentPayableAmount < originalBasePrice) {
+      if (couponAppliedView) couponAppliedView.style.display = "block";
+      if (couponManualView) couponManualView.style.display = "none";
+      return;
+    }
+    if (couponInput) couponInput.value = targetCode;
+    await handleApplyCoupon(targetCode);
   };
 }
 

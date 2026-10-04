@@ -58,7 +58,16 @@ test('Lead-First 20-minute coupon urgency funnel backend integration', async () 
     });
     assert.equal(invalidLeadRes.status, 400);
 
-    // 3. Test Coupon Validation for Urgency Voucher MOYA55
+    // 3. Test Offer Config API
+    const offerRes = await fetch(`http://127.0.0.1:${port}/api/offer-config`);
+    assert.equal(offerRes.status, 200);
+    const offerData = await offerRes.json();
+    assert.equal(offerData.success, true);
+    assert.equal(offerData.code, 'MOYA55');
+    assert.equal(offerData.discount, 4000);
+    assert.equal(offerData.finalAmount, 997);
+
+    // 4. Test Coupon Validation for Urgency Voucher MOYA55
     const couponRes = await post('/api/coupon/validate', { couponCode: 'MOYA55' });
     assert.equal(couponRes.status, 200);
     const couponData = await couponRes.json();
@@ -66,6 +75,18 @@ test('Lead-First 20-minute coupon urgency funnel backend integration', async () 
     assert.equal(couponData.code, 'MOYA55');
     assert.equal(couponData.discount, 4000);
     assert.equal(couponData.finalAmount, 997);
+
+    // 5. Test Strict Rejection of All Legacy Coupons
+    const legacyCodes = ['MOYA44', 'MOYA22', 'MOYA23', 'MOYA11', '3000OFF', '2000OFF', '1000OFF'];
+    for (const code of legacyCodes) {
+      const res = await post('/api/coupon/validate', { couponCode: code });
+      const data = await res.json();
+      assert.equal(data.valid, false, `Legacy code ${code} must be invalid`);
+    }
+
+    // 6. Test Rejection of Empty Coupon Submission
+    const emptyRes = await post('/api/coupon/validate', { couponCode: '' });
+    assert.equal(emptyRes.status, 400);
   } finally {
     const exited = new Promise(resolve => server.once('exit', resolve));
     server.kill();

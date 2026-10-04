@@ -204,10 +204,7 @@ let couponCache = {
 };
 
 const DEFAULT_MOYA_COUPONS = {
-  'MOYA55': { code: 'MOYA55', discount: 4000, status: 'ENABLED' },
-  'MOYA44': { code: 'MOYA44', discount: 3000, status: 'ENABLED' },
-  'MOYA22': { code: 'MOYA22', discount: 2000, status: 'ENABLED' },
-  'MOYA11': { code: 'MOYA11', discount: 1000, status: 'ENABLED' }
+  'MOYA55': { code: 'MOYA55', discount: 4000, status: 'ENABLED' }
 };
 
 async function getActiveCouponsFromGHL() {
@@ -219,7 +216,7 @@ async function getActiveCouponsFromGHL() {
   const locationId = process.env.GHL_LOCATION_ID || 'jsuZqhDRfnfSBFMgdfs2';
   const apiKey = process.env.GHL_API_KEY;
 
-  let coupons = { ...DEFAULT_MOYA_COUPONS };
+  let coupons = {};
 
   if (apiKey) {
     try {
@@ -236,57 +233,45 @@ async function getActiveCouponsFromGHL() {
         const data = await res.json();
         const customValues = data?.customValues || [];
 
-        // Check for single override or multi-coupon custom values
-        const legacyCode = customValues.find(cv => cv.name === 'VSL Coupon Code')?.value;
-        const legacyDiscount = customValues.find(cv => cv.name === 'VSL Coupon Discount')?.value;
-        const legacyStatus = customValues.find(cv => cv.name === 'VSL Coupon Status')?.value;
+        // Check for official VSL Coupon custom values in GHL
+        const ghlCode = customValues.find(cv => cv.name?.toLowerCase() === 'vsl coupon code')?.value;
+        const ghlDiscount = customValues.find(cv => cv.name?.toLowerCase() === 'vsl coupon discount')?.value;
+        const ghlStatus = customValues.find(cv => cv.name?.toLowerCase() === 'vsl coupon status')?.value;
 
-        if (legacyCode) {
-          coupons[legacyCode.trim().toUpperCase()] = {
-            code: legacyCode.trim().toUpperCase(),
-            discount: Number(legacyDiscount) || 4000,
-            status: legacyStatus ? legacyStatus.trim().toUpperCase() : 'ENABLED'
+        if (ghlCode && ghlCode.trim()) {
+          const codeKey = ghlCode.trim().toUpperCase();
+          const discountVal = Number(ghlDiscount);
+          coupons[codeKey] = {
+            code: codeKey,
+            discount: (!isNaN(discountVal) && discountVal > 0) ? discountVal : 4000,
+            status: ghlStatus ? ghlStatus.trim().toUpperCase() : 'ENABLED'
           };
         }
 
-        // Custom mappings for 4000, 3000, 2000, 1000 if set in GHL
-        const cv4000 = customValues.find(cv => cv.name === 'Festival Coupon 4000')?.value;
-        const cv3000 = customValues.find(cv => cv.name === 'Festival Coupon 3000')?.value;
-        const cv2000 = customValues.find(cv => cv.name === 'Festival Coupon 2000')?.value;
-        const cv1000 = customValues.find(cv => cv.name === 'Festival Coupon 1000')?.value;
-
-        if (cv4000) coupons[cv4000.trim().toUpperCase()] = { code: cv4000.trim().toUpperCase(), discount: 4000, status: 'ENABLED' };
-        if (cv3000) coupons[cv3000.trim().toUpperCase()] = { code: cv3000.trim().toUpperCase(), discount: 3000, status: 'ENABLED' };
-        if (cv2000) coupons[cv2000.trim().toUpperCase()] = { code: cv2000.trim().toUpperCase(), discount: 2000, status: 'ENABLED' };
-        if (cv1000) coupons[cv1000.trim().toUpperCase()] = { code: cv1000.trim().toUpperCase(), discount: 1000, status: 'ENABLED' };
-
+        // Cache for 20 seconds so GHL updates propagate quickly
         couponCache = {
-          data: coupons,
-          expiresAt: now + 60000 // Cache for 60 seconds
+          data: Object.keys(coupons).length > 0 ? coupons : DEFAULT_MOYA_COUPONS,
+          expiresAt: now + 20000
         };
-        console.log('[GHL Live Coupons Cached]', Object.keys(coupons));
-        return coupons;
+        console.log('[GHL Live Active Coupon]', Object.keys(couponCache.data));
+        return couponCache.data;
       } else {
-        throw new Error('Unable to retrieve active coupon configuration');
+        console.warn('[GHL Live Coupons Notice] Unable to retrieve from GHL, using default');
       }
     } catch (err) {
       console.warn('[GHL Live Coupons Notice]', err.message);
-      throw err;
     }
   }
 
-  return coupons;
+  return DEFAULT_MOYA_COUPONS;
 }
 
 mountFestiveRoutes(app, getActiveCouponsFromGHL);
 
-function isCouponAvailable(coupon, coupons) {
-  if (!coupon || !['ENABLED', 'ACTIVE'].includes(coupon.status)) return false;
-  if ([4000, 3000, 2000, 1000].includes(coupon.discount)) {
-    const campaign = campaignFromCoupons(coupons);
-    if (!campaign.active) return false;
-    if (coupon.discount !== 1000 && !campaign.rewards.some(r => r.code === coupon.code)) return false;
-  }
+function isCouponAvailable(coupon) {
+  if (!coupon) return false;
+  const status = (coupon.status || 'ENABLED').trim().toUpperCase();
+  if (!['ENABLED', 'ACTIVE'].includes(status)) return false;
   return Number.isFinite(coupon.discount) && coupon.discount > 0;
 }
 
@@ -297,15 +282,14 @@ app.get('/api/offer-config', async (req, res) => {
   try {
     const coupons = await getActiveCouponsFromGHL();
     const basePrice = Number(process.env.COURSE_PRICE) || 4997;
-    const vslCode = (process.env.VSL_COUPON_CODE || 'MOYA55').trim().toUpperCase();
-    const matched = coupons[vslCode] || Object.values(coupons).find(c => isCouponAvailable(c, coupons));
+    const activeCoupon = Object.values(coupons)[0] || DEFAULT_MOYA_COUPONS['MOYA55'];
 
-    if (matched && isCouponAvailable(matched, coupons)) {
-      const discount = Math.min(basePrice, matched.discount);
+    if (activeCoupon && isCouponAvailable(activeCoupon)) {
+      const discount = Math.min(basePrice, activeCoupon.discount);
       const finalAmount = Math.max(1, basePrice - discount);
       return res.json({
         success: true,
-        code: matched.code,
+        code: activeCoupon.code,
         discount,
         basePrice,
         finalAmount
@@ -331,7 +315,7 @@ app.get('/api/offer-config', async (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
-// API: Validate Coupon Code (Live Check Against GHL Custom Values)
+// API: Validate Coupon Code (Live Check Against GHL Custom Values & Defaults)
 // -----------------------------------------------------------------------------
 app.post('/api/coupon/validate', async (req, res) => {
   try {
@@ -340,13 +324,19 @@ app.post('/api/coupon/validate', async (req, res) => {
       return res.status(400).json({ valid: false, message: 'Please enter a valid coupon code.' });
     }
 
-    const coupons = await getActiveCouponsFromGHL();
+    let coupons;
+    try {
+      coupons = await getActiveCouponsFromGHL();
+    } catch {
+      coupons = DEFAULT_MOYA_COUPONS;
+    }
+
     const cleanInput = couponCode.trim().toUpperCase();
     const basePrice = Number(process.env.COURSE_PRICE) || 4997;
 
     const matchedCoupon = coupons[cleanInput];
 
-    if (isCouponAvailable(matchedCoupon, coupons)) {
+    if (matchedCoupon && isCouponAvailable(matchedCoupon)) {
       const discount = Math.min(basePrice, matchedCoupon.discount);
       const finalAmount = Math.max(1, basePrice - discount);
 
@@ -366,7 +356,7 @@ app.post('/api/coupon/validate', async (req, res) => {
     }
   } catch (err) {
     console.error('Error validating coupon:', err);
-    res.status(500).json({ valid: false, message: 'Could not validate coupon at this time.' });
+    return res.status(500).json({ valid: false, message: 'Could not validate coupon at this time.' });
   }
 });
 
@@ -385,9 +375,15 @@ app.post('/api/razorpay/create-order', async (req, res) => {
     let discount = 0;
 
     if (couponCode && couponCode.trim()) {
-      const coupons = await getActiveCouponsFromGHL();
-      const matched = coupons[couponCode.trim().toUpperCase()];
-      if (isCouponAvailable(matched, coupons)) {
+      let coupons;
+      try {
+        coupons = await getActiveCouponsFromGHL();
+      } catch {
+        coupons = DEFAULT_MOYA_COUPONS;
+      }
+      const cleanCode = couponCode.trim().toUpperCase();
+      const matched = coupons[cleanCode];
+      if (matched && isCouponAvailable(matched)) {
         discount = Math.min(basePrice, matched.discount);
         finalAmount = Math.max(1, basePrice - discount);
         appliedCoupon = matched.code;
