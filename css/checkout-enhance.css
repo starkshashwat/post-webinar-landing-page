@@ -468,28 +468,132 @@
   color: #d6ddf2;
 }
 
+/* Step 3: Equal-Sized Urgency Banner and Price Card in Summary Row */
+.checkout-modal-box .checkout-summary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.checkout-modal-box .checkout-summary-row:has(> #checkoutUrgencyBanner[style*="display: none"]) .checkout-price-card {
+  grid-column: 1 / -1;
+}
+
+.checkout-modal-box .checkout-urgency-banner,
+.checkout-modal-box .checkout-price-card {
+  min-height: 58px;
+  height: 58px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 11px;
+  margin: 0;
+}
+
+.checkout-modal-box .checkout-urgency-banner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 1px solid rgba(229, 46, 63, .35);
+  background: linear-gradient(110deg, rgba(229, 46, 63, .16), rgba(229, 46, 63, .04));
+  color: #f2c4c9;
+  text-align: left;
+}
+
+.checkout-modal-box .checkout-urgency-banner .urgency-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.checkout-modal-box .urgency-banner-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.checkout-modal-box .checkout-timer-label {
+  font-size: .66rem;
+  color: #e2e8f0;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.checkout-modal-box .checkout-urgency-banner strong {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: #ff9e91;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.checkout-modal-box .checkout-urgency-banner.expired {
+  border-color: rgba(255, 255, 255, .15);
+  background: rgba(255, 255, 255, .04);
+  color: #cbd5e1;
+}
+.checkout-modal-box .checkout-urgency-banner.expired .checkout-timer-label,
+.checkout-modal-box .checkout-urgency-banner.expired strong {
+  color: #cbd5e1;
+}
+
 .checkout-modal-box .checkout-price-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  margin-bottom: 8px;
   border: 1px solid rgba(255, 139, 121, .35);
   border-radius: 11px;
   background: linear-gradient(108deg, rgba(229, 46, 63, .18), rgba(229, 46, 63, .045));
+  transition: border-color .3s ease, background .3s ease, box-shadow .3s ease;
+}
+
+.checkout-modal-box .checkout-price-card .price-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.2;
 }
 
 .moya-price-caption {
   display: block;
-  font-size: .68rem;
+  font-size: .66rem;
   color: #d8dcef;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .checkout-modal-box .checkout-price-card .price-val {
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   font-weight: 850;
   color: #fff;
+  line-height: 1.2;
+  transition: color .3s ease;
+}
+
+/* Vibrant Emerald Green on Coupon Applied */
+.checkout-modal-box .checkout-price-card.has-coupon {
+  border-color: rgba(34, 197, 94, .45);
+  background: linear-gradient(108deg, rgba(16, 185, 129, .18), rgba(16, 185, 129, .045));
+  box-shadow: 0 0 16px rgba(16, 185, 129, .14);
+}
+
+.checkout-modal-box .checkout-price-card.has-coupon .moya-price-caption {
+  color: #a7f3d0;
+}
+
+.checkout-modal-box .checkout-price-card.has-coupon .price-val,
+.checkout-modal-box .price-val.coupon-applied-price {
+  color: #10b981 !important;
+  text-shadow: 0 0 14px rgba(16, 185, 129, .4);
+  animation: priceDiscountPop .45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes priceDiscountPop {
+  0% { transform: scale(0.92); opacity: 0.8; }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .checkout-modal-box .price-strikethrough {
@@ -504,8 +608,16 @@
   border-radius: 6px;
   background: rgba(229, 46, 63, .25);
   color: #ff9187;
-  font-size: .68rem;
+  font-size: .66rem;
   font-weight: 800;
+  transition: all .3s ease;
+}
+
+.checkout-modal-box .price-badge.coupon-applied {
+  border: 1px solid rgba(39, 211, 145, .36);
+  background: rgba(18, 154, 105, .22);
+  color: #9af4c5;
+  box-shadow: 0 0 12px rgba(39, 211, 145, .15);
 }
 
 .moya-coupon-disclosure {
@@ -717,12 +829,34 @@
     font-size: .68rem;
   }
 
+  .checkout-modal-box .checkout-summary-row {
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+
+  .checkout-modal-box .checkout-urgency-banner,
   .checkout-modal-box .checkout-price-card {
-    padding: 8px 10px;
+    min-height: 52px;
+    height: 52px;
+    padding: 6px 9px;
+  }
+
+  .checkout-modal-box .checkout-timer-label,
+  .checkout-modal-box .moya-price-caption {
+    font-size: .61rem;
+  }
+
+  .checkout-modal-box .checkout-urgency-banner strong {
+    font-size: 1.05rem;
   }
 
   .checkout-modal-box .checkout-price-card .price-val {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
+  }
+
+  .checkout-modal-box .price-badge {
+    padding: 3px 6px;
+    font-size: .58rem;
   }
 }
 

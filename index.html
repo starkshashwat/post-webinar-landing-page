@@ -2601,24 +2601,29 @@
       </p>
     </div>
 
-    <!-- Active Urgency Countdown Banner -->
-    <div class="checkout-urgency-banner" id="checkoutUrgencyBanner" style="display: none;">
-      <span class="urgency-icon">⏳</span>
-      <span>Special Early-Bird Price Reserved For: <strong id="checkoutCountdownTimer">20:00</strong></span>
+    <!-- Active Urgency Countdown Banner & Price Card (Equal Sized Row) -->
+    <div class="checkout-summary-row">
+      <div class="checkout-urgency-banner" id="checkoutUrgencyBanner" style="display: none;">
+        <span class="urgency-icon">⏳</span>
+        <div class="urgency-banner-info">
+          <span class="checkout-timer-label" id="checkoutTimerLabel">Coupon code expires in</span>
+          <strong id="checkoutCountdownTimer">20:00</strong>
+        </div>
+      </div>
+
+      <div class="checkout-price-card" id="checkoutPriceCard">
+        <div class="price-left">
+          <span class="moya-price-caption">Total due today</span>
+          <div class="price-val" id="checkoutDisplayPrice">₹4,997 <span class="price-strikethrough" id="checkoutOriginalStrike">₹14,997</span></div>
+        </div>
+        <div class="price-badge" id="checkoutDiscountBadge">OFFICIAL PASS</div>
+      </div>
     </div>
 
     <div class="checkout-trust-strip">
       <div class="trust-item"><span class="trust-check">✓</span> Instant Full Access</div>
       <div class="trust-item"><span class="trust-check">✓</span> 18 Bonus Vaults</div>
       <div class="trust-item"><span class="trust-check">✓</span> 2-Day Bootcamp</div>
-    </div>
-
-    <div class="checkout-price-card" id="checkoutPriceCard">
-      <div class="price-left">
-        <span class="moya-price-caption">Total due today</span>
-        <div class="price-val" id="checkoutDisplayPrice">₹4,997 <span class="price-strikethrough" id="checkoutOriginalStrike">₹14,997</span></div>
-      </div>
-      <div class="price-badge" id="checkoutDiscountBadge">OFFICIAL PASS</div>
     </div>
 
     <form id="razorpayPaymentForm" class="moya-modal-form" novalidate>

@@ -120,11 +120,11 @@ function syncUrgencyTimers(onExpire) {
       } else if (remaining > 0) {
         checkoutBannerEl.style.display = 'flex';
         checkoutBannerEl.classList.remove('expired');
-        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><span>Checkout session: <strong id="checkoutCountdownTimer">${formatted}</strong> remaining</span>`;
+        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><div class="urgency-banner-info"><span class="checkout-timer-label" id="checkoutTimerLabel">Coupon code expires in</span><strong id="checkoutCountdownTimer">${formatted}</strong></div>`;
       } else {
         checkoutBannerEl.style.display = 'flex';
         checkoutBannerEl.classList.add('expired');
-        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><span>Checkout session ended. Reapply your code to check the current offer.</span>`;
+        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><div class="urgency-banner-info"><span class="checkout-timer-label" id="checkoutTimerLabel">Coupon code expired</span><strong id="checkoutCountdownTimer">00:00</strong></div>`;
       }
     }
 
@@ -3384,9 +3384,9 @@ function initRazorpayCheckoutFlow() {
 
   // Sync live countdown timer and handle timer expiry
   syncUrgencyTimers(() => {
-    if (appliedCouponCode === "MOYA55") {
+    if (appliedCouponCode && (appliedCouponCode === "MOYA55" || appliedCouponCode === liveGHLOffer.code)) {
       handleRemoveCoupon();
-      triggerToast("Checkout session ended. Reapply your code to check the current offer.");
+      triggerToast("Coupon timer expired. You can still apply your code below.");
     }
   });
 
@@ -3424,7 +3424,11 @@ function initRazorpayCheckoutFlow() {
       currentPayableAmount = data.finalAmount;
       originalBasePrice = data.originalPrice;
 
+      const priceCardEl = document.getElementById('checkoutPriceCard');
+      if (priceCardEl) priceCardEl.classList.add('has-coupon');
+
       if (displayPriceEl) {
+        displayPriceEl.classList.add('coupon-applied-price');
         displayPriceEl.replaceChildren(document.createTextNode(`₹${data.finalAmount.toLocaleString('en-IN')} `));
         const oldPrice = document.createElement('span');
         oldPrice.className = 'price-strikethrough';
@@ -3451,21 +3455,24 @@ function initRazorpayCheckoutFlow() {
     } catch (error) {
       appliedCouponCode = null;
       currentPayableAmount = originalBasePrice;
+      const priceCardEl = document.getElementById('checkoutPriceCard');
+      if (priceCardEl) priceCardEl.classList.remove('has-coupon');
       if (displayPriceEl) {
-        displayPriceEl.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
+        displayPriceEl.classList.remove('coupon-applied-price');
+        displayPriceEl.innerHTML = `₹${originalBasePrice.toLocaleString('en-IN')} <span class="price-strikethrough">₹14,997</span>`;
       }
       if (discountBadgeEl) {
-        discountBadgeEl.textContent = 'OFFER NOT APPLIED';
+        discountBadgeEl.textContent = 'OFFICIAL PASS';
         discountBadgeEl.classList.remove('coupon-applied');
       }
       const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
-      if (payBtnText) payBtnText.textContent = 'Review your offer to continue';
+      if (payBtnText) payBtnText.textContent = `Enroll Now & Pay ₹${originalBasePrice.toLocaleString('en-IN')}`;
 
       if (couponInput) couponInput.disabled = false;
       if (applyBtn) {
         applyBtn.disabled = false;
         applyBtn.classList.remove('is-applied');
-        applyBtn.textContent = 'Retry code';
+        applyBtn.textContent = 'Apply Code';
       }
       if (couponMsgEl) {
         couponMsgEl.className = 'moya-coupon-msg error';
@@ -3492,7 +3499,11 @@ function initRazorpayCheckoutFlow() {
     appliedCouponCode = null;
     currentPayableAmount = originalBasePrice;
 
+    const priceCardEl = document.getElementById('checkoutPriceCard');
+    if (priceCardEl) priceCardEl.classList.remove('has-coupon');
+
     if (displayPriceEl) {
+      displayPriceEl.classList.remove('coupon-applied-price');
       displayPriceEl.innerHTML = `₹${originalBasePrice.toLocaleString('en-IN')} <span class="price-strikethrough">₹14,997</span>`;
     }
     if (discountBadgeEl) {
