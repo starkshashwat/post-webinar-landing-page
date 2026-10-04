@@ -21,7 +21,7 @@ const MOYA_APP_CONFIG = {
         {
           tab: "03 Assembly",
           title: "2-Hour Faceless Production Machine",
-          body: "Deploy Savan's 7,000-video tested workflow: AI-assisted scripting prompts for 65%+ retention, studio-grade AI voice synthesis, and motion graphics asset libraries for rapid 2-hour video rendering.",
+    body: "Use the workflow shaped across 12,500+ videos: research-led scripting, consistent voice production, and a repeatable visual process designed to make publishing easier to manage.",
           done: "You can produce and publish high-retention faceless videos in under 2 hours."
         },
         {
@@ -52,7 +52,7 @@ const MOYA_APP_CONFIG = {
         },
         {
           q: "What makes MOYA different from other YouTube courses?",
-          a: "Most courses are passive video lectures where the mentor abandons you once you pay. MOYA is an implementation system with hands-on support: you receive private community access, weekly live doubt-clearing sessions, and an intensive 2-day onboarding bootcamp."
+    a: "MOYA combines the course with an implementation path. You receive private community access, practical templates, and a focused 2-day onboarding bootcamp to set up your niche, tools, channel structure, and next actions."
         },
         {
           q: "How fast did student Koushik reach 7.1M views?",
@@ -60,7 +60,7 @@ const MOYA_APP_CONFIG = {
         },
         {
           q: "What happens immediately after I enroll?",
-          a: "You immediately receive portal access credentials, instant access to all 19 bonus vaults, an invitation to the private student community, and access to the private student mastermind community and the 2-day onboarding bootcamp."
+    a: "You immediately receive portal access credentials, instant access to all 18 bonus vaults, an invitation to the private student community, and access to the private student mastermind community and the 2-day onboarding bootcamp."
         }
       ]
     };

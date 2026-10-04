@@ -136,6 +136,41 @@ function syncUrgencyTimers(onExpire) {
   urgencyTimerInterval = setInterval(tick, 1000);
 }
 
+let liveGHLOffer = {
+  code: 'MOYA55',
+  discount: 4000,
+  basePrice: 4997,
+  finalAmount: 997
+};
+
+async function syncDynamicOfferFromGHL() {
+  try {
+    const res = await fetch('/api/offer-config');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.success) return;
+
+    liveGHLOffer = data;
+
+    const discountStr = `₹${data.discount.toLocaleString('en-IN')}`;
+    const payableStr = `₹${data.finalAmount.toLocaleString('en-IN')}`;
+    const codeStr = data.code;
+
+    document.querySelectorAll('[data-dyn-discount]').forEach(el => {
+      el.textContent = discountStr;
+    });
+    document.querySelectorAll('[data-dyn-payable]').forEach(el => {
+      el.textContent = payableStr;
+    });
+    document.querySelectorAll('[data-dyn-code]').forEach(el => {
+      el.textContent = codeStr;
+    });
+  } catch (err) {
+    console.debug('Dynamic offer sync note:', err.message);
+  }
+}
+window.syncDynamicOfferFromGHL = syncDynamicOfferFromGHL;
+
 // Modal Helpers
 function openLeadCaptureModal() {
   const modal = document.getElementById('leadCaptureModal');
@@ -186,7 +221,7 @@ function openRewardRevealModal() {
       closeRewardRevealModal();
       openRazorpayCheckoutModal();
       if (typeof window.applyUrgencyCoupon === 'function') {
-        window.applyUrgencyCoupon('MOYA55');
+        window.applyUrgencyCoupon(liveGHLOffer.code || 'MOYA55');
       }
     };
   }
@@ -197,7 +232,7 @@ function openRewardRevealModal() {
       closeRewardRevealModal();
       openRazorpayCheckoutModal();
       if (typeof window.applyUrgencyCoupon === 'function') {
-        window.applyUrgencyCoupon('MOYA55');
+        window.applyUrgencyCoupon(liveGHLOffer.code || 'MOYA55');
       }
     };
   }
@@ -257,7 +292,7 @@ function handleCtaClick(e) {
   } else {
     openRazorpayCheckoutModal();
     if (isTimerActive() && typeof window.applyUrgencyCoupon === 'function') {
-      window.applyUrgencyCoupon('MOYA55');
+      window.applyUrgencyCoupon(liveGHLOffer.code || 'MOYA55');
     }
   }
 }
@@ -1383,7 +1418,7 @@ window.openLightbox = function(src) {
     lightbox.innerHTML = `
       <div class="global-lightbox-backdrop"></div>
       <div class="global-lightbox-content">
-        <img src="" alt="Proof Preview" class="global-lightbox-img" />
+      <img src="" alt="Analytics Preview" class="global-lightbox-img" />
         <button class="global-lightbox-close" aria-label="Close Lightbox">&times;</button>
       </div>
     `;
@@ -1453,7 +1488,7 @@ window.openLightbox = function(src) {
           {
             title: "Session 1.1 - Good YouTube Automation Channels",
             image: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5bdc29f8b31b6abd4d539.jpeg",
-            desc: "Deconstructing verified high-performing channels dominating recommendation browse feeds."
+      desc: "Breaking down high-performing channels that consistently appear in recommendation and browse feeds."
           },
           {
             title: "Session 1.2 - Bad Automation Channels (Avoid)",
@@ -1683,7 +1718,7 @@ window.openLightbox = function(src) {
           {
             title: "100+ Profitable Niches List",
             image: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c9c8fd689c358fe1ae.webp",
-            desc: "Vetted niches with verified CPM and advertiser demand."
+      desc: "Researched niches with visible CPM patterns and advertiser demand."
           },
           {
             title: "Language Niche Channels",
@@ -2496,7 +2531,7 @@ window.openLightbox = function(src) {
         if (statusText) {
           const start = currentPage * cardsPerPage + 1;
           const end = Math.min((currentPage + 1) * cardsPerPage, slides.length);
-          statusText.textContent = `Showing ${start}–${end} of ${slides.length} Verified Case Studies`;
+    statusText.textContent = `Showing ${start}–${end} of ${slides.length} Creator Stories`;
         }
         if (prevBtn) prevBtn.disabled = currentPage === 0;
         if (nextBtn) nextBtn.disabled = currentPage === totalPages - 1;
@@ -3587,7 +3622,7 @@ function initRazorpayCheckoutFlow() {
           name: 'Mechanism of YouTube Automation',
           description: appliedCouponCode
             ? `MOYA Complete Access (Coupon ${appliedCouponCode} Applied)`
-            : 'MOYA Complete Access + 19 Bonus Vaults',
+      : 'MOYA Complete Access + 18 Bonus Vaults',
           image: 'https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c89c9b37b5fd4d3d92.webp',
           order_id: order.id,
           prefill: {
@@ -3766,6 +3801,7 @@ onReady(() => {
   animateDashboardCounters();
 
   // 3. Initialize Section 5 Lead Capture, Urgency Flow & Razorpay Checkout
+  syncDynamicOfferFromGHL();
   initSection5LeadCapture();
   window.applyUrgencyCoupon = initRazorpayCheckoutFlow();
 

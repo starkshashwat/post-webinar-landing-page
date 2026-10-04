@@ -291,6 +291,46 @@ function isCouponAvailable(coupon, coupons) {
 }
 
 // -----------------------------------------------------------------------------
+// API: Get Active Offer Config (Dynamic Sync with GHL Custom Values)
+// -----------------------------------------------------------------------------
+app.get('/api/offer-config', async (req, res) => {
+  try {
+    const coupons = await getActiveCouponsFromGHL();
+    const basePrice = Number(process.env.COURSE_PRICE) || 4997;
+    const vslCode = (process.env.VSL_COUPON_CODE || 'MOYA55').trim().toUpperCase();
+    const matched = coupons[vslCode] || Object.values(coupons).find(c => isCouponAvailable(c, coupons));
+
+    if (matched && isCouponAvailable(matched, coupons)) {
+      const discount = Math.min(basePrice, matched.discount);
+      const finalAmount = Math.max(1, basePrice - discount);
+      return res.json({
+        success: true,
+        code: matched.code,
+        discount,
+        basePrice,
+        finalAmount
+      });
+    }
+
+    return res.json({
+      success: true,
+      code: 'MOYA55',
+      discount: 4000,
+      basePrice: 4997,
+      finalAmount: 997
+    });
+  } catch (err) {
+    return res.json({
+      success: true,
+      code: 'MOYA55',
+      discount: 4000,
+      basePrice: 4997,
+      finalAmount: 997
+    });
+  }
+});
+
+// -----------------------------------------------------------------------------
 // API: Validate Coupon Code (Live Check Against GHL Custom Values)
 // -----------------------------------------------------------------------------
 app.post('/api/coupon/validate', async (req, res) => {
