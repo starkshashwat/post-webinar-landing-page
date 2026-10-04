@@ -55,8 +55,8 @@ const MOYA_APP_CONFIG = {
     a: "MOYA combines the course with an implementation path. You receive private community access, practical templates, and a focused 2-day onboarding bootcamp to set up your niche, tools, channel structure, and next actions."
         },
         {
-          q: "How fast did student Koushik reach 7.1M views?",
-          a: "Koushik reached 7.1M views and over $41,296.84 in estimated revenue within 90 days of implementing the MOYA roadmap. While individual results vary depending on consistency and niche, the roadmap is engineered for rapid algorithmic validation."
+          q: "How did student Kaushik reach ₹5 Lakh/month in 6 weeks?",
+          a: "Kaushik scaled his faceless YouTube channel to ₹5 Lakh (₹5,00,000) per month in 6 weeks by executing the MOYA operating mechanism step-by-step: establishing a verified high-CPM niche in week 1, validating topics and packaging in weeks 2–3, automating consistent publishing in weeks 4–5, and doubling down on high-retention formats in week 6. While individual timelines depend on execution and niche, the system provides the exact roadmap for rapid algorithmic growth."
         },
         {
           q: "What happens immediately after I enroll?",

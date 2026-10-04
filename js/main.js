@@ -114,14 +114,17 @@ function syncUrgencyTimers(onExpire) {
 
     const checkoutBannerEl = document.getElementById('checkoutUrgencyBanner');
     if (checkoutBannerEl) {
-      if (remaining > 0) {
+      const sessionStarted = Number(localStorage.getItem('moya_timer_expires_at')) > 0;
+      if (!sessionStarted) {
+        checkoutBannerEl.style.display = 'none';
+      } else if (remaining > 0) {
         checkoutBannerEl.style.display = 'flex';
         checkoutBannerEl.classList.remove('expired');
-        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><span>Special Early-Bird Price Reserved For: <strong id="checkoutCountdownTimer">${formatted}</strong></span>`;
+        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><span>Checkout session: <strong id="checkoutCountdownTimer">${formatted}</strong> remaining</span>`;
       } else {
         checkoutBannerEl.style.display = 'flex';
         checkoutBannerEl.classList.add('expired');
-        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⚠️</span><span>Special 20-min voucher window expired. Regular fee restored.</span>`;
+        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><span>Checkout session ended. Reapply your code to check the current offer.</span>`;
       }
     }
 
@@ -580,7 +583,6 @@ function initHeadlineTextAnimations() {
     { section: '#featured-koushik', heading: '.bento-section-title', lead: '.bento-section-sub' },
     { section: '#featured-reeshav', heading: '.bento-section-title', lead: '.bento-section-sub' },
     { section: '#reviews', heading: '.coverflow-header h2', lead: '.coverflow-header .section-lead-text' },
-    { section: '#community-reviews', heading: '.testi-v2-header h2, .testi-v2-title', lead: '.testi-v2-desc' },
     { section: '#system', heading: '.section-heading-lg', lead: '.section-lead-text' },
     { section: '#curriculum', heading: '.curriculum-section-title, .section-heading-lg', lead: '.section-lead-text' },
     { section: '#bonuses', heading: '.section-heading-lg', lead: '.section-lead-text' },
@@ -2374,11 +2376,11 @@ window.openLightbox = function(src) {
         },
         {
                 "id": "testi-4",
-                "name": "Karuna Verma",
-                "subtitle": "Full-Time Creator \u2022 Educational Automation",
-                "quote": "As a beginner, I was overwhelmed by software tools. MOYA streamlined the exact stack I needed, and the weekly clinics gave me personalized feedback.",
-                "video": "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5217409c9b37b5fd4ed87f.mp4",
-                "poster": "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa5b7f99f8b31b6abd449df.png"
+		"name": "Yesh",
+		"subtitle": "MOYA Creator \u2022 Faceless Channel Scale",
+		"quote": "The MOYA operating system streamlined my entire channel process. The step-by-step blueprints and weekly clinics gave me exact clarity to grow.",
+		"video": "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6ac24ba4c478ac5535b9d30f.mp4",
+		"poster": "./assets/yesh-testimonial-poster.webp"
         },
         {
                 "id": "testi-5",
@@ -3205,9 +3207,7 @@ function initSection5LeadCapture() {
     if (phoneErr) { phoneErr.textContent = ""; phoneErr.classList.remove("visible"); }
   });
 
-  // Section 5 Auto-trigger Observer
-  // Rule: Pops up every time user visits Section 5 until they submit the form.
-  // If closed without submitting, pops up again upon scrolling into Section 5.
+  // Show the lead prompt once when the visitor reaches Section 5.
   if (section5) {
     let hasTriggeredInCurrentPass = false;
 
@@ -3228,7 +3228,7 @@ function initSection5LeadCapture() {
             }, 600);
           }
         } else {
-          // Reset pass flag when scrolling out of Section 5 so re-entry triggers popup again!
+          // Reset pass flag when scrolling out of Section 5 so re-entry triggers popup again if closed!
           hasTriggeredInCurrentPass = false;
         }
       });
@@ -3269,7 +3269,7 @@ function initSection5LeadCapture() {
       if (submitBtn) {
         submitBtn.disabled = true;
         const btnText = submitBtn.querySelector(".btn-text");
-        if (btnText) btnText.textContent = "Verifying & Unlocking ₹4,000 Voucher...";
+        if (btnText) btnText.textContent = "Preparing your offer...";
       }
 
       try {
@@ -3314,7 +3314,7 @@ function initSection5LeadCapture() {
         if (submitBtn) {
           submitBtn.disabled = false;
           const btnText = submitBtn.querySelector(".btn-text");
-          if (btnText) btnText.textContent = "Check Eligibility & Unlock ₹4,000 Discount";
+          if (btnText) btnText.textContent = "Continue to My Offer";
         }
       }
     });
@@ -3386,7 +3386,7 @@ function initRazorpayCheckoutFlow() {
   syncUrgencyTimers(() => {
     if (appliedCouponCode === "MOYA55") {
       handleRemoveCoupon();
-      triggerToast("Special 20-minute reservation has expired. Regular fee restored.");
+      triggerToast("Checkout session ended. Reapply your code to check the current offer.");
     }
   });
 
