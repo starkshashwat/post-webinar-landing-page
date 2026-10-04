@@ -2900,23 +2900,28 @@
 </dialog>
 
 <!-- ========================================================================
-     SECTION 5 AUTO-POPUP LEAD CAPTURE MODAL
+     SECTION 5 AUTO-POPUP & GLOBAL CTA LEAD QUALIFICATION MODAL
      ======================================================================== -->
 <dialog id="leadCaptureModal" class="moya-modal-dialog" aria-labelledby="leadModalTitle">
   <div class="moya-modal-box">
     <button type="button" class="moya-modal-close" id="closeLeadModal" aria-label="Close form">&times;</button>
     
-    <h3 id="leadModalTitle" class="moya-modal-title">Unlock The MOYA Operating System</h3>
+    <div class="moya-modal-badge">
+      <span class="moya-pulse-dot"></span> FAST-ACTION CREATOR SCHOLARSHIP
+    </div>
+
+    <h3 id="leadModalTitle" class="moya-modal-title">Unlock Your Special ₹4,000 Early-Bird Discount</h3>
     <p class="moya-modal-desc">
-      Enter your details to receive the complete faceless niche validation matrix, batch scripting SOPs, and algorithmic launch checklist.
+      Check your eligibility below to unlock your special <strong>₹997 Fast-Action Pass</strong> (Save Flat ₹4,000) before today's seats close. Takes just 10 seconds!
     </p>
 
     <form id="leadCaptureForm" class="moya-modal-form" novalidate>
       <div class="moya-form-group">
         <label for="leadNameInput">Full Name <span class="req">*</span></label>
         <div class="moya-input-wrap">
-          <input type="text" id="leadNameInput" name="name" placeholder="Full Name" required autocomplete="name" />
+          <input type="text" id="leadNameInput" name="name" placeholder="Enter your full name" required autocomplete="name" />
         </div>
+        <div class="field-error-msg" id="leadNameError"></div>
       </div>
 
       <div class="moya-form-group">
@@ -2924,16 +2929,19 @@
         <div class="moya-input-wrap">
           <input type="email" id="leadEmailInput" name="email" placeholder="you@email.com" required autocomplete="email" />
         </div>
+        <div class="field-error-msg" id="leadEmailError"></div>
       </div>
 
       <div class="moya-form-group">
         <label for="leadPhoneInput">WhatsApp Phone Number <span class="req">*</span></label>
-        <div class="moya-input-wrap">
-          <input type="tel" id="leadPhoneInput" name="phone" placeholder="+91 98765 43210" required autocomplete="tel" />
+        <div class="moya-phone-wrap" id="leadPhoneWrap">
+          <span class="moya-phone-prefix">+91</span>
+          <input type="tel" id="leadPhoneInput" name="phone" placeholder="9876543210" maxlength="10" required autocomplete="tel" />
         </div>
+        <div class="field-error-msg" id="leadPhoneError"></div>
       </div>
 
-      <!-- Monthly Income Circle Selectors (Universal Size, Non-bulky) -->
+      <!-- Monthly Income Circle Selectors -->
       <div class="moya-form-group">
         <label>Current Monthly Income <span class="req">*</span></label>
         <div class="moya-income-grid" role="radiogroup" aria-label="Monthly Income">
@@ -2961,15 +2969,77 @@
       </div>
 
       <button type="submit" class="moya-modal-submit-btn" id="leadSubmitBtn">
-        <span class="btn-text">Get Instant Access</span>
+        <span class="btn-text">Check Eligibility &amp; Unlock ₹4,000 Discount</span>
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
       </button>
 
       <div class="moya-form-note">
-        🔒 100% Privacy. Zero spam. We send direct implementation resources.
+        🔒 100% Privacy • No Spam • Instant Voucher Activation
       </div>
       <div id="leadFormMsg" class="moya-form-msg"></div>
     </form>
+  </div>
+</dialog>
+
+<!-- ========================================================================
+     DOPAMINE REWARD REVEAL & 20-MINUTE URGENCY COUNTDOWN MODAL
+     ======================================================================== -->
+<dialog id="rewardRevealModal" class="moya-modal-dialog reward-modal-dialog" aria-labelledby="rewardModalTitle">
+  <div class="moya-modal-box reward-modal-box">
+    <button type="button" class="moya-modal-close" id="closeRewardModal" aria-label="Close reward">&times;</button>
+    
+    <div class="reward-celebrate-badge">
+      <span>🎉</span> SCHOLARSHIP APPROVED • ELIGIBILITY CONFIRMED
+    </div>
+
+    <h2 id="rewardModalTitle" class="reward-modal-title">
+      Congratulations! You Unlocked The<br><span>₹4,000 Fast-Action Voucher!</span>
+    </h2>
+
+    <p class="reward-modal-desc">
+      Your special early-bird scholarship code <strong>MOYA55</strong> has been activated for the next 20 minutes. Pay just <strong>₹997</strong> instead of <del>₹4,997</del>!
+    </p>
+
+    <div class="reward-prize-card">
+      <div class="reward-price-row">
+        <div class="reward-savings">
+          <span class="reward-save-amount">₹4,000</span>
+          <span class="reward-save-tag">FLAT OFF</span>
+        </div>
+        <div class="reward-final-price">
+          <span class="reward-price-label">Your Special Price:</span>
+          <div class="reward-price-nums">
+            <span class="reward-current-num">₹997</span>
+            <span class="reward-strike-num">₹4,997</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="reward-timer-pill" id="rewardTimerPill">
+        <span class="timer-flame">🔥</span>
+        <span>Exclusive Price Reserved For:</span>
+        <strong id="rewardCountdownTimer">20:00</strong>
+      </div>
+
+      <div class="reward-voucher-strip">
+        <div class="voucher-info">
+          <small>VOUCHER CODE</small>
+          <span class="voucher-code-text" id="rewardVoucherCode">MOYA55</span>
+        </div>
+        <button type="button" class="reward-copy-btn" id="rewardCopyBtn">Copy Code</button>
+      </div>
+
+      <button type="button" class="moya-modal-submit-btn reward-claim-btn" id="rewardClaimBtn">
+        <span class="btn-text">Claim ₹4,000 Waiver &amp; Enroll Now (₹997)</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+
+      <div class="reward-footer-perks">
+        <span>✓ Instant Lifetime Access</span>
+        <span>✓ 19 Bonus Vaults (₹73,990 Free)</span>
+        <span>✓ Direct Mentorship</span>
+      </div>
+    </div>
   </div>
 </dialog>
 
@@ -2987,6 +3057,12 @@
       <p class="moya-modal-desc">
         Instant Lifetime Access &bull; Verified YouTube Operating System &bull; Direct Mentorship
       </p>
+    </div>
+
+    <!-- Active Urgency Countdown Banner -->
+    <div class="checkout-urgency-banner" id="checkoutUrgencyBanner" style="display: none;">
+      <span class="urgency-icon">⏳</span>
+      <span>Special Early-Bird Price Reserved For: <strong id="checkoutCountdownTimer">20:00</strong></span>
     </div>
 
     <div class="checkout-trust-strip">
@@ -3008,6 +3084,7 @@
         <div class="moya-input-wrap">
           <input type="text" id="checkoutNameInput" name="name" placeholder="Full Name" required autocomplete="name" />
         </div>
+        <div class="field-error-msg" id="checkoutNameError"></div>
       </div>
 
       <div class="moya-form-row">
@@ -3016,12 +3093,15 @@
           <div class="moya-input-wrap">
             <input type="email" id="checkoutEmailInput" name="email" placeholder="you@email.com" required autocomplete="email" />
           </div>
+          <div class="field-error-msg" id="checkoutEmailError"></div>
         </div>
         <div class="moya-form-group">
-          <label for="checkoutPhoneInput">WhatsApp / Phone <span class="req">*</span></label>
-          <div class="moya-input-wrap">
-            <input type="tel" id="checkoutPhoneInput" name="phone" placeholder="+91 98765 43210" required autocomplete="tel" />
+          <label for="checkoutPhoneInput">WhatsApp Phone <span class="req">*</span></label>
+          <div class="moya-phone-wrap" id="checkoutPhoneWrap">
+            <span class="moya-phone-prefix">+91</span>
+            <input type="tel" id="checkoutPhoneInput" name="phone" placeholder="9876543210" maxlength="10" required autocomplete="tel" />
           </div>
+          <div class="field-error-msg" id="checkoutPhoneError"></div>
         </div>
       </div>
 
@@ -3049,35 +3129,6 @@
   </div>
 </dialog>
 
-<!-- ========================================================================
-     FESTIVE GAMIFIED SPIN WHEEL WIDGET & MODAL (REUSABLE FOR ALL FESTIVALS)
-     ======================================================================== -->
-<aside class="festive-spin-widget" id="festiveSpinWidget" aria-label="MOYA festive offers">
-  <button type="button" class="spin-launcher-btn" id="openSpinModalBtn" aria-label="Spin and win a festive MOYA offer" aria-haspopup="dialog" aria-controls="festiveSpinModal">
-    <span class="fw-launcher-art" id="spinLauncherArt" aria-hidden="true"></span>
-    <span class="fw-launcher-copy"><small data-festive-label>Festive Special</small><strong id="spinLauncherLabel">Spin &amp; Win</strong><span id="spinLauncherValue">Discover your offer</span></span>
-  </button>
-  <button class="fw-pause" id="spinPauseBtn" type="button" aria-label="Pause festive animation" aria-pressed="false">Ⅱ</button>
-</aside>
-<dialog id="festiveSpinModal" class="festive-spin-modal" aria-labelledby="spinModalTitle" data-state="loading" data-lenis-prevent>
-  <div class="fw-shell">
-    <button type="button" class="festive-spin-close" id="closeSpinModalBtn" aria-label="Close spin wheel">×</button>
-    <div class="fw-topline"><span class="fw-wordmark">MOYA</span><span data-festive-label>Festive Special</span></div>
-    <div class="fw-layout">
-      <div class="fw-stage"><div class="fw-wheel-art" id="spinWheelArt"></div><p class="fw-wheel-caption">A LITTLE SPIN. A NEW BEGINNING.</p></div>
-      <div class="fw-content">
-        <div class="fw-invitation-content">
-          <div class="fw-heading"><p class="fw-kicker">A little celebration, just for you</p><h2 id="spinModalTitle" class="spin-title">A festive offer for<br>your <em>next chapter.</em></h2><p class="spin-subtitle" id="spinOfferDescription">Discover your festive offer on MOYA Complete Access.</p></div>
-          <div class="fw-actions"><button type="button" class="fw-primary" id="spinTriggerBtn" disabled>Checking offers…</button><p class="fw-micro">Your next chapter starts with one spin.</p></div>
-        </div>
-        <div class="spin-prize-card" id="spinPrizeCard"><p class="fw-kicker">A little reason to celebrate</p><h3 class="prize-headline">Your festive offer<br>is unlocked.</h3><div class="fw-prize-figure"><span class="prize-amount" id="prizeDisplayAmount"></span><span>OFF</span></div><p class="fw-payable" id="prizePayable"></p><div class="prize-code-wrap"><span class="prize-code" id="prizeCouponCode"></span><button type="button" class="prize-copy-btn" id="prizeCopyBtn">Copy code</button></div><button type="button" class="fw-primary" id="prizeClaimBtn">Apply offer &amp; continue <span aria-hidden="true">↗</span></button><p class="fw-micro">For MOYA Complete Access. No code to remember.</p></div>
-        <p id="spinStatus" class="fw-status" role="status" aria-live="polite"></p>
-      </div>
-    </div>
-    <div class="fw-bottom"><details class="fw-terms"><summary>Rewards &amp; terms</summary><p id="spinOdds">Checking available rewards…</p><p>Rewards have different probabilities; segment sizes do not represent the odds. Your offer is saved in this browser. Clearing browser data or switching devices may reset it. Cannot be combined with another coupon. Final availability is checked at checkout.</p><p id="spinExpiry"></p></details><button type="button" class="fw-sound" id="spinSoundBtn" aria-pressed="false">Sound off</button></div>
-    <div id="spinConfetti" class="fw-confetti" aria-hidden="true"></div>
-  </div>
-</dialog>
 <!-- System Toast -->
 <div class="system-toast" id="systemToast">Notification</div>
 <!-- ========================================================================

@@ -15,8 +15,64 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS setup
-app.use(cors());
+// CORS setup - restricted to authorized domains + localhost
+const allowedOrigins = [
+  'https://vsl.mechanismofya.com',
+  'https://mechanismofya.com'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow non-browser requests (mobile, server-to-server, curl, tests) or allowed origins
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Blocked by CORS policy'));
+    }
+  }
+}));
+
+// In-memory sliding window rate limiter
+function createRateLimiter({ windowMs, max, message }) {
+  const hits = new Map();
+  const timer = setInterval(() => {
+    const now = Date.now();
+    for (const [ip, data] of hits.entries()) {
+      if (now - data.resetTime > windowMs) {
+        hits.delete(ip);
+      }
+    }
+  }, Math.min(windowMs, 60000));
+  if (timer.unref) timer.unref();
+
+  return (req, res, next) => {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const record = hits.get(ip) || { count: 0, resetTime: now };
+    if (now - record.resetTime > windowMs) {
+      record.count = 0;
+      record.resetTime = now;
+    }
+    record.count++;
+    hits.set(ip, record);
+    if (record.count > max) {
+      return res.status(429).json({ error: message || 'Too many requests. Please try again later.' });
+    }
+    next();
+  };
+}
+
+const leadsLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: 'Too many requests. Please wait a few minutes before submitting again.'
+});
+
+const failureLogLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: 'Too many requests.'
+});
 
 // Raw body capture for webhook signature verification
 app.use(express.json({
@@ -27,12 +83,12 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true }));
 
 // Helper: GoHighLevel (GHL) Contact Sync
-async function syncGHLContact({ name, email, phone, tags = [], note = '', customFields = [] }) {
+async function syncGHLContact({ name, email, phone, tags = [], note = '', customFields = [], source = 'VSL Landing Page' }) {
   const locationId = process.env.GHL_LOCATION_ID || 'jsuZqhDRfnfSBFMgdfs2';
   const apiKey = process.env.GHL_API_KEY;
   const webhookUrl = process.env.GHL_WEBHOOK_URL;
 
-  console.log(`[GHL Sync] Syncing contact: ${name} (${email || phone}) | Tags: ${tags.join(', ')}`);
+  console.log(`[GHL Sync] Syncing contact: ${name} (${email || phone}) | Tags: ${tags.join(', ')} | Source: ${source}`);
 
   let contactId = null;
 
@@ -52,6 +108,7 @@ async function syncGHLContact({ name, email, phone, tags = [], note = '', custom
           email: email || undefined,
           phone: phone || undefined,
           tags,
+          source: source || 'VSL Landing Page',
           customFields: customFields.length > 0 ? customFields : undefined
         })
       });
@@ -90,6 +147,7 @@ async function syncGHLContact({ name, email, phone, tags = [], note = '', custom
           email,
           phone,
           tags,
+          source: source || 'VSL Landing Page',
           note,
           timestamp: new Date().toISOString()
         })
@@ -106,7 +164,7 @@ async function syncGHLContact({ name, email, phone, tags = [], note = '', custom
 // -----------------------------------------------------------------------------
 // API: Capture Lead from Section 5 Auto-Popup
 // -----------------------------------------------------------------------------
-app.post('/api/leads', async (req, res) => {
+app.post('/api/leads', leadsLimiter, async (req, res) => {
   try {
     const { name, email, phone, income } = req.body;
 
@@ -125,6 +183,7 @@ app.post('/api/leads', async (req, res) => {
       email,
       phone,
       tags,
+      source: 'VSL Landing Page',
       note: `Captured via Section 5 Auto-Popup on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}${income ? `\n• Current Monthly Income: ${income}` : ''}`
     });
 
@@ -314,7 +373,7 @@ app.post('/api/razorpay/create-order', async (req, res) => {
     const options = {
       amount: amountInPaise,
       currency: 'INR',
-      receipt: `rcpt_${Date.now()}`,
+      receipt: `rcpt_vsl_${Date.now()}`,
       notes: {
         name: name || '',
         email: email || '',
@@ -322,7 +381,8 @@ app.post('/api/razorpay/create-order', async (req, res) => {
         coupon_code: appliedCoupon || 'NONE',
         discount: discount.toString(),
         total_paid: finalAmount.toString(),
-        program: 'MOYA Complete Access'
+        program: 'MOYA Complete Access',
+        source: 'VSL Landing Page'
       }
     };
 
@@ -344,7 +404,7 @@ app.post('/api/razorpay/create-order', async (req, res) => {
 });
 
 // -----------------------------------------------------------------------------
-// API: Verify Successful Payment & Tag "vsl students" in GHL
+// API: Verify Successful Payment & Tag strictly "vsl students" in GHL
 // -----------------------------------------------------------------------------
 app.post('/api/razorpay/verify-payment', async (req, res) => {
   try {
@@ -382,14 +442,27 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
 
     console.log('[Razorpay Verified] Payment ID:', razorpay_payment_id);
 
-    // Prepare tags & custom fields
-    const tags = ['vsl students', 'VSL Enrolled'];
+    // Prepare tags: strictly 'vsl students' ONLY (no extra tags)
+    const tags = ['vsl students'];
     const cleanCoupon = couponCode ? couponCode.trim().toUpperCase() : null;
-    if (cleanCoupon) {
-      tags.push(`coupon-${cleanCoupon}`);
-    }
 
-    const paidStr = clientPaidAmount ? clientPaidAmount.toString() : (cleanCoupon ? '997' : '4997');
+    // Securely verify paid amount against coupon and base price
+    const basePrice = Number(process.env.COURSE_PRICE) || 4997;
+    let verifiedAmount = basePrice;
+    if (cleanCoupon) {
+      try {
+        const coupons = await getActiveCouponsFromGHL();
+        const matched = coupons[cleanCoupon];
+        if (isCouponAvailable(matched, coupons)) {
+          verifiedAmount = Math.max(1, basePrice - matched.discount);
+        }
+      } catch (e) {
+        if (clientPaidAmount && Number(clientPaidAmount) > 0) {
+          verifiedAmount = Number(clientPaidAmount);
+        }
+      }
+    }
+    const paidStr = verifiedAmount.toString();
 
     // Contact Custom Fields in GHL
     const customFields = [
@@ -404,6 +477,7 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
       email,
       phone,
       tags,
+      source: 'VSL Landing Page',
       note,
       customFields
     });
@@ -418,7 +492,7 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
 // -----------------------------------------------------------------------------
 // API: Log Payment Failure & Tag "failed vsl payment" in GHL
 // -----------------------------------------------------------------------------
-app.post('/api/razorpay/payment-failed', async (req, res) => {
+app.post('/api/razorpay/payment-failed', failureLogLimiter, async (req, res) => {
   try {
     const { orderId, paymentId, error = {}, name, email, phone } = req.body;
 
@@ -431,6 +505,7 @@ app.post('/api/razorpay/payment-failed', async (req, res) => {
       email,
       phone,
       tags: ['failed vsl payment'],
+      source: 'VSL Landing Page',
       note: `Payment FAILED on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}.\nReason: ${failureReason}\nPayment ID: ${paymentId || 'N/A'}\nOrder ID: ${orderId || 'N/A'}`
     });
 
@@ -449,16 +524,20 @@ app.post('/api/razorpay/webhook', async (req, res) => {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
     const signature = req.headers['x-razorpay-signature'];
 
-    if (webhookSecret && signature) {
-      const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(req.rawBody)
-        .digest('hex');
+    // Mandatory Security Verification: Reject unsigned or unconfigured calls
+    if (!webhookSecret || !signature) {
+      console.warn('[Razorpay Webhook] Rejected: Missing webhook secret or signature header.');
+      return res.status(401).send('Unauthorized webhook call');
+    }
 
-      if (expectedSignature !== signature) {
-        console.warn('[Razorpay Webhook] Invalid webhook signature');
-        return res.status(400).send('Invalid signature');
-      }
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(req.rawBody)
+      .digest('hex');
+
+    if (expectedSignature !== signature) {
+      console.warn('[Razorpay Webhook] Rejected: Invalid signature mismatch.');
+      return res.status(400).send('Invalid signature');
     }
 
     const event = req.body.event;
@@ -466,16 +545,22 @@ app.post('/api/razorpay/webhook', async (req, res) => {
 
     console.log(`[Razorpay Webhook Received] Event: ${event}`);
 
+    const payment = payload?.payment?.entity;
+    const notes = payment?.notes || {};
+
+    // STRICT ISOLATION: Only process payments originating from the VSL website!
+    // External GHL native forms, webinar tickets, etc., MUST NOT be touched or tagged by the website.
+    if (notes.program !== 'MOYA Complete Access') {
+      console.log(`[Razorpay Webhook] Ignored payment ${payment?.id || 'N/A'} - Not a VSL website order (program: "${notes.program || 'None'}"). External GHL automation will handle.`);
+      return res.status(200).json({ status: 'ignored', reason: 'Not a VSL website payment' });
+    }
+
     if (event === 'payment.captured' || event === 'order.paid') {
-      const payment = payload?.payment?.entity;
-      const notes = payment?.notes || {};
       const couponCode = notes.coupon_code && notes.coupon_code !== 'NONE' ? notes.coupon_code.toUpperCase() : null;
       const paidAmount = (payment.amount / 100).toFixed(0);
 
-      const tags = ['vsl students', 'VSL Enrolled'];
-      if (couponCode) {
-        tags.push(`coupon-${couponCode}`);
-      }
+      // Strictly ONLY 'vsl students'
+      const tags = ['vsl students'];
 
       const customFields = [
         { id: 'OxYVPF3lZNekTPCUrfYV', value: couponCode || 'NONE (Full Price)' },
@@ -483,23 +568,23 @@ app.post('/api/razorpay/webhook', async (req, res) => {
       ];
 
       await syncGHLContact({
-        name: notes.name || payment?.contact || 'Student',
+        name: notes.name || undefined,
         email: notes.email || payment?.email,
         phone: notes.phone || payment?.contact,
         tags,
+        source: 'VSL Landing Page',
         note: `Webhook Verified: ₹${paidAmount} | Coupon: ${couponCode || 'None (Full Price)'} | Razorpay ID: ${payment.id}`,
         customFields
       });
     } else if (event === 'payment.failed') {
-      const payment = payload?.payment?.entity;
-      const notes = payment?.notes || {};
       const errorDesc = payment?.error_description || payment?.error_reason || 'Bank decline';
 
       await syncGHLContact({
-        name: notes.name || payment?.contact || 'Lead',
+        name: notes.name || undefined,
         email: notes.email || payment?.email,
         phone: notes.phone || payment?.contact,
         tags: ['failed vsl payment'],
+        source: 'VSL Landing Page',
         note: `Webhook Failure Event: ${errorDesc} | Payment ID: ${payment?.id}`
       });
     }

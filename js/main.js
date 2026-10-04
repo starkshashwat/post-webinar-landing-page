@@ -1,5 +1,3 @@
-import { initFestiveSpinGame } from './festive-wheel.js';
-import '../css/festive-wheel.css';
 import './data.js';
 
 /* ==========================================================================
@@ -30,52 +28,238 @@ function triggerToast(msg) {
   setTimeout(() => toast.classList.remove("is-active"), 3200);
 }
 
-// Modal Helper Functions
-function openRazorpayCheckoutModal() {
-  const modal = document.getElementById("razorpayCheckoutModal");
-  if (!modal) return;
+// ==========================================================================
+// STRICT VALIDATION UTILITIES (INDIAN MOBILE & RFC EMAIL SECURITY)
+// ==========================================================================
+function validateIndianPhone(raw) {
+  if (!raw || typeof raw !== 'string') {
+    return { valid: false, message: 'Please enter your 10-digit WhatsApp number.' };
+  }
+  let digits = raw.replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  } else if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  if (!/^[6-9]\d{9}$/.test(digits)) {
+    return { valid: false, message: 'Please enter a valid 10-digit Indian mobile number.' };
+  }
+  if (/^(\d)\1{9}$/.test(digits)) {
+    return { valid: false, message: 'Please enter a genuine mobile number.' };
+  }
+  return { valid: true, phone: digits };
+}
 
-  // Pre-fill from previous Section 5 lead capture
+function validateEmail(raw) {
+  if (!raw || typeof raw !== 'string') {
+    return { valid: false, message: 'Please enter your email address.' };
+  }
+  const email = raw.trim();
+  const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  if (!re.test(email) || !email.includes('.') || email.length > 254) {
+    return { valid: false, message: 'Please enter a valid email address (e.g. name@gmail.com).' };
+  }
+  return { valid: true, email };
+}
+
+function validateName(raw) {
+  if (!raw || typeof raw !== 'string' || raw.trim().length < 2) {
+    return { valid: false, message: 'Please enter your full name (at least 2 letters).' };
+  }
+  return { valid: true, name: raw.trim() };
+}
+
+function isLeadSubmitted() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem("moya_lead_contact") || "{}");
-    const nameInp = document.getElementById("checkoutNameInput");
-    const emailInp = document.getElementById("checkoutEmailInput");
-    const phoneInp = document.getElementById("checkoutPhoneInput");
+    return localStorage.getItem('moya_lead_submitted') === 'true' ||
+           sessionStorage.getItem('moya_lead_submitted') === 'true';
+  } catch (e) {
+    return false;
+  }
+}
+
+// 20-Minute Urgency Timer State Helpers
+const TIMER_DURATION_MS = 20 * 60 * 1000;
+let urgencyTimerInterval = null;
+
+function getTimerRemainingSeconds() {
+  const expiresAt = Number(localStorage.getItem('moya_timer_expires_at'));
+  if (!expiresAt || isNaN(expiresAt)) return 0;
+  const rem = expiresAt - Date.now();
+  return Math.max(0, Math.floor(rem / 1000));
+}
+
+function isTimerActive() {
+  return getTimerRemainingSeconds() > 0;
+}
+
+function formatCountdown(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function syncUrgencyTimers(onExpire) {
+  if (urgencyTimerInterval) clearInterval(urgencyTimerInterval);
+
+  function tick() {
+    const remaining = getTimerRemainingSeconds();
+    const formatted = formatCountdown(remaining);
+
+    const rewardTimerEl = document.getElementById('rewardCountdownTimer');
+    if (rewardTimerEl) rewardTimerEl.textContent = formatted;
+
+    const checkoutTimerEl = document.getElementById('checkoutCountdownTimer');
+    if (checkoutTimerEl) checkoutTimerEl.textContent = formatted;
+
+    const checkoutBannerEl = document.getElementById('checkoutUrgencyBanner');
+    if (checkoutBannerEl) {
+      if (remaining > 0) {
+        checkoutBannerEl.style.display = 'flex';
+        checkoutBannerEl.classList.remove('expired');
+        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⏳</span><span>Special Early-Bird Price Reserved For: <strong id="checkoutCountdownTimer">${formatted}</strong></span>`;
+      } else {
+        checkoutBannerEl.style.display = 'flex';
+        checkoutBannerEl.classList.add('expired');
+        checkoutBannerEl.innerHTML = `<span class="urgency-icon">⚠️</span><span>Special 20-min voucher window expired. Regular fee restored.</span>`;
+      }
+    }
+
+    if (remaining <= 0) {
+      clearInterval(urgencyTimerInterval);
+      urgencyTimerInterval = null;
+      if (typeof onExpire === 'function') onExpire();
+    }
+  }
+
+  tick();
+  urgencyTimerInterval = setInterval(tick, 1000);
+}
+
+// Modal Helpers
+function openLeadCaptureModal() {
+  const modal = document.getElementById('leadCaptureModal');
+  if (!modal) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem('moya_lead_contact') || sessionStorage.getItem('moya_lead_contact') || '{}');
+    const nameInp = document.getElementById('leadNameInput');
+    const emailInp = document.getElementById('leadEmailInput');
+    const phoneInp = document.getElementById('leadPhoneInput');
     if (nameInp && saved.name && !nameInp.value) nameInp.value = saved.name;
     if (emailInp && saved.email && !emailInp.value) emailInp.value = saved.email;
     if (phoneInp && saved.phone && !phoneInp.value) phoneInp.value = saved.phone;
   } catch (err) {}
 
-  if (typeof fbq === "function") {
-    fbq("track", "InitiateCheckout", { value: 4997, currency: "INR" });
+  if (typeof modal.showModal === 'function') modal.showModal();
+  else modal.setAttribute('open', 'true');
+}
+window.openLeadCaptureModal = openLeadCaptureModal;
+
+function closeLeadCaptureModal() {
+  const modal = document.getElementById('leadCaptureModal');
+  if (!modal) return;
+  if (typeof modal.close === 'function') modal.close();
+  else modal.removeAttribute('open');
+}
+window.closeLeadCaptureModal = closeLeadCaptureModal;
+
+function openRewardRevealModal() {
+  const modal = document.getElementById('rewardRevealModal');
+  if (!modal) return;
+
+  syncUrgencyTimers();
+
+  const copyBtn = document.getElementById('rewardCopyBtn');
+  const codeEl = document.getElementById('rewardVoucherCode');
+  if (copyBtn && codeEl) {
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(codeEl.textContent.trim()).then(() => {
+        copyBtn.textContent = 'Copied! ✓';
+        setTimeout(() => { copyBtn.textContent = 'Copy Code'; }, 2200);
+      }).catch(() => {});
+    };
   }
 
-  if (typeof modal.showModal === "function") {
-    modal.showModal();
-  } else {
-    modal.setAttribute("open", "true");
+  const claimBtn = document.getElementById('rewardClaimBtn');
+  if (claimBtn) {
+    claimBtn.onclick = () => {
+      closeRewardRevealModal();
+      openRazorpayCheckoutModal();
+      if (typeof window.applyUrgencyCoupon === 'function') {
+        window.applyUrgencyCoupon('MOYA55');
+      }
+    };
   }
+
+  const closeBtn = document.getElementById('closeRewardModal');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      closeRewardRevealModal();
+      openRazorpayCheckoutModal();
+      if (typeof window.applyUrgencyCoupon === 'function') {
+        window.applyUrgencyCoupon('MOYA55');
+      }
+    };
+  }
+
+  if (typeof modal.showModal === 'function') modal.showModal();
+  else modal.setAttribute('open', 'true');
+}
+window.openRewardRevealModal = openRewardRevealModal;
+
+function closeRewardRevealModal() {
+  const modal = document.getElementById('rewardRevealModal');
+  if (!modal) return;
+  if (typeof modal.close === 'function') modal.close();
+  else modal.removeAttribute('open');
+}
+window.closeRewardRevealModal = closeRewardRevealModal;
+
+function openRazorpayCheckoutModal() {
+  const modal = document.getElementById('razorpayCheckoutModal');
+  if (!modal) return;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('moya_lead_contact') || sessionStorage.getItem('moya_lead_contact') || '{}');
+    const nameInp = document.getElementById('checkoutNameInput');
+    const emailInp = document.getElementById('checkoutEmailInput');
+    const phoneInp = document.getElementById('checkoutPhoneInput');
+    if (nameInp && saved.name && !nameInp.value) nameInp.value = saved.name;
+    if (emailInp && saved.email && !emailInp.value) emailInp.value = saved.email;
+    if (phoneInp && saved.phone && !phoneInp.value) phoneInp.value = saved.phone;
+  } catch (err) {}
+
+  if (typeof fbq === 'function') {
+    fbq('track', 'InitiateCheckout', { value: 4997, currency: 'INR' });
+  }
+
+  if (typeof modal.showModal === 'function') modal.showModal();
+  else modal.setAttribute('open', 'true');
 }
 window.openRazorpayCheckoutModal = openRazorpayCheckoutModal;
 
 function closeRazorpayCheckoutModal() {
-  const modal = document.getElementById("razorpayCheckoutModal");
+  const modal = document.getElementById('razorpayCheckoutModal');
   if (!modal) return;
-  if (typeof modal.close === "function") {
-    modal.close();
-  } else {
-    modal.removeAttribute("open");
-  }
+  if (typeof modal.close === 'function') modal.close();
+  else modal.removeAttribute('open');
 }
 window.closeRazorpayCheckoutModal = closeRazorpayCheckoutModal;
 
-// CTA Router - Opens Razorpay Checkout Form on ALL Enrollment & Action Buttons
+// Global CTA Router - Lead Qualification Gatekeeper
 function handleCtaClick(e) {
   if (e) {
     if (e.preventDefault) e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
   }
-  openRazorpayCheckoutModal();
+  if (!isLeadSubmitted()) {
+    openLeadCaptureModal();
+  } else {
+    openRazorpayCheckoutModal();
+    if (isTimerActive() && typeof window.applyUrgencyCoupon === 'function') {
+      window.applyUrgencyCoupon('MOYA55');
+    }
+  }
 }
 window.handleCtaClick = handleCtaClick;
 
@@ -2943,117 +3127,160 @@ window.openLightbox = function(src) {
     })();
 
 // ==========================================================================
-// SECTION 5 AUTO-POPUP LEAD CAPTURE ENGINE
+// SECTION 5 AUTO-POPUP & LEAD QUALIFICATION ENGINE
 // ==========================================================================
 function initSection5LeadCapture() {
   const section5 = document.getElementById("system");
   const modal = document.getElementById("leadCaptureModal");
   const form = document.getElementById("leadCaptureForm");
   const closeBtn = document.getElementById("closeLeadModal");
+  const nameInp = document.getElementById("leadNameInput");
+  const emailInp = document.getElementById("leadEmailInput");
+  const phoneInp = document.getElementById("leadPhoneInput");
+  const phoneWrap = document.getElementById("leadPhoneWrap");
+  const nameErr = document.getElementById("leadNameError");
+  const emailErr = document.getElementById("leadEmailError");
+  const phoneErr = document.getElementById("leadPhoneError");
+  const submitBtn = document.getElementById("leadSubmitBtn");
   const msgEl = document.getElementById("leadFormMsg");
 
-  if (!section5 || !modal) return;
+  if (!modal) return;
 
   // Close handlers
   if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      if (typeof modal.close === "function") modal.close();
-      else modal.removeAttribute("open");
-    });
+    closeBtn.addEventListener("click", closeLeadCaptureModal);
   }
 
   modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      if (typeof modal.close === "function") modal.close();
-      else modal.removeAttribute("open");
-    }
+    if (e.target === modal) closeLeadCaptureModal();
   });
 
-  // Auto-trigger when Section 5 (#system) enters viewport
-  // Persistent rule: triggers upon scrolling to Section 5 on every visit/refresh (unless already submitted in this session)
-  const isAlreadySubmitted = sessionStorage.getItem("moya_lead_submitted") === "true";
-  let hasTriggeredInCurrentView = false;
-  if (!isAlreadySubmitted) {
+  // Real-time input error clearing & formatting
+  nameInp?.addEventListener("input", () => {
+    nameInp.classList.remove("input-error");
+    if (nameErr) { nameErr.textContent = ""; nameErr.classList.remove("visible"); }
+  });
+  emailInp?.addEventListener("input", () => {
+    emailInp.classList.remove("input-error");
+    if (emailErr) { emailErr.textContent = ""; emailErr.classList.remove("visible"); }
+  });
+  phoneInp?.addEventListener("input", () => {
+    phoneInp.value = phoneInp.value.replace(/\D/g, "").slice(0, 10);
+    phoneWrap?.classList.remove("input-error");
+    if (phoneErr) { phoneErr.textContent = ""; phoneErr.classList.remove("visible"); }
+  });
+
+  // Section 5 Auto-trigger Observer
+  // Rule: Pops up every time user visits Section 5 until they submit the form.
+  // If closed without submitting, pops up again upon scrolling into Section 5.
+  if (section5) {
+    let hasTriggeredInCurrentPass = false;
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting && !hasTriggeredInCurrentView) {
-          hasTriggeredInCurrentView = true;
+        if (isLeadSubmitted()) {
           observer.disconnect();
+          return;
+        }
 
-          setTimeout(() => {
-            if (typeof modal.showModal === "function") {
-              modal.showModal();
-            } else {
-              modal.setAttribute("open", "true");
-            }
-          }, 800);
+        if (entry.isIntersecting) {
+          if (!hasTriggeredInCurrentPass && !modal.open && !modal.hasAttribute("open")) {
+            hasTriggeredInCurrentPass = true;
+            setTimeout(() => {
+              if (!isLeadSubmitted() && !modal.open && !modal.hasAttribute("open")) {
+                openLeadCaptureModal();
+              }
+            }, 600);
+          }
+        } else {
+          // Reset pass flag when scrolling out of Section 5 so re-entry triggers popup again!
+          hasTriggeredInCurrentPass = false;
         }
       });
-    }, { threshold: 0.25 });
+    }, { threshold: 0.2 });
 
     observer.observe(section5);
   }
 
-  // Form submit handler
+  // Lead Form Submit Handler
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const submitBtn = document.getElementById("leadSubmitBtn");
-      const name = document.getElementById("leadNameInput")?.value?.trim() || "";
-      const email = document.getElementById("leadEmailInput")?.value?.trim() || "";
-      const phone = document.getElementById("leadPhoneInput")?.value?.trim() || "";
-      const income = form.querySelector('input[name="income"]:checked')?.value || "$0 - $250 / mo";
 
-      if (!name || (!email && !phone)) {
-        if (msgEl) {
-          msgEl.className = "moya-form-msg error";
-          msgEl.textContent = "Please provide your name and phone number.";
-        }
-        return;
+      const nameVal = validateName(nameInp?.value);
+      const emailVal = validateEmail(emailInp?.value);
+      const phoneVal = validateIndianPhone(phoneInp?.value);
+      const incomeVal = form.querySelector('input[name="income"]:checked')?.value || "$0 - $250 / mo";
+
+      let hasError = false;
+      if (!nameVal.valid) {
+        nameInp?.classList.add("input-error");
+        if (nameErr) { nameErr.textContent = nameVal.message; nameErr.classList.add("visible"); }
+        hasError = true;
       }
+      if (!emailVal.valid) {
+        emailInp?.classList.add("input-error");
+        if (emailErr) { emailErr.textContent = emailVal.message; emailErr.classList.add("visible"); }
+        hasError = true;
+      }
+      if (!phoneVal.valid) {
+        phoneWrap?.classList.add("input-error");
+        if (phoneErr) { phoneErr.textContent = phoneVal.message; phoneErr.classList.add("visible"); }
+        hasError = true;
+      }
+
+      if (hasError) return;
 
       if (submitBtn) {
         submitBtn.disabled = true;
         const btnText = submitBtn.querySelector(".btn-text");
-        if (btnText) btnText.textContent = "Securing Access...";
+        if (btnText) btnText.textContent = "Verifying & Unlocking ₹4,000 Voucher...";
       }
 
       try {
-        // Fire Meta Pixel Lead event
         if (typeof fbq === "function") {
           fbq("track", "Lead");
         }
 
-        // Save in sessionStorage for Razorpay checkout prefill & suppression
-        sessionStorage.setItem("moya_lead_contact", JSON.stringify({ name, email, phone, income }));
+        const leadData = {
+          name: nameVal.name,
+          email: emailVal.email,
+          phone: phoneVal.phone,
+          income: incomeVal
+        };
+
+        // Save in localStorage & sessionStorage
+        localStorage.setItem("moya_lead_contact", JSON.stringify(leadData));
+        localStorage.setItem("moya_lead_submitted", "true");
+        sessionStorage.setItem("moya_lead_contact", JSON.stringify(leadData));
         sessionStorage.setItem("moya_lead_submitted", "true");
 
+        // 20-minute urgency timer starts immediately!
+        if (!localStorage.getItem("moya_timer_expires_at")) {
+          const expiresAt = Date.now() + TIMER_DURATION_MS;
+          localStorage.setItem("moya_timer_expires_at", expiresAt.toString());
+        }
+        localStorage.setItem("moya_coupon_unlocked", "true");
+
         // Send to backend API
-        await fetch("/api/leads", {
+        fetch("/api/leads", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone, income })
-        });
+          body: JSON.stringify(leadData)
+        }).catch(err => console.error("Lead sync error:", err));
 
-        if (msgEl) {
-          msgEl.className = "moya-form-msg success";
-          msgEl.textContent = "✓ Access granted! Check your WhatsApp/Email.";
-        }
-
-        setTimeout(() => {
-          if (typeof modal.close === "function") modal.close();
-          else modal.removeAttribute("open");
-        }, 1200);
+        closeLeadCaptureModal();
+        openRewardRevealModal();
       } catch (err) {
-        console.error("Lead sync error:", err);
-        if (msgEl) {
-          msgEl.className = "moya-form-msg success";
-          msgEl.textContent = "✓ Access granted! Proceed below.";
+        console.error("Submission error:", err);
+        closeLeadCaptureModal();
+        openRewardRevealModal();
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          const btnText = submitBtn.querySelector(".btn-text");
+          if (btnText) btnText.textContent = "Check Eligibility & Unlock ₹4,000 Discount";
         }
-        setTimeout(() => {
-          if (typeof modal.close === "function") modal.close();
-          else modal.removeAttribute("open");
-        }, 1200);
       }
     });
   }
@@ -3076,13 +3303,20 @@ function getSafeUserErrorMessage(rawMsg, fallback) {
 }
 
 // ==========================================================================
-// RAZORPAY CHECKOUT & PAYMENT TRACKING ENGINE
+// RAZORPAY CHECKOUT & PAYMENT ENGINE WITH 20-MINUTE URGENCY COUPOUN
 // ==========================================================================
 function initRazorpayCheckoutFlow() {
   const modal = document.getElementById("razorpayCheckoutModal");
   const form = document.getElementById("razorpayPaymentForm");
   const closeBtn = document.getElementById("closeCheckoutModal");
   const msgEl = document.getElementById("checkoutFormMsg");
+  const nameInp = document.getElementById("checkoutNameInput");
+  const emailInp = document.getElementById("checkoutEmailInput");
+  const phoneInp = document.getElementById("checkoutPhoneInput");
+  const phoneWrap = document.getElementById("checkoutPhoneWrap");
+  const nameErr = document.getElementById("checkoutNameError");
+  const emailErr = document.getElementById("checkoutEmailError");
+  const phoneErr = document.getElementById("checkoutPhoneError");
   const couponInput = document.getElementById("checkoutCouponInput");
   const applyBtn = document.getElementById("applyCouponBtn");
   const couponMsgEl = document.getElementById("couponStatusMsg");
@@ -3093,71 +3327,133 @@ function initRazorpayCheckoutFlow() {
   let currentPayableAmount = 4997;
   let originalBasePrice = 4997;
 
-  if (!modal) return;
+  if (!modal) return () => {};
 
   let couponBusy = false;
   let couponNeedsReview = false;
-  // The server is authoritative; a network failure must never fabricate a discount.
+
+  // Clear checkout form validation errors on input
+  nameInp?.addEventListener("input", () => {
+    nameInp.classList.remove("input-error");
+    if (nameErr) { nameErr.textContent = ""; nameErr.classList.remove("visible"); }
+  });
+  emailInp?.addEventListener("input", () => {
+    emailInp.classList.remove("input-error");
+    if (emailErr) { emailErr.textContent = ""; emailErr.classList.remove("visible"); }
+  });
+  phoneInp?.addEventListener("input", () => {
+    phoneInp.value = phoneInp.value.replace(/\D/g, "").slice(0, 10);
+    phoneWrap?.classList.remove("input-error");
+    if (phoneErr) { phoneErr.textContent = ""; phoneErr.classList.remove("visible"); }
+  });
+
+  // Sync live countdown timer and handle timer expiry
+  syncUrgencyTimers(() => {
+    if (appliedCouponCode === "MOYA55") {
+      handleRemoveCoupon();
+      triggerToast("Special 20-minute reservation has expired. Regular fee restored.");
+    }
+  });
+
   async function handleApplyCoupon() {
     if (couponBusy) return;
     const code = couponInput?.value.trim() || '';
-    if (!code) { couponMsgEl.textContent = 'Please enter a coupon code.'; return; }
+    if (!code) {
+      if (couponMsgEl) {
+        couponMsgEl.className = 'moya-coupon-msg error';
+        couponMsgEl.textContent = 'Please enter a coupon code.';
+      }
+      return;
+    }
     couponBusy = true;
     couponNeedsReview = true;
-    applyBtn.disabled = true;
-    applyBtn.textContent = 'Checking…';
-    document.getElementById('checkoutPayBtn').disabled = true;
+    if (applyBtn) {
+      applyBtn.disabled = true;
+      applyBtn.textContent = 'Checking…';
+    }
+    const payBtn = document.getElementById('checkoutPayBtn');
+    if (payBtn) payBtn.disabled = true;
+
     try {
       const res = await fetch('/api/coupon/validate', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ couponCode: code }), signal: AbortSignal.timeout(10000)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ couponCode: code }),
+        signal: AbortSignal.timeout(10000)
       });
       const data = await res.json();
-      if (!res.ok || !data.valid) throw new Error(data.message || 'This offer could not be verified. Please try again.');
+      if (!res.ok || !data.valid) {
+        throw new Error(data.message || 'This offer could not be verified. Please try again.');
+      }
       appliedCouponCode = data.code;
       currentPayableAmount = data.finalAmount;
       originalBasePrice = data.originalPrice;
-      displayPriceEl.replaceChildren(document.createTextNode(`₹${data.finalAmount.toLocaleString('en-IN')} `));
-      const oldPrice = document.createElement('span');
-      oldPrice.className = 'price-strikethrough';
-      oldPrice.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
-      displayPriceEl.append(oldPrice);
-      discountBadgeEl.textContent = `COUPON APPLIED (-₹${data.discount.toLocaleString('en-IN')})`;
-      discountBadgeEl.classList.add('coupon-applied');
-      document.querySelector('#checkoutPayBtn .btn-text').textContent = `Enroll Now & Pay ₹${data.finalAmount.toLocaleString('en-IN')}`;
-      applyBtn.textContent = 'Applied ✓';
-      applyBtn.classList.add('is-applied');
-      couponInput.disabled = true;
-      couponMsgEl.className = 'moya-coupon-msg success';
-      couponMsgEl.textContent = `Your ₹${data.discount.toLocaleString('en-IN')} offer is applied. `;
+
+      if (displayPriceEl) {
+        displayPriceEl.replaceChildren(document.createTextNode(`₹${data.finalAmount.toLocaleString('en-IN')} `));
+        const oldPrice = document.createElement('span');
+        oldPrice.className = 'price-strikethrough';
+        oldPrice.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
+        displayPriceEl.append(oldPrice);
+      }
+      if (discountBadgeEl) {
+        discountBadgeEl.textContent = `COUPON APPLIED (-₹${data.discount.toLocaleString('en-IN')})`;
+        discountBadgeEl.classList.add('coupon-applied');
+      }
+      const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
+      if (payBtnText) payBtnText.textContent = `Enroll Now & Pay ₹${data.finalAmount.toLocaleString('en-IN')}`;
+
+      if (applyBtn) {
+        applyBtn.textContent = 'Applied ✓';
+        applyBtn.classList.add('is-applied');
+      }
+      if (couponInput) couponInput.disabled = true;
+      if (couponMsgEl) {
+        couponMsgEl.className = 'moya-coupon-msg success';
+        couponMsgEl.textContent = `Your ₹${data.discount.toLocaleString('en-IN')} offer is applied. `;
+      }
       couponNeedsReview = false;
     } catch (error) {
       appliedCouponCode = null;
       currentPayableAmount = originalBasePrice;
-      displayPriceEl.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
-      discountBadgeEl.textContent = 'OFFER NOT APPLIED';
-      discountBadgeEl.classList.remove('coupon-applied');
-      document.querySelector('#checkoutPayBtn .btn-text').textContent = 'Review your offer to continue';
-      couponInput.disabled = false;
-      applyBtn.disabled = false;
-      applyBtn.classList.remove('is-applied');
-      applyBtn.textContent = 'Retry code';
-      couponMsgEl.className = 'moya-coupon-msg error';
-      couponMsgEl.textContent = getSafeUserErrorMessage(error.message, 'We couldn’t verify your offer. Please retry or remove it to continue.');
+      if (displayPriceEl) {
+        displayPriceEl.textContent = `₹${originalBasePrice.toLocaleString('en-IN')}`;
+      }
+      if (discountBadgeEl) {
+        discountBadgeEl.textContent = 'OFFER NOT APPLIED';
+        discountBadgeEl.classList.remove('coupon-applied');
+      }
+      const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
+      if (payBtnText) payBtnText.textContent = 'Review your offer to continue';
+
+      if (couponInput) couponInput.disabled = false;
+      if (applyBtn) {
+        applyBtn.disabled = false;
+        applyBtn.classList.remove('is-applied');
+        applyBtn.textContent = 'Retry code';
+      }
+      if (couponMsgEl) {
+        couponMsgEl.className = 'moya-coupon-msg error';
+        couponMsgEl.textContent = getSafeUserErrorMessage(error.message, 'We couldn’t verify your offer. Please retry or remove it to continue.');
+      }
     } finally {
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'coupon-remove-link';
-      remove.textContent = 'Remove code';
-      remove.addEventListener('click', handleRemoveCoupon);
-      couponMsgEl.append(remove);
+      if (couponMsgEl) {
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'coupon-remove-link';
+        remove.textContent = 'Remove code';
+        remove.addEventListener('click', handleRemoveCoupon);
+        couponMsgEl.append(remove);
+      }
       couponBusy = false;
-      document.getElementById('checkoutPayBtn').disabled = couponNeedsReview;
+      if (payBtn) payBtn.disabled = couponNeedsReview;
     }
   }
+
   function handleRemoveCoupon() {
     couponNeedsReview = false;
-    document.getElementById('checkoutPayBtn').disabled = false;
+    const payBtn = document.getElementById('checkoutPayBtn');
+    if (payBtn) payBtn.disabled = false;
     appliedCouponCode = null;
     currentPayableAmount = originalBasePrice;
 
@@ -3165,44 +3461,49 @@ function initRazorpayCheckoutFlow() {
       displayPriceEl.innerHTML = `₹${originalBasePrice.toLocaleString('en-IN')} <span class="price-strikethrough">₹14,997</span>`;
     }
     if (discountBadgeEl) {
-      discountBadgeEl.textContent = "OFFICIAL PASS";
-      discountBadgeEl.classList.remove("coupon-applied");
+      discountBadgeEl.textContent = 'OFFICIAL PASS';
+      discountBadgeEl.classList.remove('coupon-applied');
     }
-    const submitBtn = document.getElementById("checkoutPayBtn");
-    if (submitBtn) {
-      const btnText = submitBtn.querySelector(".btn-text");
-      if (btnText) btnText.textContent = `Enroll Now & Pay ₹${originalBasePrice.toLocaleString('en-IN')}`;
-    }
+    const payBtnText = document.querySelector('#checkoutPayBtn .btn-text');
+    if (payBtnText) payBtnText.textContent = `Enroll Now & Pay ₹${originalBasePrice.toLocaleString('en-IN')}`;
 
     if (applyBtn) {
       applyBtn.disabled = false;
-      applyBtn.textContent = "Apply Code";
-      applyBtn.classList.remove("is-applied");
+      applyBtn.textContent = 'Apply Code';
+      applyBtn.classList.remove('is-applied');
     }
     if (couponInput) {
       couponInput.disabled = false;
-      couponInput.value = "";
+      couponInput.value = '';
     }
     if (couponMsgEl) {
-      couponMsgEl.className = "moya-coupon-msg";
-      couponMsgEl.innerHTML = "";
+      couponMsgEl.className = 'moya-coupon-msg';
+      couponMsgEl.innerHTML = '';
     }
   }
 
   if (applyBtn) {
-    applyBtn.addEventListener("click", handleApplyCoupon);
+    applyBtn.addEventListener('click', handleApplyCoupon);
   }
 
   if (couponInput) {
-    couponInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
+    couponInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
         e.preventDefault();
         handleApplyCoupon();
       }
     });
   }
 
-  // Auto-check URL parameters (e.g. ?coupon=MOYA55 or ?code=MOYA55)
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeRazorpayCheckoutModal);
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeRazorpayCheckoutModal();
+  });
+
+  // Auto-apply promo if URL param has coupon
   const urlParams = new URLSearchParams(window.location.search);
   const promoParam = urlParams.get('coupon') || urlParams.get('code');
   if (promoParam && couponInput) {
@@ -3210,58 +3511,68 @@ function initRazorpayCheckoutFlow() {
     setTimeout(handleApplyCoupon, 400);
   }
 
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeRazorpayCheckoutModal);
-  }
-
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) closeRazorpayCheckoutModal();
-  });
-
+  // Checkout Payment Form Submit
   if (form) {
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (couponBusy || couponNeedsReview) return;
-      const submitBtn = document.getElementById("checkoutPayBtn");
-      const name = document.getElementById("checkoutNameInput")?.value?.trim() || "";
-      const email = document.getElementById("checkoutEmailInput")?.value?.trim() || "";
-      const phone = document.getElementById("checkoutPhoneInput")?.value?.trim() || "";
 
-      if (!name || !email || !phone) {
-        if (msgEl) {
-          msgEl.className = "moya-form-msg error";
-          msgEl.textContent = "Please fill in your name, email, and phone number.";
-        }
-        return;
+      const submitBtn = document.getElementById('checkoutPayBtn');
+      const name = nameInp?.value?.trim() || '';
+      const email = emailInp?.value?.trim() || '';
+      const phone = phoneInp?.value?.trim() || '';
+
+      const nameVal = validateName(name);
+      const emailVal = validateEmail(email);
+      const phoneVal = validateIndianPhone(phone);
+
+      let hasError = false;
+      if (!nameVal.valid) {
+        nameInp?.classList.add('input-error');
+        if (nameErr) { nameErr.textContent = nameVal.message; nameErr.classList.add('visible'); }
+        hasError = true;
       }
+      if (!emailVal.valid) {
+        emailInp?.classList.add('input-error');
+        if (emailErr) { emailErr.textContent = emailVal.message; emailErr.classList.add('visible'); }
+        hasError = true;
+      }
+      if (!phoneVal.valid) {
+        phoneWrap?.classList.add('input-error');
+        if (phoneErr) { phoneErr.textContent = phoneVal.message; phoneErr.classList.add('visible'); }
+        hasError = true;
+      }
+
+      if (hasError) return;
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        const btnText = submitBtn.querySelector(".btn-text");
-        if (btnText) btnText.textContent = "Initializing Secure Checkout...";
+        const btnText = submitBtn.querySelector('.btn-text');
+        if (btnText) btnText.textContent = 'Initializing Secure Checkout...';
       }
 
       try {
-        // Save in sessionStorage
-        sessionStorage.setItem("moya_lead_contact", JSON.stringify({ name, email, phone }));
+        // Save in localStorage & sessionStorage
+        const contact = { name: nameVal.name, email: emailVal.email, phone: phoneVal.phone };
+        localStorage.setItem('moya_lead_contact', JSON.stringify(contact));
+        sessionStorage.setItem('moya_lead_contact', JSON.stringify(contact));
 
-        // 1. Create Order via backend API (with live coupon support)
-        const orderRes = await fetch("/api/razorpay/create-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        // 1. Create Order via backend API
+        const orderRes = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name,
-            email,
-            phone,
+            name: nameVal.name,
+            email: emailVal.email,
+            phone: phoneVal.phone,
             couponCode: appliedCouponCode,
             expectedAmount: currentPayableAmount
           })
         });
 
         const orderData = await orderRes.json();
-
         if (!orderRes.ok || !orderData.order) {
-          throw new Error(orderData.error || "Failed to initialize payment gateway");
+          throw new Error(orderData.error || 'Failed to initialize payment gateway');
         }
 
         const order = orderData.order;
@@ -3272,86 +3583,74 @@ function initRazorpayCheckoutFlow() {
         const options = {
           key: keyId,
           amount: order.amount,
-          currency: order.currency || "INR",
-          name: "Mechanism of YouTube Automation",
+          currency: order.currency || 'INR',
+          name: 'Mechanism of YouTube Automation',
           description: appliedCouponCode
             ? `MOYA Complete Access (Coupon ${appliedCouponCode} Applied)`
-            : "MOYA Complete Access + 19 Bonus Vaults",
-          image: "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c89c9b37b5fd4d3d92.webp",
+            : 'MOYA Complete Access + 19 Bonus Vaults',
+          image: 'https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5214c89c9b37b5fd4d3d92.webp',
           order_id: order.id,
           prefill: {
-            name: name,
-            email: email,
-            contact: phone
+            name: nameVal.name,
+            email: emailVal.email,
+            contact: phoneVal.phone
           },
           theme: {
-            color: "#ff3346"
+            color: '#ff3346'
           },
           handler: async function (response) {
             if (msgEl) {
-              msgEl.className = "moya-form-msg success";
-              msgEl.textContent = "Payment successful! Verifying enrollment...";
+              msgEl.className = 'moya-form-msg success';
+              msgEl.textContent = 'Payment successful! Verifying enrollment...';
             }
 
             try {
               // 3. Verify Payment on Backend
-              await fetch("/api/razorpay/verify-payment", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+              await fetch('/api/razorpay/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   razorpay_order_id: response.razorpay_order_id,
                   razorpay_payment_id: response.razorpay_payment_id,
                   razorpay_signature: response.razorpay_signature,
-                  name,
-                  email,
-                  phone,
+                  name: nameVal.name,
+                  email: emailVal.email,
+                  phone: phoneVal.phone,
                   couponCode: appliedCouponCode,
                   paidAmount: finalPayable
                 })
               });
 
-              // Save payment details in sessionStorage for instant, resilient retrieval
               try {
-                sessionStorage.setItem("moya_last_payment", JSON.stringify({
+                sessionStorage.setItem('moya_last_payment', JSON.stringify({
                   amount: finalPayable,
-                  paymentId: response.razorpay_payment_id || "",
-                  email: email,
-                  coupon: appliedCouponCode || "",
+                  paymentId: response.razorpay_payment_id || '',
+                  email: emailVal.email,
+                  coupon: appliedCouponCode || '',
                   timestamp: Date.now()
                 }));
               } catch (storageErr) {}
 
-              if (typeof fbq === "function") {
-                fbq("track", "Purchase", { value: finalPayable, currency: "INR" });
+              if (typeof fbq === 'function') {
+                fbq('track', 'Purchase', { value: finalPayable, currency: 'INR' });
               }
 
               const thankYouParams = new URLSearchParams({
                 amount: finalPayable,
-                payment_id: response.razorpay_payment_id || "",
-                customer_email: email,
-                coupon: appliedCouponCode || ""
+                payment_id: response.razorpay_payment_id || '',
+                customer_email: emailVal.email,
+                coupon: appliedCouponCode || ''
               });
 
               window.location.href = `/thankyou.html?${thankYouParams.toString()}`;
             } catch (err) {
-              console.error("Verification error:", err);
-              try {
-                sessionStorage.setItem("moya_last_payment", JSON.stringify({
-                  amount: finalPayable,
-                  paymentId: response.razorpay_payment_id || "",
-                  email: email,
-                  coupon: appliedCouponCode || "",
-                  timestamp: Date.now()
-                }));
-              } catch (storageErr) {}
-
+              console.error('Verification error:', err);
               const fallbackParams = new URLSearchParams({
                 amount: finalPayable,
-                payment_id: response.razorpay_payment_id || "",
-                customer_email: email,
-                coupon: appliedCouponCode || ""
+                payment_id: response.razorpay_payment_id || '',
+                customer_email: emailVal.email,
+                coupon: appliedCouponCode || ''
               });
-
               window.location.href = `/thankyou.html?${fallbackParams.toString()}`;
             }
           },
@@ -3359,105 +3658,86 @@ function initRazorpayCheckoutFlow() {
             ondismiss: function () {
               if (submitBtn) {
                 submitBtn.disabled = false;
-                const btnText = submitBtn.querySelector(".btn-text");
+                const btnText = submitBtn.querySelector('.btn-text');
                 if (btnText) btnText.textContent = `Enroll Now & Pay ₹${finalPayable.toLocaleString('en-IN')}`;
               }
-              // Restore checkout modal so user can review/edit details or retry!
-              if (typeof modal.showModal === "function") {
-                modal.showModal();
-              } else {
-                modal.setAttribute("open", "true");
-              }
-              // Log dismissed/cancelled as potential drop-off
-              fetch("/api/razorpay/payment-failed", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+              openRazorpayCheckoutModal();
+              fetch('/api/razorpay/payment-failed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   orderId: order.id,
-                  paymentId: "",
-                  error: { description: "User closed Razorpay popup without paying", reason: "checkout_dismissed" },
-                  name,
-                  email,
-                  phone
+                  paymentId: '',
+                  error: { description: 'User closed Razorpay popup without paying', reason: 'checkout_dismissed' },
+                  name: nameVal.name,
+                  email: emailVal.email,
+                  phone: phoneVal.phone
                 })
               }).catch(() => {});
             }
           }
         };
 
-        if (typeof window.Razorpay !== "function") {
-          throw new Error("Razorpay SDK not loaded. Please check your connection.");
+        if (typeof window.Razorpay !== 'function') {
+          throw new Error('Razorpay SDK not loaded. Please check your connection.');
         }
 
         const rzp = new window.Razorpay(options);
 
-        // Capture payment failure directly
-        rzp.on("payment.failed", function (response) {
-          console.warn("Payment failed:", response.error);
-
-          // Restore checkout modal so user can see error and retry
-          if (typeof modal.showModal === "function") {
-            modal.showModal();
-          } else {
-            modal.setAttribute("open", "true");
-          }
+        rzp.on('payment.failed', function (response) {
+          console.warn('Payment failed:', response.error);
+          openRazorpayCheckoutModal();
 
           if (msgEl) {
-            msgEl.className = "moya-form-msg error";
-            msgEl.textContent = response.error.description || "Payment failed. Please try UPI or another card.";
+            msgEl.className = 'moya-form-msg error';
+            msgEl.textContent = response.error.description || 'Payment failed. Please try UPI or another card.';
           }
 
           if (submitBtn) {
             submitBtn.disabled = false;
-            const btnText = submitBtn.querySelector(".btn-text");
+            const btnText = submitBtn.querySelector('.btn-text');
             if (btnText) btnText.textContent = `Retry Payment (₹${finalPayable.toLocaleString('en-IN')})`;
           }
 
-          // Send to backend failed payment logger
-          fetch("/api/razorpay/payment-failed", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+          fetch('/api/razorpay/payment-failed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               orderId: order.id,
-              paymentId: response.error?.metadata?.payment_id || "",
+              paymentId: response.error?.metadata?.payment_id || '',
               error: {
                 description: response.error.description,
                 reason: response.error.reason,
                 code: response.error.code
               },
-              name,
-              email,
-              phone
+              name: nameVal.name,
+              email: emailVal.email,
+              phone: phoneVal.phone
             })
           }).catch(() => {});
         });
 
-        // Close checkout dialog so Razorpay iframe renders with 100% full unobstructed front focus!
-        if (typeof modal.close === "function") {
-          modal.close();
-        } else {
-          modal.removeAttribute("open");
-        }
-
+        closeRazorpayCheckoutModal();
         rzp.open();
       } catch (err) {
-        console.error("Checkout init error:", err);
+        console.error('Checkout init error:', err);
         if (msgEl) {
-          msgEl.className = "moya-form-msg error";
-          msgEl.textContent = getSafeUserErrorMessage(err.message, "Payment gateway is currently completing a secure update. Please retry in a moment.");
+          msgEl.className = 'moya-form-msg error';
+          msgEl.textContent = getSafeUserErrorMessage(err.message, 'Payment gateway is currently completing a secure update. Please retry in a moment.');
         }
         if (submitBtn) {
           submitBtn.disabled = false;
-          const btnText = submitBtn.querySelector(".btn-text");
+          const btnText = submitBtn.querySelector('.btn-text');
           if (btnText) btnText.textContent = `Enroll Now & Pay ₹${currentPayableAmount.toLocaleString('en-IN')}`;
         }
       }
     });
   }
-  return async function applyFestiveOffer(code) {
+
+  return async function applyUrgencyCoupon(code) {
     if (couponBusy) return;
     handleRemoveCoupon();
-    couponInput.value = code;
+    if (couponInput) couponInput.value = code;
     openRazorpayCheckoutModal();
     await handleApplyCoupon();
   };
@@ -3467,7 +3747,7 @@ function initRazorpayCheckoutFlow() {
 // MASTER APPLICATION INITIALIZER
 // ==========================================================================
 onReady(() => {
-  // 1. Bind ALL Enrollment & Action CTAs across the entire page to open Razorpay Checkout Modal
+  // 1. Bind ALL Enrollment & Action CTAs across the entire page to Gatekeeper
   $$(".js-cta, .js-cta-checkout, #cta, .hero-cta-primary, .moya-mobile-sticky-btn, .modal-cta-btn, .moya-btn-primary, a[href='#offer']:not(.nav-item)").forEach((btn) => {
     btn.addEventListener("click", handleCtaClick);
   });
@@ -3485,10 +3765,9 @@ onReady(() => {
   animateChartOnLoad();
   animateDashboardCounters();
 
-  // 3. Initialize Section 5 Lead Capture, Razorpay Checkout & Festive Spin Game
+  // 3. Initialize Section 5 Lead Capture, Urgency Flow & Razorpay Checkout
   initSection5LeadCapture();
-  const applyFestiveOffer = initRazorpayCheckoutFlow();
-  initFestiveSpinGame({ applyOffer: applyFestiveOffer });
+  window.applyUrgencyCoupon = initRazorpayCheckoutFlow();
 
   // 4. Initialize Video Controller
   window.videoController.init();
