@@ -163,92 +163,6 @@ async function syncGHLContact({ name, email, phone, tags = [], note = '', custom
   return { success: true, contactId };
 }
 
-// Helper: GoHighLevel (GHL) Opportunity Sync for Payments
-async function syncGHLOpportunity({ contactId, name, amount }) {
-  const locationId = process.env.GHL_LOCATION_ID || 'jsuZqhDRfnfSBFMgdfs2';
-  const apiKey = process.env.GHL_API_KEY;
-  const pipelineId = 'oRlyCNFHQMgZPRQDYjcz'; // MOYA webiste Leads
-  const stageId = 'f71a530b-829d-4d32-af02-6e730cf06e38'; // Course purchased
-
-  if (!apiKey || !contactId) return;
-
-  try {
-    const monetaryValue = Number(amount) || 0;
-
-    // 1. Search existing opportunity for this contact
-    const searchRes = await fetch(
-      `${GHL_API_BASE}/opportunities/search?location_id=${locationId}&contact_id=${contactId}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Version': '2021-07-28',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    let existingOpp = null;
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      const opps = searchData?.opportunities || [];
-      // Prefer opportunity in MOYA website Leads pipeline if present
-      existingOpp = opps.find(o => o.pipelineId === pipelineId) || opps[0];
-    }
-
-    if (existingOpp?.id) {
-      // 2. Update existing opportunity to Won with numeric monetaryValue & moved stage
-      const updateRes = await fetch(`${GHL_API_BASE}/opportunities/${existingOpp.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Version': '2021-07-28',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          pipelineId: existingOpp.pipelineId || pipelineId,
-          pipelineStageId: stageId,
-          status: 'won',
-          monetaryValue
-        })
-      });
-      if (updateRes.ok) {
-        console.log(`[GHL Opportunity] Updated opportunity ${existingOpp.id} to Won with monetaryValue: ₹${monetaryValue}`);
-      } else {
-        const errText = await updateRes.text();
-        console.warn(`[GHL Opportunity Update Warning] Status ${updateRes.status}:`, errText);
-      }
-    } else {
-      // 3. Create opportunity if none found
-      const createRes = await fetch(`${GHL_API_BASE}/opportunities/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Version': '2021-07-28',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          locationId,
-          contactId,
-          name: name || 'VSL Student',
-          pipelineId,
-          pipelineStageId: stageId,
-          status: 'won',
-          monetaryValue
-        })
-      });
-      if (createRes.ok) {
-        const createData = await createRes.json();
-        console.log(`[GHL Opportunity] Created new Won opportunity ${createData?.opportunity?.id} with monetaryValue: ₹${monetaryValue}`);
-      } else {
-        const errText = await createRes.text();
-        console.warn(`[GHL Opportunity Create Warning] Status ${createRes.status}:`, errText);
-      }
-    }
-  } catch (err) {
-    console.error('[GHL Opportunity Error]', err.message);
-  }
-}
-
 // -----------------------------------------------------------------------------
 // API: Capture Lead from Section 5 Auto-Popup
 // -----------------------------------------------------------------------------
@@ -596,7 +510,7 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
 
     const note = `🎉 Enrollment Confirmed via Razorpay!\n• Course: MOYA Complete Access\n• Total Paid: ₹${paidStr}\n• Coupon Applied: ${cleanCoupon || 'None (Full Price)'}\n• Razorpay Payment ID: ${razorpay_payment_id}\n• Order ID: ${razorpay_order_id}\n• Date: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}`;
 
-    const { contactId } = await syncGHLContact({
+    await syncGHLContact({
       name,
       email,
       phone,
@@ -605,14 +519,6 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
       note,
       customFields
     });
-
-    if (contactId) {
-      await syncGHLOpportunity({
-        contactId,
-        name,
-        amount: verifiedAmount
-      });
-    }
 
     res.json({ success: true, redirect: '/thankyou' });
   } catch (error) {
@@ -699,7 +605,7 @@ app.post('/api/razorpay/webhook', async (req, res) => {
         { id: 'jY5kE16LGuyCbzmuxwWe', value: paidAmount }
       ];
 
-      const { contactId } = await syncGHLContact({
+      await syncGHLContact({
         name: notes.name || undefined,
         email: notes.email || payment?.email,
         phone: notes.phone || payment?.contact,
@@ -708,14 +614,6 @@ app.post('/api/razorpay/webhook', async (req, res) => {
         note: `Webhook Verified: ₹${paidAmount} | Coupon: ${couponCode || 'None (Full Price)'} | Razorpay ID: ${payment.id}`,
         customFields
       });
-
-      if (contactId) {
-        await syncGHLOpportunity({
-          contactId,
-          name: notes.name,
-          amount: Number(paidAmount)
-        });
-      }
     } else if (event === 'payment.failed') {
       const errorDesc = payment?.error_description || payment?.error_reason || 'Bank decline';
 
