@@ -1,31 +1,35 @@
-/* Focused polish for the existing lead → offer → checkout flow. */
+/* Focused zero-scroll polish for lead → offer → checkout flow. */
 .moya-modal-dialog {
-  width: min(100%, 620px);
-  max-width: min(100vw, 620px);
-  max-height: calc(100dvh - 28px);
+  width: min(100%, 540px);
+  max-width: min(96vw, 540px);
+  max-height: min(94dvh, 680px);
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(229, 46, 63, .55) transparent;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: auto;
 }
 
 .moya-modal-dialog::backdrop {
   background: rgba(4, 5, 17, .87);
-  backdrop-filter: blur(9px);
+  backdrop-filter: blur(8px);
 }
 
 .moya-modal-dialog .moya-modal-box {
   max-width: none;
   isolation: isolate;
   overflow: hidden;
-  padding: 30px 34px 28px;
+  padding: 20px 24px 16px;
   background:
-    radial-gradient(circle at 94% 0, rgba(229, 46, 63, .17), transparent 38%),
+    radial-gradient(circle at 94% 0, rgba(229, 46, 63, .16), transparent 38%),
     linear-gradient(152deg, #141735 0%, #0d1028 48%, #090b1e 100%);
   border: 1px solid rgba(220, 226, 255, .16);
-  border-radius: 22px;
-  box-shadow: 0 28px 90px rgba(0, 0, 0, .62), inset 0 1px 0 rgba(255, 255, 255, .06);
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .65), inset 0 1px 0 rgba(255, 255, 255, .06);
 }
 
 .moya-modal-dialog .moya-modal-box::before {
@@ -42,29 +46,27 @@
   z-index: 1;
 }
 
-.moya-flow-step {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 46px 17px 0;
-  color: #9ba5cf;
-  font-size: .69rem;
-  font-weight: 800;
-  letter-spacing: .14em;
-}
-
-.moya-flow-step span:last-child {
-  color: #ff948e;
-  font-variant-numeric: tabular-nums;
-}
-
 .moya-modal-dialog .moya-modal-close {
-  top: 18px;
-  right: 20px;
-  width: 38px;
-  height: 38px;
+  top: 14px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
   z-index: 5;
   background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 50%;
+  color: #d1d5eb;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease;
+}
+
+.moya-modal-dialog .moya-modal-close:hover {
+  background: rgba(229, 46, 63, .2);
+  color: #fff;
 }
 
 .moya-modal-dialog .moya-modal-close:focus-visible,
@@ -72,98 +74,90 @@
 .moya-modal-dialog button:focus-visible,
 .moya-modal-dialog .moya-income-opt:focus-within {
   outline: 2px solid #ff8b88;
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
-.moya-access-box .moya-modal-badge {
-  margin-bottom: 10px;
-  color: #ffb2a9;
-  background: rgba(229, 46, 63, .11);
+.moya-modal-header-compact {
+  margin-bottom: 8px;
+  padding-right: 32px;
 }
 
 .moya-modal-dialog .moya-modal-title,
 .moya-modal-dialog .reward-modal-title {
-  max-width: 500px;
-  margin-bottom: 9px;
-  font-size: clamp(1.55rem, 3vw, 2rem);
-  line-height: 1.14;
-  letter-spacing: -.045em;
+  max-width: 480px;
+  margin-bottom: 4px;
+  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+  color: #fff;
+}
+
+.moya-modal-dialog .moya-modal-title span,
+.moya-modal-dialog .reward-modal-title span {
+  color: #ff5263;
 }
 
 .moya-modal-dialog .moya-modal-desc,
 .moya-modal-dialog .reward-modal-desc {
   max-width: 52ch;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   color: #bdc5e3;
-  font-size: .9rem;
-  line-height: 1.55;
+  font-size: .8rem;
+  line-height: 1.4;
 }
 
-.moya-offer-preview {
+/* Locked Voucher Teaser Bar (Zero Spoilers) */
+.moya-locked-voucher-strip {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin: 0 0 19px;
-  padding: 13px 17px;
-  border: 1px solid rgba(255, 130, 119, .32);
-  border-radius: 13px;
-  background: linear-gradient(100deg, rgba(229, 46, 63, .14), rgba(229, 46, 63, .045));
-}
-
-.moya-offer-preview > span {
-  color: #d3d8ef;
-  font-size: .84rem;
-  font-weight: 700;
-}
-
-.moya-offer-preview strong {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 3px 8px;
-  color: #fff;
-  font-size: 1.32rem;
-  font-weight: 850;
-  letter-spacing: -.035em;
-  white-space: nowrap;
-}
-
-.moya-offer-preview del {
-  color: #929aba;
-  font-size: .8rem;
+  justify-content: center;
+  gap: 7px;
+  padding: 6px 12px;
+  margin: 0 0 10px;
+  border: 1px dashed rgba(229, 46, 63, .38);
+  border-radius: 9px;
+  background: linear-gradient(100deg, rgba(229, 46, 63, .12), rgba(229, 46, 63, .03));
+  color: #ffb5ab;
+  font-size: .77rem;
   font-weight: 600;
+  text-align: center;
 }
 
-.moya-offer-preview small {
-  flex-basis: 100%;
-  color: #ffb0a5;
-  font-size: .68rem;
-  font-weight: 700;
-  line-height: 1;
-  text-align: right;
-  letter-spacing: 0;
+.moya-locked-voucher-strip strong {
+  color: #ffffff;
+  font-weight: 750;
 }
 
+/* Form Groups & Inputs */
 .moya-modal-dialog .moya-modal-form .moya-form-group {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .moya-modal-dialog .moya-modal-form label {
-  margin-bottom: 6px;
+  display: block;
+  margin-bottom: 3px;
   color: #e2e6f6;
-  font-size: .76rem;
+  font-size: .72rem;
   font-weight: 700;
   text-transform: none;
   letter-spacing: 0;
 }
 
+.moya-modal-dialog .moya-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
 .moya-modal-dialog .moya-input-wrap input,
 .moya-modal-dialog .moya-phone-wrap input,
 .moya-modal-dialog .moya-coupon-input-wrap input {
-  min-height: 48px;
-  font-size: 1rem;
+  min-height: 38px;
+  height: 38px;
+  font-size: .88rem;
+  padding: 6px 11px;
 }
 
 .moya-modal-dialog .moya-input-wrap input,
@@ -171,191 +165,365 @@
 .moya-modal-dialog .moya-coupon-input-wrap input {
   background: rgba(255, 255, 255, .065);
   border-color: rgba(225, 232, 255, .17);
-  border-radius: 11px;
+  border-radius: 9px;
 }
 
 .moya-modal-dialog .moya-input-wrap input::placeholder,
 .moya-modal-dialog .moya-phone-wrap input::placeholder,
 .moya-modal-dialog .moya-coupon-input-wrap input::placeholder {
   color: #8c96b9;
+  font-size: .82rem;
+}
+
+.moya-modal-dialog .moya-phone-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.moya-modal-dialog .moya-phone-prefix {
+  padding: 0 8px 0 10px;
+  color: #9ba5cf;
+  font-size: .82rem;
+  font-weight: 700;
+  border-right: 1px solid rgba(225, 232, 255, .15);
 }
 
 .moya-modal-dialog .moya-form-group:focus-within > label {
   color: #ffaaa4;
 }
 
-.moya-field-hint {
-  margin: 5px 0 0;
-  color: #99a4c8;
-  font-size: .7rem;
-  line-height: 1.35;
-}
-
-.moya-inline-hint {
-  margin-left: 5px;
-  color: #9da7cb;
-  font-size: .68rem;
-  font-weight: 500;
+/* Compact Starting Income Grid (Preserved Options) */
+.moya-income-group {
+  margin-bottom: 6px !important;
 }
 
 .moya-access-box .moya-income-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 3px;
 }
 
 .moya-access-box .moya-income-opt {
   display: flex;
   align-items: center;
-  min-height: 43px;
+  justify-content: center;
+  min-height: 32px;
+  height: 32px;
   margin: 0;
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: 4px 6px;
+  border: 1px solid rgba(225, 232, 255, .15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .04);
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.moya-access-box .moya-income-opt:hover {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .25);
+}
+
+.moya-access-box .moya-income-opt input[type="radio"] {
+  display: none;
+}
+
+.moya-access-box .moya-income-circle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid #8c96b9;
+  margin-right: 5px;
+  flex-shrink: 0;
+  transition: all .2s ease;
+}
+
+.moya-access-box .moya-income-opt input[type="radio"]:checked + .moya-income-circle {
+  border-color: #e52e3f;
+  background: #e52e3f;
+  box-shadow: 0 0 8px rgba(229, 46, 63, .6);
+}
+
+.moya-access-box .moya-income-opt:has(input[type="radio"]:checked) {
+  border-color: rgba(229, 46, 63, .5);
+  background: rgba(229, 46, 63, .12);
 }
 
 .moya-access-box .moya-income-text {
-  font-size: .77rem;
+  font-size: .69rem;
   font-weight: 650;
+  color: #d1d5eb;
+  white-space: nowrap;
 }
 
+/* Modal Submit Buttons */
 .moya-modal-dialog .moya-modal-submit-btn {
-  min-height: 51px;
-  margin-top: 16px;
+  width: 100%;
+  min-height: 42px;
+  height: 42px;
+  margin-top: 10px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 1px solid rgba(255, 255, 255, .18);
-  border-radius: 11px;
+  border-radius: 10px;
   background: linear-gradient(112deg, #ed3444, #c71b35);
-  box-shadow: 0 9px 25px rgba(229, 46, 63, .29);
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(229, 46, 63, .3);
+  transition: all .2s ease;
 }
 
 .moya-modal-dialog .moya-modal-submit-btn:hover {
-  box-shadow: 0 12px 29px rgba(229, 46, 63, .4);
+  box-shadow: 0 10px 26px rgba(229, 46, 63, .45);
+  transform: translateY(-1px);
 }
 
 .moya-modal-dialog .moya-form-note {
-  margin-top: 10px;
+  margin-top: 6px;
   color: #aeb8d7;
-  font-size: .73rem;
+  font-size: .68rem;
+  text-align: center;
 }
 
+/* Step 2: Reward Reveal Modal */
 .reward-modal-dialog .reward-modal-box {
   text-align: left;
 }
 
 .reward-modal-dialog .reward-celebrate-badge {
-  margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(241, 179, 91, .28);
+  border-radius: 999px;
   color: #ffe1a2;
   background: rgba(241, 179, 91, .09);
-  border-color: rgba(241, 179, 91, .28);
+  font-size: .68rem;
+  font-weight: 750;
+  letter-spacing: .06em;
 }
 
 .reward-modal-dialog .reward-modal-title span {
   background: linear-gradient(95deg, #ffcf89, #ff8075);
   -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .reward-modal-dialog .reward-prize-card {
-  padding: 19px;
-  border-radius: 15px;
-  border-color: rgba(255, 255, 255, .16);
-  background: rgba(255, 255, 255, .045);
+  padding: 13px 15px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .04);
 }
 
-.reward-modal-dialog .reward-voucher-strip {
-  border-color: rgba(250, 194, 121, .48);
-  background: linear-gradient(110deg, rgba(250, 194, 121, .08), rgba(250, 194, 121, .025));
+.reward-modal-dialog .reward-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.reward-modal-dialog .reward-savings {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reward-modal-dialog .reward-save-amount {
+  font-size: 1.3rem;
+  font-weight: 850;
+  color: #26e7a6;
+}
+
+.reward-modal-dialog .reward-save-tag {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(38, 231, 166, .15);
+  color: #26e7a6;
+  font-size: .65rem;
+  font-weight: 800;
+}
+
+.reward-modal-dialog .reward-final-price {
+  text-align: right;
+}
+
+.reward-modal-dialog .reward-price-label {
+  display: block;
+  font-size: .68rem;
+  color: #a0a8c2;
+}
+
+.reward-modal-dialog .reward-current-num {
+  font-size: 1.4rem;
+  font-weight: 850;
+  color: #fff;
+}
+
+.reward-modal-dialog .reward-strike-num {
+  font-size: .8rem;
+  color: #8c96b9;
+  text-decoration: line-through;
+  margin-left: 4px;
 }
 
 .reward-modal-dialog .reward-timer-pill {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+  padding: 5px 10px;
+  margin: 6px 0;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .03);
   color: #c4cce5;
-  background: rgba(255, 255, 255, .04);
-  border-color: rgba(255, 255, 255, .13);
+  font-size: .75rem;
+}
+
+.reward-modal-dialog .reward-timer-pill strong {
+  color: #ff8a7a;
+  font-variant-numeric: tabular-nums;
+}
+
+.reward-modal-dialog .reward-voucher-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  margin: 6px 0;
+  border: 1px dashed rgba(250, 194, 121, .45);
+  border-radius: 8px;
+  background: linear-gradient(110deg, rgba(250, 194, 121, .08), rgba(250, 194, 121, .02));
+}
+
+.reward-modal-dialog .voucher-info small {
+  display: block;
+  font-size: .6rem;
+  color: #d1b582;
+  letter-spacing: .08em;
+}
+
+.reward-modal-dialog .voucher-code-text {
+  font-size: 1rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  color: #ffdf9e;
+}
+
+.reward-modal-dialog .reward-copy-btn {
+  padding: 4px 10px;
+  border: 1px solid rgba(250, 194, 121, .35);
+  border-radius: 6px;
+  background: rgba(250, 194, 121, .15);
+  color: #ffe6b0;
+  font-size: .72rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .reward-modal-dialog .reward-footer-perks {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 8px 15px;
+  gap: 8px 12px;
+  margin-top: 8px;
+  font-size: .68rem;
+  color: #a0a8c2;
 }
 
+/* Step 3: Razorpay Checkout Modal */
 .checkout-modal-box .checkout-header-top {
-  align-items: flex-start;
-}
-
-.checkout-modal-box .checkout-header-top .moya-modal-title {
-  max-width: 390px;
-  font-size: clamp(1.55rem, 3vw, 1.9rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .checkout-modal-box .checkout-secure-badge {
-  margin-right: 40px;
-  padding: 6px 9px;
-  border-color: rgba(58, 207, 152, .3);
+  padding: 4px 8px;
+  border: 1px solid rgba(58, 207, 152, .3);
+  border-radius: 6px;
   color: #8fe4bc;
   background: rgba(26, 154, 114, .12);
+  font-size: .68rem;
+  font-weight: 700;
 }
 
 .checkout-modal-box .checkout-trust-strip {
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 7px 18px;
-  padding: 11px 14px;
-  border-radius: 10px;
-}
-
-.checkout-modal-box .checkout-trust-strip .trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .03);
+  font-size: .72rem;
   color: #d6ddf2;
 }
 
 .checkout-modal-box .checkout-price-card {
-  padding: 17px 19px;
-  border-color: rgba(255, 139, 121, .35);
-  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 139, 121, .35);
+  border-radius: 11px;
   background: linear-gradient(108deg, rgba(229, 46, 63, .18), rgba(229, 46, 63, .045));
 }
 
 .moya-price-caption {
   display: block;
-  margin-bottom: 4px;
+  font-size: .68rem;
   color: #d8dcef;
-  font-size: .72rem;
   font-weight: 700;
 }
 
 .checkout-modal-box .checkout-price-card .price-val {
-  font-size: 1.8rem;
-  font-variant-numeric: tabular-nums;
+  font-size: 1.45rem;
+  font-weight: 850;
+  color: #fff;
 }
 
-.checkout-modal-box .checkout-price-card.is-celebrating {
-  animation: moyaPriceConfirm .65s cubic-bezier(.2, .8, .2, 1);
+.checkout-modal-box .price-strikethrough {
+  font-size: .8rem;
+  color: #8c96b9;
+  text-decoration: line-through;
+  margin-left: 5px;
 }
 
-.checkout-modal-box .checkout-urgency-banner {
-  justify-content: space-between;
-  background: rgba(255, 255, 255, .04);
-  border-color: rgba(255, 255, 255, .13);
-  color: #cbd2e9;
+.checkout-modal-box .price-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(229, 46, 63, .25);
+  color: #ff9187;
+  font-size: .68rem;
+  font-weight: 800;
 }
 
 .moya-coupon-disclosure {
-  margin: 4px 0 13px;
+  margin: 2px 0 8px;
   border: 1px solid rgba(218, 226, 255, .14);
-  border-radius: 11px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, .035);
 }
 
-.moya-coupon-disclosure[open] {
-  border-color: rgba(229, 46, 63, .34);
-}
-
 .moya-coupon-disclosure summary {
+  padding: 8px 11px;
+  color: #e6e9f8;
+  font-size: .75rem;
+  font-weight: 700;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 13px 15px;
-  color: #e6e9f8;
-  cursor: pointer;
-  font-size: .8rem;
-  font-weight: 700;
   list-style: none;
 }
 
@@ -364,43 +532,50 @@
 
 .moya-coupon-disclosure summary span {
   color: #ffa69f;
-  font-size: .75rem;
-  white-space: nowrap;
+  font-size: .7rem;
 }
 
 .moya-coupon-disclosure .moya-coupon-section {
+  padding: 0 11px 8px;
   margin: 0;
-  padding: 0 15px 14px;
 }
 
-.moya-coupon-disclosure .moya-coupon-input-wrap input {
-  min-width: 0;
+.moya-coupon-disclosure .moya-coupon-input-wrap {
+  display: flex;
+  gap: 6px;
 }
 
 .moya-coupon-disclosure .moya-coupon-btn {
-  flex-shrink: 0;
-  padding-inline: 12px;
-  font-size: .74rem;
-}
-
-.moya-coupon-disclosure .moya-coupon-msg.success {
-  padding: 10px 12px;
-  border-radius: 9px;
-  color: #92edc0;
-  background: rgba(19, 157, 102, .11);
-}
-
-.moya-coupon-disclosure .moya-coupon-msg.error {
-  padding: 10px 12px;
-  border-radius: 9px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: #e52e3f;
+  color: #fff;
+  border: none;
+  font-size: .72rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .checkout-modal-box .checkout-payment-methods {
+  margin-top: 6px;
   color: #b4bddb;
-  font-size: .73rem;
-  line-height: 1.4;
+  font-size: .68rem;
+  text-align: center;
 }
 
+/* Hero Section Subtext */
+.hero-disclaimer-subtext {
+  font-size: clamp(0.72rem, 1.8vw, 0.84rem);
+  color: #a0a8c2;
+  text-align: center;
+  max-width: 720px;
+  margin: 8px auto 24px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  opacity: 0.85;
+}
+
+/* Confetti & Animations */
 .moya-celebration {
   position: absolute;
   inset: 0;
@@ -430,50 +605,125 @@
 
 @keyframes moyaPriceConfirm {
   0% { box-shadow: 0 0 0 rgba(29, 195, 131, 0); }
-  45% { box-shadow: 0 0 0 6px rgba(29, 195, 131, .16), 0 0 22px rgba(29, 195, 131, .26); }
+  45% { box-shadow: 0 0 0 4px rgba(29, 195, 131, .16), 0 0 16px rgba(29, 195, 131, .26); }
   100% { box-shadow: 0 0 0 rgba(29, 195, 131, 0); }
 }
 
+/* ZERO-SCROLL MOBILE OPTIMIZATION (max-width: 640px) */
 @media (max-width: 640px) {
   .moya-modal-dialog {
-    width: 100vw;
-    max-width: 100vw;
-    height: 100dvh;
-    max-height: 100dvh;
-    padding: 0;
-    margin: 0;
+    width: min(96vw, 440px);
+    max-width: 96vw;
+    max-height: min(96dvh, 620px);
+    margin: auto;
+    border-radius: 16px;
   }
 
   .moya-modal-dialog .moya-modal-box {
-    min-height: 100dvh;
-    padding: max(23px, env(safe-area-inset-top)) 20px max(26px, env(safe-area-inset-bottom));
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
+    padding: 15px 15px 12px;
+    border-radius: 16px;
+    min-height: auto;
   }
 
   .moya-modal-dialog .moya-modal-close {
-    top: 14px;
-    right: 18px;
+    top: 10px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
   }
 
-  .moya-flow-step { margin-bottom: 16px; }
-  .moya-modal-dialog .moya-modal-title,
-  .moya-modal-dialog .reward-modal-title { font-size: clamp(1.5rem, 6.2vw, 1.9rem); }
-  .moya-modal-dialog .moya-modal-desc { font-size: .85rem; }
-  .moya-access-box .moya-income-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .checkout-modal-box .checkout-header-top { display: block; }
-  .checkout-modal-box .checkout-secure-badge { display: inline-flex; margin: 5px 0 0; }
-  .checkout-modal-box .checkout-trust-strip { gap: 8px 13px; }
-  .checkout-modal-box .moya-form-row { grid-template-columns: 1fr; gap: 0; }
-}
+  .moya-modal-header-compact {
+    padding-right: 28px;
+    margin-bottom: 6px;
+  }
 
-@media (max-width: 360px) {
-  .moya-modal-dialog .moya-modal-box { padding-inline: 16px; }
-  .moya-access-box .moya-income-grid { grid-template-columns: 1fr; }
-  .moya-offer-preview strong { font-size: 1.15rem; }
-  .moya-coupon-disclosure .moya-coupon-input-wrap { flex-wrap: wrap; }
-  .moya-coupon-disclosure .moya-coupon-btn { width: 100%; min-height: 44px; }
+  .moya-modal-dialog .moya-modal-title,
+  .moya-modal-dialog .reward-modal-title {
+    font-size: 1.15rem;
+    margin-bottom: 2px;
+  }
+
+  .moya-modal-dialog .moya-modal-desc,
+  .moya-modal-dialog .reward-modal-desc {
+    font-size: .74rem;
+    margin-bottom: 6px;
+  }
+
+  .moya-locked-voucher-strip {
+    padding: 5px 8px;
+    margin-bottom: 6px;
+    font-size: .7rem;
+  }
+
+  .moya-modal-dialog .moya-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .moya-modal-dialog .moya-modal-form .moya-form-group {
+    margin-bottom: 5px;
+  }
+
+  .moya-modal-dialog .moya-modal-form label {
+    margin-bottom: 2px;
+    font-size: .68rem;
+  }
+
+  .moya-modal-dialog .moya-input-wrap input,
+  .moya-modal-dialog .moya-phone-wrap input,
+  .moya-modal-dialog .moya-coupon-input-wrap input {
+    min-height: 35px;
+    height: 35px;
+    font-size: .82rem;
+  }
+
+  .moya-access-box .moya-income-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .moya-access-box .moya-income-opt {
+    min-height: 29px;
+    height: 29px;
+    padding: 2px 4px;
+  }
+
+  .moya-access-box .moya-income-text {
+    font-size: .65rem;
+  }
+
+  .moya-modal-dialog .moya-modal-submit-btn {
+    min-height: 39px;
+    height: 39px;
+    margin-top: 7px;
+    font-size: .84rem;
+  }
+
+  .moya-modal-dialog .moya-form-note {
+    font-size: .64rem;
+    margin-top: 4px;
+  }
+
+  .checkout-modal-box .checkout-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .checkout-modal-box .checkout-trust-strip {
+    gap: 4px 10px;
+    padding: 4px 8px;
+    font-size: .68rem;
+  }
+
+  .checkout-modal-box .checkout-price-card {
+    padding: 8px 10px;
+  }
+
+  .checkout-modal-box .checkout-price-card .price-val {
+    font-size: 1.25rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

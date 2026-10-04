@@ -2376,11 +2376,11 @@ window.openLightbox = function(src) {
         },
         {
                 "id": "testi-4",
-		"name": "Yesh",
+		"name": "Yogesh",
 		"subtitle": "MOYA Creator \u2022 Faceless Channel Scale",
 		"quote": "The MOYA operating system streamlined my entire channel process. The step-by-step blueprints and weekly clinics gave me exact clarity to grow.",
 		"video": "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6ac24ba4c478ac5535b9d30f.mp4",
-		"poster": "./assets/yesh-testimonial-poster.webp"
+		"poster": "https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6ac251fdbbad531ac8a222a3.png"
         },
         {
                 "id": "testi-5",
@@ -3269,7 +3269,7 @@ function initSection5LeadCapture() {
       if (submitBtn) {
         submitBtn.disabled = true;
         const btnText = submitBtn.querySelector(".btn-text");
-        if (btnText) btnText.textContent = "Preparing your offer...";
+        if (btnText) btnText.textContent = "Verifying Eligibility & Unlocking Voucher...";
       }
 
       try {
@@ -3314,7 +3314,7 @@ function initSection5LeadCapture() {
         if (submitBtn) {
           submitBtn.disabled = false;
           const btnText = submitBtn.querySelector(".btn-text");
-          if (btnText) btnText.textContent = "Continue to My Offer";
+          if (btnText) btnText.textContent = "Unlock My Voucher Code";
         }
       }
     });
@@ -3677,7 +3677,7 @@ function initRazorpayCheckoutFlow() {
                 coupon: appliedCouponCode || ''
               });
 
-              window.location.href = `/thankyou.html?${thankYouParams.toString()}`;
+              window.location.href = `/thankyou?${thankYouParams.toString()}`;
             } catch (err) {
               console.error('Verification error:', err);
               const fallbackParams = new URLSearchParams({
@@ -3686,7 +3686,7 @@ function initRazorpayCheckoutFlow() {
                 customer_email: emailVal.email,
                 coupon: appliedCouponCode || ''
               });
-              window.location.href = `/thankyou.html?${fallbackParams.toString()}`;
+              window.location.href = `/thankyou?${fallbackParams.toString()}`;
             }
           },
           modal: {

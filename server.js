@@ -196,14 +196,14 @@ app.post('/api/leads', leadsLimiter, async (req, res) => {
 
 // -----------------------------------------------------------------------------
 // GHL Custom Values & Live Festive Coupon Management Engine
-// Reusable for Navratri, Diwali and future promotional campaigns
+// Official MOYA Scholarship & 20-Minute Urgency Voucher Engine
 // -----------------------------------------------------------------------------
 let couponCache = {
   data: null,
   expiresAt: 0
 };
 
-const DEFAULT_FESTIVAL_COUPONS = {
+const DEFAULT_MOYA_COUPONS = {
   'MOYA55': { code: 'MOYA55', discount: 4000, status: 'ENABLED' },
   'MOYA44': { code: 'MOYA44', discount: 3000, status: 'ENABLED' },
   'MOYA22': { code: 'MOYA22', discount: 2000, status: 'ENABLED' },
@@ -219,7 +219,7 @@ async function getActiveCouponsFromGHL() {
   const locationId = process.env.GHL_LOCATION_ID || 'jsuZqhDRfnfSBFMgdfs2';
   const apiKey = process.env.GHL_API_KEY;
 
-  let coupons = { ...DEFAULT_FESTIVAL_COUPONS };
+  let coupons = { ...DEFAULT_MOYA_COUPONS };
 
   if (apiKey) {
     try {
@@ -640,6 +640,17 @@ app.post('/api/razorpay/webhook', async (req, res) => {
 // Static Files & Clean URLs for Coolify Production
 // -----------------------------------------------------------------------------
 const distPath = path.resolve(__dirname, 'dist');
+
+// 301 Redirect .html to clean slug
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') && req.path !== '/index.html' && req.path !== '/') {
+    const cleanSlug = req.path.slice(0, -5);
+    const query = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    return res.redirect(301, cleanSlug + query);
+  }
+  next();
+});
+
 app.use(express.static(distPath));
 
 // Clean URL rewrite mappings for Coolify
