@@ -2436,88 +2436,103 @@
 <!-- ========================================================================
      SECTION 5 AUTO-POPUP & GLOBAL CTA LEAD QUALIFICATION MODAL
      ======================================================================== -->
-<dialog id="leadCaptureModal" class="moya-modal-dialog" aria-labelledby="leadModalTitle">
-  <div class="moya-modal-box moya-access-box">
-    <button type="button" class="moya-modal-close" id="closeLeadModal" aria-label="Close form">&times;</button>
-    
-    <div class="moya-modal-header-compact">
-      <h3 id="leadModalTitle" class="moya-modal-title">Unlock Your <span data-dyn-discount>₹4,000</span> Fast-Action Voucher</h3>
-      <p class="moya-modal-desc">
-        Enter your details to check qualification and generate your secret discount voucher.
-      </p>
-    </div>
+<dialog id="leadCaptureModal" class="moya-modal-dialog lead-capture-modal-custom" aria-labelledby="leadModalTitle">
+  <div class="lead-modal-card-wrap">
+    <button type="button" class="lead-modal-close-btn" id="closeLeadModal" aria-label="Close dialog">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
 
-    <!-- Locked Teaser (NO code or discounted price leaked!) -->
-    <div class="moya-locked-voucher-strip">
-      <span class="lock-icon">🔒</span>
-      <span>Action-Taker Grant: <strong>Up to <span data-dyn-discount>₹4,000</span> Voucher Available</strong> (Fill details to unlock)</span>
-    </div>
+    <div class="lead-modal-grid">
+      <!-- Left Column: Visual & Value Hook with Savan Matariya -->
+      <div class="lead-modal-visual-side">
+        <div class="lead-modal-eyebrow">EXCLUSIVE FOR YOU</div>
+        <h2 id="leadModalTitle" class="lead-modal-headline">
+          You’re Not <span class="lead-headline-gold">Just Another Learner.</span>
+        </h2>
+        <p class="lead-modal-subcopy">
+          You’re here because you want to build something bigger.<br>
+          So here’s a special <strong class="lead-subcopy-highlight"><span data-dyn-discount>₹4,000</span> discount</strong> — just for you.
+        </p>
 
-    <form id="leadCaptureForm" class="moya-modal-form" novalidate>
-      <div class="moya-form-row">
-        <div class="moya-form-group">
-          <label for="leadNameInput">Your Name <span class="req">*</span></label>
-          <div class="moya-input-wrap">
-            <input type="text" id="leadNameInput" name="name" placeholder="Enter your full name" required autocomplete="name" />
+        <!-- Ambient Character Visual: Savan Matariya with Warm Desk Glow -->
+        <div class="lead-mentor-stage" aria-hidden="true">
+          <div class="mentor-ambient-glow"></div>
+          <img
+            src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6aa35343d1b3cd745ba41599.png"
+            alt="Savan Matariya — Founder & YouTube Automation Mentor"
+            class="lead-mentor-cutout"
+            loading="lazy"
+            decoding="async"
+          />
+          <div class="mentor-ground-fade"></div>
+        </div>
+      </div>
+
+      <!-- Right Column: Form Card -->
+      <div class="lead-modal-form-card">
+        <form id="leadCaptureForm" class="lead-capture-form-inner" novalidate>
+          <input type="hidden" name="income" value="$0 - $250 / mo" />
+
+          <!-- Name Field -->
+          <div class="lead-field-group">
+            <div class="lead-input-pill" id="leadNameWrap">
+              <span class="lead-pill-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
+              <input type="text" id="leadNameInput" name="name" placeholder="Your Name" required autocomplete="name" />
+            </div>
+            <div class="field-error-msg" id="leadNameError"></div>
           </div>
-          <div class="field-error-msg" id="leadNameError"></div>
-        </div>
 
-        <div class="moya-form-group">
-          <label for="leadEmailInput">Email for Course Access <span class="req">*</span></label>
-          <div class="moya-input-wrap">
-            <input type="email" id="leadEmailInput" name="email" placeholder="you@email.com" required autocomplete="email" />
+          <!-- Email Field -->
+          <div class="lead-field-group">
+            <div class="lead-input-pill" id="leadEmailWrap">
+              <span class="lead-pill-icon" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+              </span>
+              <input type="email" id="leadEmailInput" name="email" placeholder="Email for course access" required autocomplete="email" />
+            </div>
+            <div class="field-error-msg" id="leadEmailError"></div>
           </div>
-          <div class="field-error-msg" id="leadEmailError"></div>
-        </div>
-      </div>
 
-      <div class="moya-form-group">
-        <label for="leadPhoneInput">WhatsApp Number <span class="req">*</span></label>
-        <div class="moya-phone-wrap" id="leadPhoneWrap">
-          <span class="moya-phone-prefix">+91</span>
-          <input type="tel" id="leadPhoneInput" name="phone" placeholder="9876543210" maxlength="10" required autocomplete="tel" />
-        </div>
-        <div class="field-error-msg" id="leadPhoneError"></div>
-      </div>
+          <!-- Phone Field (Without WhatsApp logo, Indian flag +91) -->
+          <div class="lead-field-group">
+            <div class="lead-input-pill lead-phone-pill" id="leadPhoneWrap">
+              <div class="lead-flag-badge">
+                <span class="lead-flag-emoji" aria-hidden="true">🇮🇳</span>
+                <span class="lead-flag-code">+91</span>
+                <svg class="lead-flag-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <span class="lead-phone-divider" aria-hidden="true"></span>
+              <input type="tel" id="leadPhoneInput" name="phone" placeholder="9876543210" maxlength="10" required autocomplete="tel" />
+            </div>
+            <div class="field-error-msg" id="leadPhoneError"></div>
+          </div>
 
-      <!-- Monthly Income Circle Selectors (Preserved as requested) -->
-      <div class="moya-form-group moya-income-group">
-        <label>Starting Monthly Income (USD) <span class="req">*</span></label>
-        <div class="moya-income-grid" role="radiogroup" aria-label="Current monthly income in USD">
-          <label class="moya-income-opt">
-            <input type="radio" name="income" value="$0 - $250 / mo" checked />
-            <span class="moya-income-circle"></span>
-            <span class="moya-income-text">$0 – $250 / mo</span>
-          </label>
-          <label class="moya-income-opt">
-            <input type="radio" name="income" value="$250 - $750 / mo" />
-            <span class="moya-income-circle"></span>
-            <span class="moya-income-text">$250 – $750 / mo</span>
-          </label>
-          <label class="moya-income-opt">
-            <input type="radio" name="income" value="$750 - $1,500 / mo" />
-            <span class="moya-income-circle"></span>
-            <span class="moya-income-text">$750 – $1,500 / mo</span>
-          </label>
-          <label class="moya-income-opt">
-            <input type="radio" name="income" value="$1,500 - $2,000+ / mo" />
-            <span class="moya-income-circle"></span>
-            <span class="moya-income-text">$1,500 – $2,000+ / mo</span>
-          </label>
-        </div>
-      </div>
+          <!-- Submit Button -->
+          <button type="submit" class="lead-modal-claim-btn" id="leadSubmitBtn">
+            <span class="btn-text">Claim My <span data-dyn-discount>₹4,000</span> Discount</span>
+            <svg class="btn-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
 
-      <button type="submit" class="moya-modal-submit-btn" id="leadSubmitBtn">
-        <span class="btn-text">Unlock My Voucher Code</span>
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-      </button>
-
-      <div class="moya-form-note">
-        🔒 100% Privacy • Immediate Code Reveal • Zero Spam
+          <div id="leadFormMsg" class="moya-form-msg"></div>
+        </form>
       </div>
-      <div id="leadFormMsg" class="moya-form-msg"></div>
-    </form>
+    </div>
   </div>
 </dialog>
 

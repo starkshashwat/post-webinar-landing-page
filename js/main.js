@@ -3192,13 +3192,18 @@ function initSection5LeadCapture() {
     if (e.target === modal) closeLeadCaptureModal();
   });
 
+  const nameWrap = document.getElementById("leadNameWrap");
+  const emailWrap = document.getElementById("leadEmailWrap");
+
   // Real-time input error clearing & formatting
   nameInp?.addEventListener("input", () => {
     nameInp.classList.remove("input-error");
+    nameWrap?.classList.remove("input-error");
     if (nameErr) { nameErr.textContent = ""; nameErr.classList.remove("visible"); }
   });
   emailInp?.addEventListener("input", () => {
     emailInp.classList.remove("input-error");
+    emailWrap?.classList.remove("input-error");
     if (emailErr) { emailErr.textContent = ""; emailErr.classList.remove("visible"); }
   });
   phoneInp?.addEventListener("input", () => {
@@ -3245,16 +3250,18 @@ function initSection5LeadCapture() {
       const nameVal = validateName(nameInp?.value);
       const emailVal = validateEmail(emailInp?.value);
       const phoneVal = validateIndianPhone(phoneInp?.value);
-      const incomeVal = form.querySelector('input[name="income"]:checked')?.value || "$0 - $250 / mo";
+      const incomeVal = form.querySelector('input[name="income"]:checked')?.value || form.querySelector('input[name="income"]')?.value || "$0 - $250 / mo";
 
       let hasError = false;
       if (!nameVal.valid) {
         nameInp?.classList.add("input-error");
+        nameWrap?.classList.add("input-error");
         if (nameErr) { nameErr.textContent = nameVal.message; nameErr.classList.add("visible"); }
         hasError = true;
       }
       if (!emailVal.valid) {
         emailInp?.classList.add("input-error");
+        emailWrap?.classList.add("input-error");
         if (emailErr) { emailErr.textContent = emailVal.message; emailErr.classList.add("visible"); }
         hasError = true;
       }
@@ -3314,7 +3321,9 @@ function initSection5LeadCapture() {
         if (submitBtn) {
           submitBtn.disabled = false;
           const btnText = submitBtn.querySelector(".btn-text");
-          if (btnText) btnText.textContent = "Unlock My Voucher Code";
+          if (btnText) {
+            btnText.innerHTML = `Claim My <span data-dyn-discount>₹${(liveGHLOffer.discount || 4000).toLocaleString('en-IN')}</span> Discount`;
+          }
         }
       }
     });
