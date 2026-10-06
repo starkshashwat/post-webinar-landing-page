@@ -99,6 +99,30 @@ function formatCountdown(sec) {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
+// Meta Pixel & Conversions API Tracking Cookie Helper (_fbp, _fbc)
+function getMetaTrackingCookies() {
+  const getCookie = (name) => {
+    try {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    } catch (_) {}
+    return null;
+  };
+  const fbp = getCookie('_fbp');
+  let fbc = getCookie('_fbc');
+  if (!fbc) {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fbclid = urlParams.get('fbclid');
+      if (fbclid) {
+        fbc = `fb.1.${Date.now()}.${fbclid}`;
+      }
+    } catch (_) {}
+  }
+  return { fbp, fbc };
+}
+
 function syncUrgencyTimers(onExpire) {
   if (urgencyTimerInterval) clearInterval(urgencyTimerInterval);
 
@@ -297,7 +321,19 @@ function openRazorpayCheckoutModal() {
   } catch (err) {}
 
   if (typeof fbq === 'function') {
-    try { fbq('track', 'InitiateCheckout', { value: 4997, currency: 'INR' }); } catch (e) {}
+    try {
+      const displayPriceEl = document.getElementById('checkoutDisplayPrice');
+      const parsedDomPrice = displayPriceEl ? parseFloat(displayPriceEl.textContent.replace(/[^\d.]/g, '')) : NaN;
+      const checkoutValue = (!isNaN(parsedDomPrice) && parsedDomPrice > 0)
+        ? parsedDomPrice
+        : (liveGHLOffer?.finalAmount || 997);
+
+      fbq('track', 'InitiateCheckout', {
+        value: checkoutValue,
+        currency: 'INR',
+        content_name: 'MOYA Complete Access'
+      });
+    } catch (e) {}
   }
 
   try {
@@ -3327,15 +3363,27 @@ function initSection5LeadCapture() {
       }
 
       try {
+        const leadEventId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        const metaCookies = getMetaTrackingCookies();
+
         if (typeof fbq === "function") {
-          fbq("track", "Lead");
+          try {
+            fbq("track", "Lead", {
+              content_name: "MOYA Scholarship Voucher Claim",
+              currency: "INR",
+              value: 0
+            }, { eventID: leadEventId });
+          } catch (e) {}
         }
 
         const leadData = {
           name: nameVal.name,
           email: emailVal.email,
           phone: phoneVal.phone,
-          income: incomeVal
+          income: incomeVal,
+          eventId: leadEventId,
+          fbp: metaCookies.fbp || undefined,
+          fbc: metaCookies.fbc || undefined
         };
 
         // Save in localStorage & sessionStorage
@@ -3752,6 +3800,8 @@ function initRazorpayCheckoutFlow() {
             }
 
             try {
+              const metaCookies = getMetaTrackingCookies();
+
               // 3. Verify Payment on Backend
               await fetch('/api/razorpay/verify-payment', {
                 method: 'POST',
@@ -3764,7 +3814,9 @@ function initRazorpayCheckoutFlow() {
                   email: emailVal.email,
                   phone: phoneVal.phone,
                   couponCode: appliedCouponCode,
-                  paidAmount: finalPayable
+                  paidAmount: finalPayable,
+                  fbp: metaCookies.fbp || undefined,
+                  fbc: metaCookies.fbc || undefined
                 })
               });
 
@@ -3772,6 +3824,7 @@ function initRazorpayCheckoutFlow() {
                 sessionStorage.setItem('moya_last_payment', JSON.stringify({
                   amount: finalPayable,
                   paymentId: response.razorpay_payment_id || '',
+                  orderId: response.razorpay_order_id || '',
                   email: emailVal.email,
                   coupon: appliedCouponCode || '',
                   timestamp: Date.now()
@@ -3779,12 +3832,19 @@ function initRazorpayCheckoutFlow() {
               } catch (storageErr) {}
 
               if (typeof fbq === 'function') {
-                fbq('track', 'Purchase', { value: finalPayable, currency: 'INR' });
+                try {
+                  fbq('track', 'Purchase', {
+                    value: finalPayable,
+                    currency: 'INR',
+                    content_name: 'MOYA Complete Access'
+                  }, { eventID: response.razorpay_order_id });
+                } catch (e) {}
               }
 
               const thankYouParams = new URLSearchParams({
                 amount: finalPayable,
                 payment_id: response.razorpay_payment_id || '',
+                order_id: response.razorpay_order_id || '',
                 customer_email: emailVal.email,
                 coupon: appliedCouponCode || ''
               });
@@ -3795,6 +3855,7 @@ function initRazorpayCheckoutFlow() {
               const fallbackParams = new URLSearchParams({
                 amount: finalPayable,
                 payment_id: response.razorpay_payment_id || '',
+                order_id: response.razorpay_order_id || '',
                 customer_email: emailVal.email,
                 coupon: appliedCouponCode || ''
               });

@@ -1050,6 +1050,7 @@
       var params = new URLSearchParams(window.location.search);
       var rawAmount = params.get('amount');
       var rawPaymentId = params.get('payment_id');
+      var rawOrderId = params.get('order_id');
       var rawCustomerEmail = params.get('customer_email');
       var rawCoupon = params.get('coupon');
 
@@ -1060,6 +1061,7 @@
           if (cached) {
             if (!rawAmount && cached.amount) rawAmount = String(cached.amount);
             if (!rawPaymentId && cached.paymentId) rawPaymentId = String(cached.paymentId);
+            if (!rawOrderId && cached.orderId) rawOrderId = String(cached.orderId);
             if (!rawCustomerEmail && cached.email) rawCustomerEmail = String(cached.email);
             if (!rawCoupon && cached.coupon) rawCoupon = String(cached.coupon);
           }
@@ -1082,10 +1084,17 @@
         displayAmountEl.textContent = '₹' + Math.round(numericAmount).toLocaleString('en-IN');
       }
 
-      // Sync Meta Pixel Purchase conversion with the exact paid amount
+      // Sync Meta Pixel Purchase conversion with the exact paid amount & eventID deduplication
       if (window.fbq && numericAmount > 0) {
         try {
-          window.fbq('track', 'Purchase', { value: numericAmount, currency: 'INR' });
+          var deduplicationEventId = rawOrderId || rawPaymentId || '';
+          var eventOptions = deduplicationEventId ? { eventID: deduplicationEventId } : {};
+          window.fbq('track', 'Purchase', {
+            value: numericAmount,
+            currency: 'INR',
+            content_name: 'MOYA Complete Access',
+            content_type: 'product'
+          }, eventOptions);
         } catch (fbErr) {}
       }
 

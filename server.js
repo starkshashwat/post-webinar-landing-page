@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { mountFestiveRoutes, campaignFromCoupons } from './server/festive.js';
+import { sendMetaCapiEvent } from './server/meta-capi.js';
 
 dotenv.config();
 
@@ -168,7 +169,7 @@ async function syncGHLContact({ name, email, phone, tags = [], note = '', custom
 // -----------------------------------------------------------------------------
 app.post('/api/leads', leadsLimiter, async (req, res) => {
   try {
-    const { name, email, phone, income } = req.body;
+    const { name, email, phone, income, eventId, fbp, fbc } = req.body;
 
     if (!name || (!email && !phone)) {
       return res.status(400).json({ error: 'Name and either email or phone are required.' });
@@ -188,6 +189,30 @@ app.post('/api/leads', leadsLimiter, async (req, res) => {
       source: 'VSL Landing Page',
       note: `Captured via Section 5 Auto-Popup on ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}${income ? `\n• Current Monthly Income: ${income}` : ''}`
     });
+
+    // Meta Conversions API (CAPI) Lead dispatch (asynchronous & non-blocking)
+    const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || req.ip;
+    const userAgent = req.headers['user-agent'] || '';
+
+    sendMetaCapiEvent({
+      eventName: 'Lead',
+      eventId: eventId || ('lead_srv_' + Date.now()),
+      eventSourceUrl: req.headers.referer || 'https://vsl.mechanismofya.com/',
+      userData: {
+        email,
+        phone,
+        name,
+        clientIp,
+        userAgent,
+        fbp,
+        fbc
+      },
+      customData: {
+        content_name: 'MOYA Masterclass Lead',
+        currency: 'INR',
+        value: 0
+      }
+    }).catch(capiErr => console.error('[Meta CAPI Lead Error]', capiErr?.message || capiErr));
 
     res.json({ success: true, message: 'Lead captured and synced to GHL' });
   } catch (error) {
@@ -454,7 +479,9 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
       email,
       phone,
       couponCode,
-      paidAmount: clientPaidAmount
+      paidAmount: clientPaidAmount,
+      fbp,
+      fbc
     } = req.body;
 
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -519,6 +546,32 @@ app.post('/api/razorpay/verify-payment', async (req, res) => {
       note,
       customFields
     });
+
+    // Meta Conversions API (CAPI) Purchase Dispatch (asynchronous & non-blocking)
+    const clientIp = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket?.remoteAddress || req.ip;
+    const userAgent = req.headers['user-agent'] || '';
+
+    sendMetaCapiEvent({
+      eventName: 'Purchase',
+      eventId: razorpay_order_id,
+      eventSourceUrl: req.headers.referer || 'https://vsl.mechanismofya.com/thankyou',
+      userData: {
+        email,
+        phone,
+        name,
+        clientIp,
+        userAgent,
+        fbp,
+        fbc
+      },
+      customData: {
+        value: verifiedAmount,
+        currency: 'INR',
+        content_name: 'MOYA Complete Access',
+        order_id: razorpay_order_id,
+        payment_id: razorpay_payment_id
+      }
+    }).catch(capiErr => console.error('[Meta CAPI Purchase Error]', capiErr?.message || capiErr));
 
     res.json({ success: true, redirect: '/thankyou' });
   } catch (error) {
@@ -614,6 +667,28 @@ app.post('/api/razorpay/webhook', async (req, res) => {
         note: `Webhook Verified: ₹${paidAmount} | Coupon: ${couponCode || 'None (Full Price)'} | Razorpay ID: ${payment.id}`,
         customFields
       });
+
+      // Meta Conversions API (CAPI) Purchase Fallback Dispatch (asynchronous & non-blocking)
+      const webhookOrderId = payment?.order_id || null;
+      if (webhookOrderId) {
+        sendMetaCapiEvent({
+          eventName: 'Purchase',
+          eventId: webhookOrderId,
+          eventSourceUrl: 'https://vsl.mechanismofya.com/thankyou',
+          userData: {
+            email: notes.email || payment?.email,
+            phone: notes.phone || payment?.contact,
+            name: notes.name || undefined
+          },
+          customData: {
+            value: Number(paidAmount),
+            currency: 'INR',
+            content_name: 'MOYA Complete Access',
+            order_id: webhookOrderId,
+            payment_id: payment?.id
+          }
+        }).catch(capiErr => console.error('[Meta CAPI Webhook Purchase Error]', capiErr?.message || capiErr));
+      }
     } else if (event === 'payment.failed') {
       const errorDesc = payment?.error_description || payment?.error_reason || 'Bank decline';
 
