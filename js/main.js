@@ -408,6 +408,11 @@ class VideoController {
     if (!video || this.videos.has(video)) return;
     this.videos.add(video);
 
+    // Hero VSL has its own custom restricted controls (anti-seek/no scrub)
+    if (video.dataset.vslPlayer === 'true' || video.id === 'heroVslVideo') {
+      return;
+    }
+
     const wrap = video.closest('.cinematic-clean-video-frame, .bento-video-wrapper, .video-card-item') || video.parentElement;
     const playBtn = wrap ? wrap.querySelector('.custom-play-btn, .video-play-overlay') : null;
 
@@ -524,6 +529,195 @@ class VideoController {
   }
 }
 window.videoController = new VideoController();
+
+// ==========================================================================
+// HERO VSL RESTRICTED VIDEO PLAYER (NO-SEEK / ANTI-SKIP ARCHITECTURE)
+// ==========================================================================
+function initHeroVslPlayer() {
+  const video = document.getElementById('heroVslVideo');
+  const frame = document.getElementById('heroVslFrame');
+  const centerPlayBtn = document.getElementById('heroVslCenterPlay');
+  const controlsBar = document.getElementById('heroVslControls');
+  const playPauseBtn = document.getElementById('vslPlayPauseBtn');
+  const muteBtn = document.getElementById('vslMuteBtn');
+  const fullscreenBtn = document.getElementById('vslFullscreenBtn');
+  const progressFill = document.getElementById('vslProgressFill');
+
+  if (!video || !frame) return;
+
+  let maxWatchedTime = 0;
+  let hideControlsTimer = null;
+
+  // Auto-hide controls during playback
+  const scheduleHideControls = () => {
+    clearTimeout(hideControlsTimer);
+    if (!video.paused && controlsBar) {
+      hideControlsTimer = setTimeout(() => {
+        controlsBar.classList.add('is-hidden');
+      }, 2500);
+    }
+  };
+
+  const showControls = () => {
+    if (!controlsBar) return;
+    controlsBar.classList.remove('is-hidden');
+    scheduleHideControls();
+  };
+
+  const updatePlayIcons = (isPlaying) => {
+    if (playPauseBtn) {
+      const playIcon = playPauseBtn.querySelector('.vsl-icon-play');
+      const pauseIcon = playPauseBtn.querySelector('.vsl-icon-pause');
+      if (playIcon) playIcon.style.display = isPlaying ? 'none' : 'block';
+      if (pauseIcon) pauseIcon.style.display = isPlaying ? 'block' : 'none';
+      playPauseBtn.setAttribute('aria-label', isPlaying ? 'Pause Video' : 'Play Video');
+    }
+    if (centerPlayBtn) {
+      centerPlayBtn.style.display = isPlaying ? 'none' : 'flex';
+    }
+  };
+
+  const updateMuteIcons = (isMuted) => {
+    if (muteBtn) {
+      const soundIcon = muteBtn.querySelector('.vsl-icon-sound');
+      const muteIcon = muteBtn.querySelector('.vsl-icon-mute');
+      if (soundIcon) soundIcon.style.display = isMuted ? 'none' : 'block';
+      if (muteIcon) muteIcon.style.display = isMuted ? 'block' : 'none';
+      muteBtn.setAttribute('aria-label', isMuted ? 'Unmute Audio' : 'Mute Audio');
+    }
+  };
+
+  const togglePlay = () => {
+    if (video.paused) {
+      // Pause any other video playing
+      if (window.videoController && window.videoController.videos) {
+        window.videoController.videos.forEach(v => {
+          if (v !== video && !v.paused) v.pause();
+        });
+      }
+      video.play().catch(err => {
+        console.warn('VSL Playback Notice:', err);
+      });
+    } else {
+      video.pause();
+    }
+  };
+
+  const toggleMute = () => {
+    video.muted = !video.muted;
+    updateMuteIcons(video.muted);
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (frame.requestFullscreen) {
+        frame.requestFullscreen();
+      } else if (frame.webkitRequestFullscreen) {
+        frame.webkitRequestFullscreen();
+      } else if (video.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  };
+
+  // Button Click Events
+  if (centerPlayBtn) centerPlayBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+  if (playPauseBtn) playPauseBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+  if (muteBtn) muteBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleMute(); });
+  if (fullscreenBtn) fullscreenBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFullscreen(); });
+
+  video.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePlay();
+  });
+
+  // Track playback time & update read-only progress bar
+  video.addEventListener('timeupdate', () => {
+    // Normal progression tracking
+    if (video.currentTime > maxWatchedTime && (video.currentTime - maxWatchedTime) < 1.5) {
+      maxWatchedTime = video.currentTime;
+    }
+    // Update progress fill
+    if (progressFill && video.duration) {
+      const pct = (video.currentTime / video.duration) * 100;
+      progressFill.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+    }
+  });
+
+  // STRICT ANTI-SEEK / ANTI-SKIP ENFORCEMENT:
+  // If user or any browser action attempts to jump ahead of maxWatchedTime, immediately clamp back
+  video.addEventListener('seeking', () => {
+    if (video.currentTime > maxWatchedTime + 0.5) {
+      video.currentTime = maxWatchedTime;
+    }
+  });
+
+  // Block keyboard seek shortcuts when video or container has focus
+  window.addEventListener('keydown', (e) => {
+    const isVslFocused = document.activeElement === video || frame.contains(document.activeElement);
+    if (isVslFocused) {
+      const blockedKeys = ['ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown', 'j', 'l', 'J', 'L', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+      if (blockedKeys.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (e.key === ' ' && document.activeElement === video) {
+        e.preventDefault();
+        togglePlay();
+      }
+    }
+  });
+
+  // Mouse / Touch Activity for Auto-hide Controls
+  frame.addEventListener('mousemove', showControls);
+  frame.addEventListener('touchstart', showControls, { passive: true });
+  frame.addEventListener('mouseleave', () => {
+    if (!video.paused && controlsBar) {
+      controlsBar.classList.add('is-hidden');
+    }
+  });
+
+  // Video State Transitions
+  video.addEventListener('play', () => {
+    updatePlayIcons(true);
+    frame.classList.add('is-playing');
+    document.body.classList.add('is-cinema-mode');
+    showControls();
+  });
+
+  video.addEventListener('pause', () => {
+    updatePlayIcons(false);
+    frame.classList.remove('is-playing');
+    document.body.classList.remove('is-cinema-mode');
+    showControls();
+  });
+
+  video.addEventListener('ended', () => {
+    updatePlayIcons(false);
+    frame.classList.remove('is-playing');
+    document.body.classList.remove('is-cinema-mode');
+    showControls();
+    video.currentTime = 0;
+  });
+
+  // Fullscreen UI sync
+  document.addEventListener('fullscreenchange', () => {
+    const isFs = !!document.fullscreenElement;
+    if (fullscreenBtn) {
+      const enterIcon = fullscreenBtn.querySelector('.vsl-icon-fullscreen');
+      const exitIcon = fullscreenBtn.querySelector('.vsl-icon-exit-fullscreen');
+      if (enterIcon) enterIcon.style.display = isFs ? 'none' : 'block';
+      if (exitIcon) exitIcon.style.display = isFs ? 'block' : 'none';
+      fullscreenBtn.setAttribute('aria-label', isFs ? 'Exit Fullscreen' : 'Enter Fullscreen');
+    }
+  });
+}
 
 // ==========================================================================
 // LENIS SMOOTH SCROLL ENGINE & ANCHOR NAVIGATION
@@ -3988,8 +4182,9 @@ onReady(() => {
   initSection5LeadCapture();
   window.applyUrgencyCoupon = initRazorpayCheckoutFlow();
 
-  // 4. Initialize Video Controller
+  // 4. Initialize Video Controllers
   window.videoController.init();
+  initHeroVslPlayer();
 
   // 5. Initialize Lenis Smooth Scroll Engine & Navigation
   initLenisScroll();

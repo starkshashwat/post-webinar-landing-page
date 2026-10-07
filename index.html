@@ -175,23 +175,28 @@
   }
   </script>
 
-  <!-- Preconnect & Fonts -->
+  <!-- Preconnect & CDNs for Zero Handshake Delay -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="preconnect" href="https://assets.cdn.filesafe.space" crossorigin />
+
+  <!-- Preload High-Priority Hero VSL Thumbnail (61 KB WebP) -->
+  <link rel="preload" as="image" href="./assets/hero-vsl-thumbnail.webp" fetchpriority="high" type="image/webp" />
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Core External CDN Libraries (Preserved Exact Versions) -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://unpkg.com/split-type"></script>
-  <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+  <!-- Core External CDN Libraries (Deferred for 100% Non-Blocking HTML Parsing) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script defer src="https://unpkg.com/split-type"></script>
+  <script defer src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
 
   <link rel="icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png">
   <link rel="shortcut icon" type="image/png" href="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6a5222f50e67afc013938126.png">
 
   <!-- Production Stylesheet -->
-  <link rel="preconnect" href="https://assets.cdn.filesafe.space" crossorigin />
   <link rel="stylesheet" href="./css/main.css" />
   <link rel="stylesheet" href="./css/checkout-enhance.css" />
 </head>
@@ -281,87 +286,68 @@
         </h1>
         
         
-        <!-- DATA-FOCUSED VERIFIED STUDENT DASHBOARD -->
-        <div class="dashboard-viewport">
-          <div class="moya-advanced-stats-grid">
-            
-            <!-- Context Header: Student & Verification -->
-            <div class="dash-proof-bar">
-              <div class="dash-proof-badge">
-                <span class="pulse-green-dot"></span>
-                <span>LIVE AUDIT • STUDENT: KAUSHIK (FACELESS NICHE)</span>
-              </div>
-              <div class="dash-verified-pill">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                <span>ADSENSE PAYOUT SNAPSHOT</span>
-              </div>
-            </div>
-
-            <!-- Left: Hero Revenue Spotlight -->
-            <div class="stat-card stat-revenue-hero-card">
-              <div class="stat-subtitle">TOTAL ESTIMATED REVENUE</div>
-              <div class="revenue-giant-metric">$4,896<span class="revenue-cents">.81</span></div>
-              <div class="revenue-inr-pill">₹4,11,332 INR NET</div>
-              <div class="revenue-meta-tags">
-                <span class="rev-tag">1 Video</span>
-                <span class="rev-tag">45 Days</span>
-                <span class="rev-tag">0 On-Camera</span>
-              </div>
-            </div>
-
-            <!-- Right: Interactive Growth Curve -->
-            <div class="stat-card stat-chart-card">
-              <div class="stat-head">
-                <div>
-                  <h3 class="stat-title">Revenue Velocity</h3>
-                  <p class="stat-subtitle">45-DAY VIRAL BREAKTHROUGH</p>
-                </div>
-                <div class="stat-head-right">
-                  <div class="stat-metric-primary">+4,280%</div>
-                  <div class="stat-metric-secondary">Algorithmic Push</div>
-                </div>
-              </div>
+        <!-- HERO VSL VIDEO CENTERPIECE (RESTRICTED PLAYBACK: PLAY/PAUSE, MUTE, FULLSCREEN ONLY - NO SEEKING) -->
+        <div class="hero-vsl-container" id="heroVslContainer">
+          <div class="hero-vsl-frame" id="heroVslFrame">
+            <div class="bento-video-wrapper vsl-video-wrapper">
+              <video 
+                id="heroVslVideo"
+                class="hero-vsl-video" 
+                data-vsl-player="true"
+                src="https://assets.cdn.filesafe.space/jsuZqhDRfnfSBFMgdfs2/media/6ac5fa9722bc27f58fb12c4a.mp4"
+                poster="./assets/hero-vsl-thumbnail.webp"
+                playsinline 
+                preload="metadata"
+                controlsList="nodownload noplaybackrate"
+                disablepictureinpicture
+                oncontextmenu="return false;"></video>
               
-              <!-- Interactive Chart Area -->
-              <div class="interactive-chart-wrap" id="mainChartArea">
-                <div class="chart-crosshair" id="chartCrosshair"></div>
-                <div class="chart-dot" id="chartDot"></div>
-                <div class="chart-tooltip" id="chartTooltip">1,008,158 Views</div>
-                
-                <svg viewBox="0 0 800 220" preserveAspectRatio="none" style="width:100%; height:100%; pointer-events:none;">
-                  <line x1="0" y1="45" x2="800" y2="45" stroke="var(--line)" stroke-dasharray="4" />
-                  <line x1="0" y1="110" x2="800" y2="110" stroke="var(--line)" stroke-dasharray="4" />
-                  <line x1="0" y1="175" x2="800" y2="175" stroke="var(--line)" stroke-dasharray="4" />
-                  
-                  <defs>
-                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#E52E3F" stop-opacity="0.45"/>
-                      <stop offset="100%" stop-color="#E52E3F" stop-opacity="0.0"/>
-                    </linearGradient>
-                  </defs>
-                  
-                  <path d="M0,200 L0,180 C100,180 150,170 200,150 C250,135 300,40 350,50 C400,60 450,150 500,130 C550,115 600,65 650,75 C700,85 750,150 800,135 L800,200 Z" fill="url(#areaGrad)"/>
-                  <path class="animated-line" d="M0,180 C100,180 150,170 200,150 C250,135 300,40 350,50 C400,60 450,150 500,130 C550,115 600,65 650,75 C700,85 750,150 800,135" fill="none" stroke="#E52E3F" stroke-width="3.5" stroke-linecap="round" />
-                </svg>
-              </div>
-            </div>
+              <!-- Center Big Play Button (Initial Overlay) -->
+              <div class="custom-play-btn hero-vsl-play-btn" id="heroVslCenterPlay" title="Click to Watch Video"></div>
 
-            <!-- Bottom: 3 Core Data KPIs -->
-            <div class="stat-bottom-row stat-bottom-3col">
-              <div class="stat-card">
-                 <p class="stat-subtitle">TOTAL VIEWS</p>
-                 <div class="stat-bottom-val">1,008,158 <span class="stat-trend positive">100% Organic</span></div>
-              </div>
-              <div class="stat-card">
-                 <p class="stat-subtitle">WATCH TIME</p>
-                 <div class="stat-bottom-val">48,190 <span class="stat-metric-unit">HRS</span> <span class="stat-trend positive">Monetized</span></div>
-              </div>
-              <div class="stat-card">
-                 <p class="stat-subtitle">SUBSCRIBERS</p>
-                 <div class="stat-bottom-val">+18,450 <span class="stat-trend positive">From 0</span></div>
+              <!-- Custom Restricted VSL Control Bar (Play/Pause, Mute/Unmute, Fullscreen Only) -->
+              <div class="vsl-control-bar" id="heroVslControls">
+                <!-- Play / Pause Button -->
+                <button type="button" class="vsl-ctrl-btn" id="vslPlayPauseBtn" aria-label="Play Video" title="Play / Pause">
+                  <svg class="vsl-icon-play" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <polygon points="6 4 20 12 6 20 6 4"/>
+                  </svg>
+                  <svg class="vsl-icon-pause" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="display:none;">
+                    <rect x="6" y="4" width="4" height="16"/>
+                    <rect x="14" y="4" width="4" height="16"/>
+                  </svg>
+                </button>
+
+                <!-- Read-Only Non-Interactive Progress Bar (Pointer-Events None, Zero Seek) -->
+                <div class="vsl-progress-track" title="Playback Progress (Non-seekable)">
+                  <div class="vsl-progress-fill" id="vslProgressFill"></div>
+                </div>
+
+                <!-- Mute / Unmute Button -->
+                <button type="button" class="vsl-ctrl-btn" id="vslMuteBtn" aria-label="Toggle Mute" title="Mute / Unmute">
+                  <svg class="vsl-icon-sound" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                  </svg>
+                  <svg class="vsl-icon-mute" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <line x1="23" y1="9" x2="17" y2="15"/>
+                    <line x1="17" y1="9" x2="23" y2="15"/>
+                  </svg>
+                </button>
+
+                <!-- Fullscreen Button -->
+                <button type="button" class="vsl-ctrl-btn" id="vslFullscreenBtn" aria-label="Toggle Fullscreen" title="Fullscreen">
+                  <svg class="vsl-icon-fullscreen" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                  </svg>
+                  <svg class="vsl-icon-exit-fullscreen" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                    <path d="M4 14h6v6m10-10h-6V4m0 6l7-7M9 15l-7 7"/>
+                  </svg>
+                </button>
               </div>
             </div>
-            
           </div>
         </div>
 

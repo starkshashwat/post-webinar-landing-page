@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -15,6 +16,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// High-speed Gzip / Deflate compression for fast loading over the wire
+app.use(compression());
 
 // CORS setup - restricted to authorized domains + localhost
 const allowedOrigins = [
@@ -724,7 +728,16 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(distPath));
+app.use(express.static(distPath, {
+  maxAge: '1d',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    } else if (filePath.match(/\.(js|css|webp|png|jpg|jpeg|svg|woff2)$/)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 
 // Clean URL rewrite mappings for Coolify
 const rewrites = {
