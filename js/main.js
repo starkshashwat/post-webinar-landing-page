@@ -362,12 +362,14 @@ function handleCtaClick(e) {
   if (e) {
     if (e.preventDefault) e.preventDefault();
     if (e.stopPropagation) e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
   }
   if (!isLeadSubmitted()) {
     openLeadCaptureModal();
   } else {
     openRazorpayCheckoutModal();
   }
+  return false;
 }
 window.handleCtaClick = handleCtaClick;
 
@@ -748,19 +750,23 @@ function initLenisScroll() {
 
     // Smooth Anchor Navigation on mobile
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        const targetId = this.getAttribute('href');
-        if (!targetId || targetId === '#' || targetId.startsWith('#open-popup')) return;
+      // Exclude all CTA buttons, popups, and modal triggers from smooth scroll
+      if (anchor.matches('.js-cta, .hero-cta, .hero-cta-primary, .moya-mobile-sticky-btn, .modal-cta-btn, .js-modal-cta, .js-cta-checkout, [data-cta]')) {
+        return;
+      }
+      const targetId = anchor.getAttribute('href');
+      if (!targetId || targetId === '#' || (targetId === '#offer' && anchor.classList.contains('hero-cta')) || targetId.startsWith('#open-popup')) return;
 
-        const targetEl = document.querySelector(targetId);
-        if (targetEl) {
+      const targetEl = document.querySelector(targetId);
+      if (targetEl) {
+        anchor.addEventListener('click', function(e) {
           e.preventDefault();
           const navHeader = document.querySelector('.moya-header') || document.querySelector('header');
           const navHeight = navHeader ? navHeader.offsetHeight + 18 : 78;
           const targetY = targetEl.getBoundingClientRect().top + window.scrollY - navHeight;
           window.scrollTo({ top: targetY, behavior: 'smooth' });
-        }
-      });
+        });
+      }
     });
     return;
   }
@@ -795,12 +801,16 @@ function initLenisScroll() {
 
     // Smooth Anchor Navigation taking fixed navbar into account
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        const targetId = this.getAttribute('href');
-        if (!targetId || targetId === '#' || targetId.startsWith('#open-popup')) return;
+      // Exclude all CTA buttons, popups, and modal triggers from smooth scroll
+      if (anchor.matches('.js-cta, .hero-cta, .hero-cta-primary, .moya-mobile-sticky-btn, .modal-cta-btn, .js-modal-cta, .js-cta-checkout, [data-cta]')) {
+        return;
+      }
+      const targetId = anchor.getAttribute('href');
+      if (!targetId || targetId === '#' || (targetId === '#offer' && anchor.classList.contains('hero-cta')) || targetId.startsWith('#open-popup')) return;
 
-        const targetEl = document.querySelector(targetId);
-        if (targetEl) {
+      const targetEl = document.querySelector(targetId);
+      if (targetEl) {
+        anchor.addEventListener('click', function(e) {
           e.preventDefault();
           const navHeader = document.querySelector('.moya-header') || document.querySelector('header');
           const navHeight = navHeader ? navHeader.offsetHeight + 18 : 78;
@@ -809,8 +819,8 @@ function initLenisScroll() {
             duration: 1.1,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
           });
-        }
-      });
+        });
+      }
     });
 
   } catch (err) {
@@ -4160,7 +4170,7 @@ function initRazorpayCheckoutFlow() {
 // ==========================================================================
 onReady(() => {
   // 1. Bind ALL Enrollment & Action CTAs across the entire page to Gatekeeper
-  $$(".js-cta, .js-cta-checkout, #cta, .hero-cta-primary, .moya-mobile-sticky-btn, .modal-cta-btn, .moya-btn-primary, a[href='#offer']:not(.nav-item)").forEach((btn) => {
+  $$(".js-cta, .js-cta-checkout, #cta, #heroCtaBtn, .hero-cta, .hero-cta-primary, .moya-mobile-sticky-btn, .modal-cta-btn, .js-modal-cta, .moya-btn-primary, [data-cta], a[href='#offer']:not(.nav-item)").forEach((btn) => {
     btn.addEventListener("click", handleCtaClick);
   });
 
