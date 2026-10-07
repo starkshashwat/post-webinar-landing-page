@@ -1,3 +1,6 @@
+import net from 'net';
+import http from 'http';
+import https from 'https';
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
@@ -6,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
+import selfsigned from 'selfsigned';
 import { mountFestiveRoutes, campaignFromCoupons } from './server/festive.js';
 import { sendMetaCapiEvent } from './server/meta-capi.js';
 
@@ -20,16 +24,22 @@ const PORT = process.env.PORT || 3000;
 // High-speed Gzip / Deflate compression for fast loading over the wire
 app.use(compression());
 
+// Dedicated Healthcheck Endpoints for Coolify, Docker & Uptime Probes (Supports HTTP & HTTPS)
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok', uptime: process.uptime() }));
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', uptime: process.uptime() }));
+
 // CORS setup - restricted to authorized domains + localhost
 const allowedOrigins = [
   'https://vsl.mechanismofya.com',
-  'https://mechanismofya.com'
+  'https://www.vsl.mechanismofya.com',
+  'https://mechanismofya.com',
+  'https://www.mechanismofya.com'
 ];
 
 app.use(cors({
   origin: (origin, callback) => {
     // Allow non-browser requests (mobile, server-to-server, curl, tests) or allowed origins
-    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    if (!origin || allowedOrigins.includes(origin) || origin.includes('localhost') || origin.includes('127.0.0.1')) {
       callback(null, true);
     } else {
       callback(new Error('Blocked by CORS policy'));
@@ -766,10 +776,50 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(distPath, '404.html'));
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`MOYA Web App running in Coolify / Node on port ${PORT}`);
-  console.log(`Local address: http://localhost:${PORT}`);
-  console.log(`====================================================`);
-});
+// Start Dual Protocol (HTTP & HTTPS) Server on single PORT for Coolify Healthchecks & Reverse Proxy
+async function startServer() {
+  let pems = null;
+  try {
+    pems = await selfsigned.generate(
+      [{ name: 'commonName', value: 'localhost' }],
+      { days: 365 }
+    );
+  } catch (err) {
+    console.warn('[SelfSigned Warning]', err?.message || err);
+  }
+
+  const httpServer = http.createServer(app);
+  const httpsServer = pems && pems.cert && pems.private
+    ? https.createServer({ key: pems.private, cert: pems.cert }, app)
+    : null;
+
+  const masterServer = net.createServer((socket) => {
+    socket.once('data', (buffer) => {
+      socket.pause();
+      socket.unshift(buffer);
+      // Byte 0x16 (22) is standard TLS Handshake ClientHello (HTTPS)
+      if (buffer[0] === 22 && httpsServer) {
+        httpsServer.emit('connection', socket);
+      } else {
+        httpServer.emit('connection', socket);
+      }
+      process.nextTick(() => socket.resume());
+    });
+
+    socket.on('error', (err) => {
+      if (err.code !== 'ECONNRESET' && err.code !== 'EPIPE') {
+        console.warn('[Socket Notice]', err.message);
+      }
+    });
+  });
+
+  masterServer.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`MOYA Web App running in Coolify / Node on port ${PORT}`);
+    console.log(`Dual Protocol Enabled: HTTP & HTTPS on port ${PORT}`);
+    console.log(`Local address: http://localhost:${PORT}`);
+    console.log(`====================================================`);
+  });
+}
+
+startServer();
