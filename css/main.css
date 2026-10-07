@@ -12896,15 +12896,8 @@ body.light-mode .hero-vsl-frame {
   background: #000;
 }
 
-/* Big Center Play Button Overlay */
+/* Big Center Play Button Overlay (Hidden so character face on thumbnail remains 100% visible) */
 .hero-vsl-play-btn {
-  width: 70px !important;
-  height: 70px !important;
-  z-index: 10;
-  transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.hero-vsl-frame.is-playing .hero-vsl-play-btn {
   display: none !important;
 }
 
