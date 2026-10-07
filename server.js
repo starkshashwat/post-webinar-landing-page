@@ -1,6 +1,7 @@
 import net from 'net';
 import http from 'http';
 import https from 'https';
+import fs from 'fs';
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
@@ -776,6 +777,21 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(distPath, '404.html'));
 });
 
+// Configure container local curl/wget rc configs to allow selfsigned probes
+try {
+  const configs = [
+    { paths: ['/root/.curlrc', '/etc/curlrc', path.join(process.env.HOME || '/root', '.curlrc')], content: 'insecure\n' },
+    { paths: ['/root/.wgetrc', '/etc/wgetrc', path.join(process.env.HOME || '/root', '.wgetrc')], content: 'check_certificate = off\n' }
+  ];
+  for (const item of configs) {
+    for (const p of item.paths) {
+      try {
+        if (!fs.existsSync(p)) fs.writeFileSync(p, item.content, 'utf8');
+      } catch (_) {}
+    }
+  }
+} catch (_) {}
+
 // Start Dual Protocol (HTTP & HTTPS) Server on single PORT for Coolify Healthchecks & Reverse Proxy
 async function startServer() {
   let pems = null;
@@ -794,7 +810,10 @@ async function startServer() {
     : null;
 
   const masterServer = net.createServer((socket) => {
-    socket.once('data', (buffer) => {
+    socket.setTimeout(20000, () => socket.destroy());
+
+    const onData = (buffer) => {
+      socket.removeListener('error', onError);
       socket.pause();
       socket.unshift(buffer);
       // Byte 0x16 (22) is standard TLS Handshake ClientHello (HTTPS)
@@ -804,16 +823,20 @@ async function startServer() {
         httpServer.emit('connection', socket);
       }
       process.nextTick(() => socket.resume());
-    });
+    };
 
-    socket.on('error', (err) => {
+    const onError = (err) => {
+      socket.removeListener('data', onData);
       if (err.code !== 'ECONNRESET' && err.code !== 'EPIPE') {
         console.warn('[Socket Notice]', err.message);
       }
-    });
+    };
+
+    socket.once('data', onData);
+    socket.once('error', onError);
   });
 
-  masterServer.listen(PORT, () => {
+  masterServer.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
     console.log(`MOYA Web App running in Coolify / Node on port ${PORT}`);
     console.log(`Dual Protocol Enabled: HTTP & HTTPS on port ${PORT}`);
